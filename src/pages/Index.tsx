@@ -1,7 +1,16 @@
-import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { teamMembers, tasks } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
+
+const models = [
+  { name: "Izzy", theme: "Military", color: "hsl(var(--primary))", days: ["Monday", "Wednesday", "Friday"] },
+  { name: "Willow", theme: "Playful Redhead", color: "hsl(var(--accent))", days: ["Monday", "Wednesday", "Friday"] },
+  { name: "Lucinda Bleu", theme: "Goth Aesthetic", color: "hsl(270 60% 60%)", days: ["Monday", "Wednesday", "Friday"] },
+  { name: "Ashley Morris", theme: "College", color: "hsl(30 80% 55%)", days: ["Monday", "Wednesday", "Friday"] },
+];
+
+const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const Index = () => {
   const totalRevenue = teamMembers.reduce((sum, m) => sum + m.revenueGenerated, 0);
@@ -21,6 +30,65 @@ const Index = () => {
         <MetricCard title="Active Chatters" value={`${activeChatters}/${teamMembers.length}`} change="3 online now" changeType="neutral" icon={Users} />
         <MetricCard title="Avg Quality Score" value={`${avgQuality}/10`} change="+0.3 from last week" changeType="positive" icon={Star} />
         <MetricCard title="Tasks Completed" value={`${completedTasks}/${tasks.length}`} change={`${Math.round((completedTasks / tasks.length) * 100)}% completion rate`} changeType="neutral" icon={TrendingUp} />
+      </div>
+
+      {/* Mass Message Schedule */}
+      <div className="glass-card p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          <h2 className="font-semibold">Mass Message Schedule</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="min-w-[700px]">
+            {/* Header row */}
+            <div className="grid grid-cols-8 gap-1 mb-2">
+              <div className="p-2 text-xs font-medium text-muted-foreground">Model</div>
+              {weekDays.map((day) => (
+                <div key={day} className="p-2 text-xs font-medium text-muted-foreground text-center">
+                  {day.slice(0, 3)}
+                </div>
+              ))}
+            </div>
+            {/* Model rows */}
+            {models.map((model) => (
+              <div key={model.name} className="grid grid-cols-8 gap-1 mb-1">
+                <div className="p-2 flex flex-col justify-center">
+                  <span className="text-sm font-medium truncate">{model.name}</span>
+                  <span className="text-[10px] text-muted-foreground">{model.theme}</span>
+                </div>
+                {weekDays.map((day) => {
+                  const isScheduled = model.days.includes(day);
+                  return (
+                    <div
+                      key={day}
+                      className={`rounded-md p-2 text-center flex items-center justify-center transition-colors ${
+                        isScheduled
+                          ? "bg-secondary border border-border"
+                          : "bg-transparent"
+                      }`}
+                    >
+                      {isScheduled && (
+                        <div
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: model.color }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 pt-2 border-t border-border/50">
+          {models.map((model) => (
+            <div key={model.name} className="flex items-center gap-1.5">
+              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: model.color }} />
+              <span className="text-xs text-muted-foreground">{model.name}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
