@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
 
-const CORRECT_PASSWORD = "theonlymanager2026!";
+const CORRECT_PASSWORD = "only2026";
 const AUTH_KEY = "chatting-university-auth";
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
@@ -13,14 +13,14 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setAuthenticated(localStorage.getItem(AUTH_KEY) === "true");
+    setAuthenticated(sessionStorage.getItem(AUTH_KEY) === "true");
     setLoading(false);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === CORRECT_PASSWORD) {
-      localStorage.setItem(AUTH_KEY, "true");
+      sessionStorage.setItem(AUTH_KEY, "true");
       setAuthenticated(true);
       setError(false);
     } else {
