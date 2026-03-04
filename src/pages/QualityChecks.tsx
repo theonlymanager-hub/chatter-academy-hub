@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { teamMembers } from "@/lib/mock-data";
+import { teamMembers, chatterColors } from "@/lib/mock-data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,15 @@ export default function QualityChecks() {
   const [notes, setNotes] = useState("");
 
   const avgScore = (Object.values(scores).reduce((a, b) => a + b, 0) / categories.length).toFixed(1);
+  const selectedChatter = teamMembers.find(m => m.id === selectedMember);
+  const selectedColor = selectedChatter ? chatterColors[selectedChatter.name] : null;
 
   const handleSubmit = () => {
     if (!selectedMember) {
       toast.error("Please select a team member");
       return;
     }
-    toast.success(`Quality check submitted for ${teamMembers.find((m) => m.id === selectedMember)?.name}`);
+    toast.success(`Quality check submitted for ${selectedChatter?.name}`);
     setSelectedMember("");
     setScores(Object.fromEntries(categories.map((c) => [c, 5])));
     setNotes("");
@@ -41,12 +43,39 @@ export default function QualityChecks() {
               <SelectValue placeholder="Select a team member" />
             </SelectTrigger>
             <SelectContent>
-              {teamMembers.map((m) => (
-                <SelectItem key={m.id} value={m.id}>{m.name} — {m.role}</SelectItem>
-              ))}
+              {teamMembers.map((m) => {
+                const color = chatterColors[m.name];
+                return (
+                  <SelectItem key={m.id} value={m.id}>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />
+                      <span>{m.name}</span>
+                      <span className="text-muted-foreground">— {m.role}</span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
+
+        {selectedChatter && (
+          <div
+            className="flex items-center gap-3 p-3 rounded-lg border"
+            style={{ borderColor: `hsl(${selectedColor} / 0.3)`, backgroundColor: `hsl(${selectedColor} / 0.05)` }}
+          >
+            <div
+              className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold"
+              style={{ backgroundColor: `hsl(${selectedColor} / 0.2)`, color: `hsl(${selectedColor})` }}
+            >
+              {selectedChatter.avatar}
+            </div>
+            <div>
+              <p className="text-sm font-semibold">{selectedChatter.name}</p>
+              <p className="text-[10px] text-muted-foreground">{selectedChatter.role} • Current score: {selectedChatter.qualityScore}/10</p>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-5">
           {categories.map((category) => (
