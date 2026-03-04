@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Star,
   CalendarDays,
+  MessageSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -27,6 +28,7 @@ const items = [
   { title: "Tasks", url: "/tasks", icon: ClipboardList },
   { title: "Quality Checks", url: "/quality", icon: Star },
   { title: "Shift Calendar", url: "/calendar", icon: CalendarDays },
+  { title: "Mass Messages", url: "/messages", icon: MessageSquare },
 ];
 
 export function AppSidebar() {

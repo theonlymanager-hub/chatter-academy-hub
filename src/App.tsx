@@ -11,6 +11,7 @@ import Training from "./pages/Training";
 import Tasks from "./pages/Tasks";
 import QualityChecks from "./pages/QualityChecks";
 import ShiftCalendar from "./pages/ShiftCalendar";
+import MassMessageCalendar from "./pages/MassMessageCalendar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/tasks" element={<DashboardLayout><Tasks /></DashboardLayout>} />
           <Route path="/quality" element={<DashboardLayout><QualityChecks /></DashboardLayout>} />
           <Route path="/calendar" element={<DashboardLayout><ShiftCalendar /></DashboardLayout>} />
+          <Route path="/messages" element={<DashboardLayout><MassMessageCalendar /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
