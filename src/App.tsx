@@ -12,6 +12,7 @@ import Tasks from "./pages/Tasks";
 import QualityChecks from "./pages/QualityChecks";
 import ShiftCalendar from "./pages/ShiftCalendar";
 import MassMessageCalendar from "./pages/MassMessageCalendar";
+import WeeklyTasks from "./pages/WeeklyTasks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/team" element={<DashboardLayout><TeamMembers /></DashboardLayout>} />
           <Route path="/training" element={<DashboardLayout><Training /></DashboardLayout>} />
           <Route path="/tasks" element={<DashboardLayout><Tasks /></DashboardLayout>} />
+          <Route path="/weekly-tasks" element={<DashboardLayout><WeeklyTasks /></DashboardLayout>} />
           <Route path="/quality" element={<DashboardLayout><QualityChecks /></DashboardLayout>} />
           <Route path="/calendar" element={<DashboardLayout><ShiftCalendar /></DashboardLayout>} />
           <Route path="/messages" element={<DashboardLayout><MassMessageCalendar /></DashboardLayout>} />

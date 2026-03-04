@@ -26,6 +26,7 @@ const items = [
   { title: "Team Members", url: "/team", icon: Users },
   { title: "Training", url: "/training", icon: GraduationCap },
   { title: "Tasks", url: "/tasks", icon: ClipboardList },
+  { title: "Weekly Tasks", url: "/weekly-tasks", icon: ClipboardList },
   { title: "Quality Checks", url: "/quality", icon: Star },
   { title: "Shift Calendar", url: "/calendar", icon: CalendarDays },
   { title: "Mass Messages", url: "/messages", icon: MessageSquare },
