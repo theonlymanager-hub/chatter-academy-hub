@@ -14,6 +14,7 @@ import ShiftCalendar from "./pages/ShiftCalendar";
 import MassMessageCalendar from "./pages/MassMessageCalendar";
 import WeeklyTasks from "./pages/WeeklyTasks";
 import Analytics from "./pages/Analytics";
+import Shifts from "./pages/Shifts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/calendar" element={<DashboardLayout><ShiftCalendar /></DashboardLayout>} />
           <Route path="/messages" element={<DashboardLayout><MassMessageCalendar /></DashboardLayout>} />
           <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+          <Route path="/shifts" element={<DashboardLayout><Shifts /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

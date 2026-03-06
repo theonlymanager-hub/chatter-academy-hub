@@ -7,6 +7,7 @@ import {
   CalendarDays,
   MessageSquare,
   BarChart3,
+  Clock,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -32,6 +33,7 @@ const items = [
   { title: "Shift Calendar", url: "/calendar", icon: CalendarDays },
   { title: "Mass Messages", url: "/messages", icon: MessageSquare },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Shift Scheduler", url: "/shifts", icon: Clock },
 ];
 
 export function AppSidebar() {
