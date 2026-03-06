@@ -6,6 +6,7 @@ import {
   Star,
   CalendarDays,
   MessageSquare,
+  BarChart3,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -30,6 +31,7 @@ const items = [
   { title: "Quality Checks", url: "/quality", icon: Star },
   { title: "Shift Calendar", url: "/calendar", icon: CalendarDays },
   { title: "Mass Messages", url: "/messages", icon: MessageSquare },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
 ];
 
 export function AppSidebar() {
