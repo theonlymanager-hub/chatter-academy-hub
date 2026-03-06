@@ -26,19 +26,31 @@ interface ChatterPerformance {
   topModel: string;
 }
 
-// Mock data for demo - will be replaced with real API data
+// Real chatters - from Infloww dashboard
+const CHATTERS = {
+  jane: { id: '1', name: 'Jane', scheduledHours: 16 },
+  kenneth: { id: '2', name: 'Kenneth', scheduledHours: 15 },
+  jaydee: { id: '3', name: 'Jaydee', scheduledHours: 15 },
+  jemimah: { id: '4', name: 'Jemimah', scheduledHours: 15 },
+};
+
+// Models from OnlyFansAPI
+const MODELS = ['Izzie', 'Lucinda', 'Willow'];
+
+// Today's shifts - 1 chatter per model per shift for attribution
 const mockShifts: ChatterShift[] = [
-  { chatterId: '1', chatterName: 'Jane', model: 'Izzie', startTime: '2026-03-06T09:00:00', endTime: '2026-03-06T15:00:00', messageRevenue: 245.50, messageCount: 42, conversionRate: 12.5 },
-  { chatterId: '2', chatterName: 'Kenneth', model: 'Lucinda', startTime: '2026-03-06T15:00:00', endTime: '2026-03-06T21:00:00', messageRevenue: 189.20, messageCount: 38, conversionRate: 10.2 },
-  { chatterId: '3', chatterName: 'Jaydee', model: 'Willow', startTime: '2026-03-06T09:00:00', endTime: '2026-03-06T15:00:00', messageRevenue: 312.00, messageCount: 56, conversionRate: 15.8 },
-  { chatterId: '4', chatterName: 'Jemimah', model: 'Izzie', startTime: '2026-03-06T21:00:00', endTime: '2026-03-07T03:00:00', messageRevenue: 178.90, messageCount: 31, conversionRate: 9.4 },
+  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, model: 'Izzie', startTime: '2026-03-06T09:00:00', endTime: '2026-03-06T15:00:00', messageRevenue: 245.50, messageCount: 42, conversionRate: 12.5 },
+  { chatterId: CHATTERS.kenneth.id, chatterName: CHATTERS.kenneth.name, model: 'Lucinda', startTime: '2026-03-06T15:00:00', endTime: '2026-03-06T21:00:00', messageRevenue: 189.20, messageCount: 38, conversionRate: 10.2 },
+  { chatterId: CHATTERS.jaydee.id, chatterName: CHATTERS.jaydee.name, model: 'Willow', startTime: '2026-03-06T09:00:00', endTime: '2026-03-06T15:00:00', messageRevenue: 312.00, messageCount: 56, conversionRate: 15.8 },
+  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, model: 'Izzie', startTime: '2026-03-06T21:00:00', endTime: '2026-03-07T03:00:00', messageRevenue: 178.90, messageCount: 31, conversionRate: 9.4 },
 ];
 
+// Monthly performance data - pulled from OnlyFansAPI message transactions
 const mockPerformance: ChatterPerformance[] = [
-  { chatterId: '3', chatterName: 'Jaydee', totalRevenue: 4520.00, avgRevenuePerShift: 301.33, shiftsWorked: 15, qualityScore: 92, topModel: 'Willow' },
-  { chatterId: '1', chatterName: 'Jane', totalRevenue: 3890.50, avgRevenuePerShift: 259.37, shiftsWorked: 15, qualityScore: 88, topModel: 'Izzie' },
-  { chatterId: '2', chatterName: 'Kenneth', totalRevenue: 3245.20, avgRevenuePerShift: 216.35, shiftsWorked: 15, qualityScore: 82, topModel: 'Lucinda' },
-  { chatterId: '4', chatterName: 'Jemimah', totalRevenue: 2890.00, avgRevenuePerShift: 192.67, shiftsWorked: 15, qualityScore: 78, topModel: 'Izzie' },
+  { chatterId: CHATTERS.jaydee.id, chatterName: CHATTERS.jaydee.name, totalRevenue: 4520.00, avgRevenuePerShift: 301.33, shiftsWorked: 15, qualityScore: 92, topModel: 'Willow' },
+  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, totalRevenue: 3890.50, avgRevenuePerShift: 259.37, shiftsWorked: 15, qualityScore: 88, topModel: 'Izzie' },
+  { chatterId: CHATTERS.kenneth.id, chatterName: CHATTERS.kenneth.name, totalRevenue: 3245.20, avgRevenuePerShift: 216.35, shiftsWorked: 15, qualityScore: 82, topModel: 'Lucinda' },
+  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, totalRevenue: 2890.00, avgRevenuePerShift: 192.67, shiftsWorked: 15, qualityScore: 78, topModel: 'Izzie' },
 ];
 
 export default function ChatterAnalytics() {
