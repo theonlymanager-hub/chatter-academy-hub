@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, Plug, FileSpreadsheet, Pencil, Check } from "lucide-react";
 import { teamMembers, tasks, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
@@ -15,48 +15,20 @@ interface EditableKPI {
   icon: any;
 }
 
-interface ApiData {
-  lastUpdated: string;
-  revenue: {
-    gross: string;
-    net: string;
-    grossFormatted: string;
-    netFormatted: string;
-  };
-  accounts: Array<{
-    name: string;
-    username: string;
-    grossRevenue: string;
-    netRevenue: string;
-    messagesRevenue: string;
-    tipsRevenue: string;
-  }>;
-}
-
 const Index = () => {
+  // Calculate chatter stats from team data
+  const onlineChatters = teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
+  const avgQuality = (teamMembers.reduce((sum, m) => sum + m.qualityScore, 0) / teamMembers.length).toFixed(1);
+  const totalTasks = teamMembers.reduce((sum, m) => sum + m.weeklyTasks, 0);
+  const completedTasks = teamMembers.reduce((sum, m) => sum + m.tasksCompleted, 0);
+  const totalChatterRevenue = teamMembers.reduce((sum, m) => sum + m.revenueGenerated, 0);
+
   const [kpis, setKpis] = useState<EditableKPI[]>([
-    { title: "Gross Revenue", value: "Loading...", change: "All-time total", changeType: "positive", icon: DollarSign },
-    { title: "Net Revenue", value: "Loading...", change: "After OF fees", changeType: "positive", icon: DollarSign },
-    { title: "Active Chatters", value: "2/4", change: "2 online now", changeType: "neutral", icon: Users },
-    { title: "Avg Quality Score", value: "7.9/10", change: "+0.3 from last week", changeType: "positive", icon: Star },
-    { title: "Tasks Completed", value: "2/8", change: "25% completion rate", changeType: "neutral", icon: TrendingUp },
+    { title: "Chatters Online", value: `${onlineChatters}/${teamMembers.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
+    { title: "Avg Quality Score", value: `${avgQuality}/10`, change: "+0.3 from last week", changeType: "positive", icon: Star },
+    { title: "Tasks Completed", value: `${completedTasks}/${totalTasks}`, change: `${Math.round(completedTasks/totalTasks*100)}% completion rate`, changeType: "neutral", icon: TrendingUp },
+    { title: "Chatter Revenue", value: `$${totalChatterRevenue.toLocaleString()}`, change: "This week combined", changeType: "positive", icon: DollarSign },
   ]);
-  const [apiData, setApiData] = useState<ApiData | null>(null);
-  
-  // Fetch live API data
-  useEffect(() => {
-    fetch('/api-data.json')
-      .then(res => res.json())
-      .then((data: ApiData) => {
-        setApiData(data);
-        setKpis(prev => prev.map((kpi, i) => {
-          if (i === 0) return { ...kpi, value: data.revenue.grossFormatted };
-          if (i === 1) return { ...kpi, value: data.revenue.netFormatted };
-          return kpi;
-        }));
-      })
-      .catch(err => console.error('Failed to load API data:', err));
-  }, []);
   const [editingKpi, setEditingKpi] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -81,8 +53,8 @@ const Index = () => {
         <p className="text-muted-foreground text-sm mt-1">Overview of your chatting team performance</p>
       </div>
 
-      {/* Editable KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Chatter KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (

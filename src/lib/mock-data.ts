@@ -55,6 +55,7 @@ export const chatterColors: Record<string, string> = {
   "Kenneth": "160 84% 39%",   // green
   "Jaydee": "270 60% 60%",    // purple
   "Jemimah": "30 80% 55%",    // orange
+  "Mark": "340 75% 55%",      // pink/magenta
 };
 
 export const modelColors: Record<string, string> = {
@@ -69,6 +70,7 @@ export const teamMembers: TeamMember[] = [
   { id: "2", name: "Kenneth", avatar: "KE", role: "Chatter", trainingProgress: 83, qualityScore: 7.8, revenueGenerated: 8320, status: "online", weeklyTasks: 5, tasksCompleted: 3, clockedIn: true, clockInTime: "9:30 AM" },
   { id: "3", name: "Jaydee", avatar: "JD", role: "Junior Chatter", trainingProgress: 50, qualityScore: 6.5, revenueGenerated: 3200, status: "busy", weeklyTasks: 4, tasksCompleted: 2, clockedIn: true, clockInTime: "10:00 AM" },
   { id: "4", name: "Jemimah", avatar: "JM", role: "Chatter", trainingProgress: 67, qualityScore: 8.1, revenueGenerated: 6780, status: "offline", weeklyTasks: 5, tasksCompleted: 5, clockedIn: false },
+  { id: "5", name: "Mark", avatar: "MA", role: "Chatter", trainingProgress: 75, qualityScore: 7.5, revenueGenerated: 5400, status: "online", weeklyTasks: 5, tasksCompleted: 3, clockedIn: true, clockInTime: "9:00 AM" },
 ];
 
 export const trainingCurriculum: TrainingModule[] = [
