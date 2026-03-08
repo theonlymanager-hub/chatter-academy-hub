@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, Plug, FileSpreadsheet, Pencil, Check } from "lucide-react";
 import { teamMembers, tasks, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
@@ -15,14 +15,48 @@ interface EditableKPI {
   icon: any;
 }
 
+interface ApiData {
+  lastUpdated: string;
+  revenue: {
+    gross: string;
+    net: string;
+    grossFormatted: string;
+    netFormatted: string;
+  };
+  accounts: Array<{
+    name: string;
+    username: string;
+    grossRevenue: string;
+    netRevenue: string;
+    messagesRevenue: string;
+    tipsRevenue: string;
+  }>;
+}
+
 const Index = () => {
   const [kpis, setKpis] = useState<EditableKPI[]>([
-    { title: "Gross Revenue", value: "$30,750", change: "+12.5% from last week", changeType: "positive", icon: DollarSign },
-    { title: "Net Revenue", value: "$24,600", change: "+10.2% from last week", changeType: "positive", icon: DollarSign },
+    { title: "Gross Revenue", value: "Loading...", change: "All-time total", changeType: "positive", icon: DollarSign },
+    { title: "Net Revenue", value: "Loading...", change: "After OF fees", changeType: "positive", icon: DollarSign },
     { title: "Active Chatters", value: "2/4", change: "2 online now", changeType: "neutral", icon: Users },
     { title: "Avg Quality Score", value: "7.9/10", change: "+0.3 from last week", changeType: "positive", icon: Star },
     { title: "Tasks Completed", value: "2/8", change: "25% completion rate", changeType: "neutral", icon: TrendingUp },
   ]);
+  const [apiData, setApiData] = useState<ApiData | null>(null);
+  
+  // Fetch live API data
+  useEffect(() => {
+    fetch('/api-data.json')
+      .then(res => res.json())
+      .then((data: ApiData) => {
+        setApiData(data);
+        setKpis(prev => prev.map((kpi, i) => {
+          if (i === 0) return { ...kpi, value: data.revenue.grossFormatted };
+          if (i === 1) return { ...kpi, value: data.revenue.netFormatted };
+          return kpi;
+        }));
+      })
+      .catch(err => console.error('Failed to load API data:', err));
+  }, []);
   const [editingKpi, setEditingKpi] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
 
