@@ -62,6 +62,25 @@ const fansByModel: Record<string, Fan[]> = {
       interests: "Variety content, likes surprises",
       notes: "Consistent weekly spender. Reliable Saturday purchases."
     },
+    { 
+      id: "10", name: "adamo", account: "Ashley", totalSpent: 805, lastActive: "Today", tier: "vip",
+      preferences: ["PPV", "daily buyer"],
+      personality: "dominant",
+      activeTime: "Daily",
+      payday: "Daily spender",
+      interests: "Pure message buyer, no tips",
+      notes: "New but spending fast (joined Feb 21). Daily engagement, pure PPV buyer."
+    },
+    { 
+      id: "11", name: "Mikey", account: "Ashley", totalSpent: 734, lastActive: "Today", tier: "vip",
+      preferences: ["customs", "100/500 tier"],
+      personality: "submissive",
+      activeTime: "Early mornings",
+      payday: "Daily",
+      job: "Drummer",
+      interests: "Custom content, very active daily",
+      notes: "Custom buyer (100/500 tier noted). Very active daily engagement. Drummer."
+    },
   ],
   "Willow": [
     { 
