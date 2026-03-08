@@ -65,12 +65,14 @@ export const modelColors: Record<string, string> = {
   "Ashley Morris": "330 70% 60%", // pink
 };
 
+// NOTE: Clock-in status should eventually pull from Discord ON DUTY voice channel
+// For now, manually updated to reflect current reality
 export const teamMembers: TeamMember[] = [
-  { id: "1", name: "Jane", avatar: "JA", role: "Senior Chatter", trainingProgress: 100, qualityScore: 9.2, revenueGenerated: 12450, status: "online", weeklyTasks: 5, tasksCompleted: 4, clockedIn: true, clockInTime: "8:00 AM" },
-  { id: "2", name: "Kenneth", avatar: "KE", role: "Chatter", trainingProgress: 83, qualityScore: 7.8, revenueGenerated: 8320, status: "online", weeklyTasks: 5, tasksCompleted: 3, clockedIn: true, clockInTime: "9:30 AM" },
-  { id: "3", name: "Jaydee", avatar: "JD", role: "Junior Chatter", trainingProgress: 50, qualityScore: 6.5, revenueGenerated: 3200, status: "busy", weeklyTasks: 4, tasksCompleted: 2, clockedIn: true, clockInTime: "10:00 AM" },
-  { id: "4", name: "Jemimah", avatar: "JM", role: "Chatter", trainingProgress: 67, qualityScore: 8.1, revenueGenerated: 6780, status: "offline", weeklyTasks: 5, tasksCompleted: 5, clockedIn: false },
-  { id: "5", name: "Mark", avatar: "MA", role: "Chatter", trainingProgress: 75, qualityScore: 7.5, revenueGenerated: 5400, status: "online", weeklyTasks: 5, tasksCompleted: 3, clockedIn: true, clockInTime: "9:00 AM" },
+  { id: "1", name: "Jane", avatar: "JA", role: "Senior Chatter", trainingProgress: 100, qualityScore: 9.2, revenueGenerated: 12450, status: "offline", weeklyTasks: 5, tasksCompleted: 4, clockedIn: false },
+  { id: "2", name: "Kenneth", avatar: "KE", role: "Chatter", trainingProgress: 83, qualityScore: 7.8, revenueGenerated: 8320, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
+  { id: "3", name: "Jaydee", avatar: "JD", role: "Junior Chatter", trainingProgress: 50, qualityScore: 6.5, revenueGenerated: 3200, status: "online", weeklyTasks: 4, tasksCompleted: 2, clockedIn: true, clockInTime: "6:00 AM" },
+  { id: "4", name: "Jemimah", avatar: "JM", role: "Chatter", trainingProgress: 67, qualityScore: 8.1, revenueGenerated: 6780, status: "online", weeklyTasks: 5, tasksCompleted: 5, clockedIn: true, clockInTime: "6:00 AM" },
+  { id: "5", name: "Mark", avatar: "MA", role: "Chatter", trainingProgress: 75, qualityScore: 7.5, revenueGenerated: 5400, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
 ];
 
 export const trainingCurriculum: TrainingModule[] = [
@@ -82,15 +84,10 @@ export const trainingCurriculum: TrainingModule[] = [
   { week: 6, title: "Mastery & Scaling", lessons: [{ name: "Multi-Account Management", completed: false }, { name: "Team Coordination", completed: false }, { name: "Crisis Management", completed: false }, { name: "Performance Review", completed: false }], testPassed: false },
 ];
 
+// Tasks - cleared placeholder data
+// Will be populated with real tasks from supervisors
 export const tasks: Task[] = [
-  { id: "1", title: "Create a whale (subscriber spending $500+)", assignee: "Jane", dueDate: "2026-03-07", status: "in-progress", priority: "high" },
-  { id: "2", title: "Hit $500 daily revenue", assignee: "Kenneth", dueDate: "2026-03-05", status: "pending", priority: "high" },
-  { id: "3", title: "Use 3 upsell techniques in one conversation", assignee: "Jaydee", dueDate: "2026-03-06", status: "completed", priority: "medium" },
-  { id: "4", title: "Send 50 personalized openers", assignee: "Jemimah", dueDate: "2026-03-04", status: "completed", priority: "medium" },
-  { id: "5", title: "Convert 5 free followers to paid", assignee: "Jane", dueDate: "2026-03-07", status: "in-progress", priority: "high" },
-  { id: "6", title: "Complete Week 2 training module", assignee: "Jaydee", dueDate: "2026-03-05", status: "pending", priority: "low" },
-  { id: "7", title: "Achieve 8+ quality score this week", assignee: "Kenneth", dueDate: "2026-03-07", status: "in-progress", priority: "medium" },
-  { id: "8", title: "Sell 10 PPV messages", assignee: "Jane", dueDate: "2026-03-06", status: "pending", priority: "high" },
+  // Add real tasks here
 ];
 
 // Chatter shift schedule with specific times
@@ -113,60 +110,20 @@ export const shiftSchedule: ShiftEntry[] = [
   { id: "16", memberId: "4", memberName: "Jemimah", day: "Sunday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
 ];
 
-// Generate mass messages for the current month
-function generateMassMessages(): MassMessage[] {
-  const messages: MassMessage[] = [];
-  const models = [
-    { name: "Izzy", theme: "Military", messages: {
-      Monday: { preview: "Mission briefing incoming... 🎖️", ppv: "Workout tease PPV", price: 12 },
-      Wednesday: { preview: "Post-workout vibes... 💪", ppv: "Shower PPV", price: 15 },
-      Friday: { preview: "At ease... time to relax 🔥", ppv: "Full solo PPV", price: 18 },
-    }},
-    { name: "Willow", theme: "Playful Redhead", messages: {
-      Monday: { preview: "Mondays are better with me... 😏🔥", ppv: "Playful tease PPV", price: 12 },
-      Wednesday: { preview: "Hump day energy 😜", ppv: "Fun strip PPV", price: 15 },
-      Friday: { preview: "TGIF baby! Time to celebrate 🧡", ppv: "Full solo PPV", price: 18 },
-    }},
-    { name: "Lucinda Bleu", theme: "Goth Aesthetic", messages: {
-      Monday: { preview: "Come into the darkness... 🖤", ppv: "Candlelit tease PPV", price: 12 },
-      Wednesday: { preview: "Feeling dangerous tonight... 😈", ppv: "Lingerie strip PPV", price: 15 },
-      Friday: { preview: "The night is ours... 🌙", ppv: "Solo PPV", price: 18 },
-    }},
-    { name: "Ashley Morris", theme: "College", messages: {
-      Monday: { preview: "Just got home from class... 😈", ppv: "Bedroom tease PPV", price: 12 },
-      Wednesday: { preview: "Can't believe I'm showing this...", ppv: "Shy strip tease PPV", price: 15 },
-      Friday: { preview: "Weekend vibes incoming... 🔥", ppv: "Full solo PPV", price: 18 },
-    }},
-  ];
-
-  const year = 2026;
-  const month = 2; // March (0-indexed)
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  let id = 1;
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day);
-    const dayOfWeek = dayNames[date.getDay()];
-    
-    for (const model of models) {
-      const msgData = model.messages[dayOfWeek as keyof typeof model.messages];
-      if (msgData) {
-        messages.push({
-          id: String(id++),
-          modelName: model.name,
-          theme: model.theme,
-          date: `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-          dayOfWeek,
-          messagePreview: msgData.preview,
-          ppvTitle: msgData.ppv,
-          ppvPrice: msgData.price,
-        });
-      }
-    }
-  }
-
-  return messages;
-}
-
-export const massMessages: MassMessage[] = generateMassMessages();
+// Mass messages - cleared placeholder data
+// Will be populated with real schedule from team input
+// Types: mass (general), prompt (conversation starter), ppv (pay-per-view sale)
+// PPV frequency: 2-3 per week max per model
+export const massMessages: MassMessage[] = [
+  // Example structure - to be filled with real schedule
+  // {
+  //   id: "1",
+  //   modelName: "Izzy",
+  //   theme: "Military",
+  //   date: "2026-03-10",
+  //   dayOfWeek: "Tuesday",
+  //   messagePreview: "...",
+  //   ppvTitle: "...",
+  //   ppvPrice: 15,
+  // },
+];
