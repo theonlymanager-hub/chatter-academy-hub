@@ -85,7 +85,33 @@ const fansByModel: Record<string, Fan[]> = {
     },
   ],
   "Lucinda Bleu": [
-    // Add Lucinda fans as we get data
+    { 
+      id: "7", name: "Zaza", account: "Lucinda Bleu", totalSpent: 183, lastActive: "This week", tier: "vip",
+      preferences: ["goth aesthetic", "mysterious content"],
+      personality: "submissive",
+      activeTime: "Late nights",
+      payday: "Unknown",
+      interests: "Dark/mysterious themes, candlelit content",
+      notes: "Top spender for Lucinda. Responds well to dark aesthetic."
+    },
+    { 
+      id: "8", name: "Todd Whiting", account: "Lucinda Bleu", totalSpent: 136, lastActive: "This week", tier: "regular",
+      preferences: ["tips only", "no PPV"],
+      personality: "dominant",
+      activeTime: "Evenings",
+      payday: "Unknown",
+      interests: "Pure tipper - doesn't buy messages/PPV",
+      notes: "$136 in tips only, $0 messages. Appreciation spender."
+    },
+    { 
+      id: "9", name: "Brandon", account: "Lucinda Bleu", totalSpent: 112, lastActive: "This week", tier: "regular",
+      preferences: ["goth content"],
+      personality: "switch",
+      activeTime: "Unknown",
+      payday: "Unknown",
+      interests: "Goth aesthetic content",
+      notes: "Regular buyer, building relationship."
+    },
   ],
 };
 
