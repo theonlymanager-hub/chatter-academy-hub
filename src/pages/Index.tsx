@@ -43,8 +43,8 @@ const Index = () => {
   };
 
   const todayShifts = shiftSchedule.filter((s) => s.day === today);
-  // Clear placeholder data - will be populated with real data via API
-  const upcomingMessages: typeof massMessages = [];
+  // Show next 5 upcoming messages from the schedule
+  const upcomingMessages = massMessages.slice(0, 5);
 
   return (
     <div className="space-y-6 max-w-7xl">
