@@ -4,8 +4,8 @@ import { teamMembers, tasks, shiftSchedule, massMessages, chatterColors, modelCo
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 
-const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const today = "Wednesday";
+const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const today = weekDays[new Date().getDay()];
 
 interface EditableKPI {
   title: string;

@@ -77,7 +77,9 @@ export default function MassMessageCalendar() {
             const msgs = getMessagesForDay(day);
             const dateStr = getDateStr(day);
             const isSelected = selectedDate === dateStr;
-            const isToday = dateStr === "2026-03-04";
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+            const isToday = dateStr === todayStr;
 
             return (
               <Tooltip key={day}>
