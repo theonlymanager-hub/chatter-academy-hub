@@ -17,7 +17,8 @@ interface EditableKPI {
 
 const Index = () => {
   const [kpis, setKpis] = useState<EditableKPI[]>([
-    { title: "Total Revenue", value: "$30,750", change: "+12.5% from last week", changeType: "positive", icon: DollarSign },
+    { title: "Gross Revenue", value: "$30,750", change: "+12.5% from last week", changeType: "positive", icon: DollarSign },
+    { title: "Net Revenue", value: "$24,600", change: "+10.2% from last week", changeType: "positive", icon: DollarSign },
     { title: "Active Chatters", value: "2/4", change: "2 online now", changeType: "neutral", icon: Users },
     { title: "Avg Quality Score", value: "7.9/10", change: "+0.3 from last week", changeType: "positive", icon: Star },
     { title: "Tasks Completed", value: "2/8", change: "25% completion rate", changeType: "neutral", icon: TrendingUp },
@@ -36,7 +37,8 @@ const Index = () => {
   };
 
   const todayShifts = shiftSchedule.filter((s) => s.day === today);
-  const upcomingMessages = massMessages.slice(0, 5);
+  // Clear placeholder data - will be populated with real data via API
+  const upcomingMessages: typeof massMessages = [];
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -46,7 +48,7 @@ const Index = () => {
       </div>
 
       {/* Editable KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
@@ -163,26 +165,30 @@ const Index = () => {
           <MessageSquare className="h-5 w-5 text-primary" />
           <h2 className="font-semibold">Upcoming Mass Messages</h2>
         </div>
-        <div className="space-y-2">
-          {upcomingMessages.map((m) => {
-            const color = modelColors[m.modelName] || "217 91% 60%";
-            return (
-              <div key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                  {m.modelName.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium" style={{ color: `hsl(${color})` }}>{m.modelName}</span>
-                    <span className="text-[10px] text-muted-foreground">{m.dayOfWeek}</span>
+        {upcomingMessages.length > 0 ? (
+          <div className="space-y-2">
+            {upcomingMessages.map((m) => {
+              const color = modelColors[m.modelName] || "217 91% 60%";
+              return (
+                <div key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
+                    {m.modelName.slice(0, 2).toUpperCase()}
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">{m.messagePreview}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium" style={{ color: `hsl(${color})` }}>{m.modelName}</span>
+                      <span className="text-[10px] text-muted-foreground">{m.dayOfWeek}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{m.messagePreview}</p>
+                  </div>
+                  <span className="text-xs font-medium text-accent">${m.ppvPrice}</span>
                 </div>
-                <span className="text-xs font-medium text-accent">${m.ppvPrice}</span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground py-4 text-center">No messages scheduled</p>
+        )}
       </div>
 
       {/* Mass Message Schedule */}
