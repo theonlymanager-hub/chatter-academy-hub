@@ -8,6 +8,8 @@ import {
   MessageSquare,
   BarChart3,
   Clock,
+  UserCircle,
+  Heart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -34,6 +36,8 @@ const items = [
   { title: "Mass Messages", url: "/messages", icon: MessageSquare },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Shift Scheduler", url: "/shifts", icon: Clock },
+  { title: "Client Profiles", url: "/clients", icon: UserCircle },
+  { title: "Fan Profiles", url: "/fans", icon: Heart },
 ];
 
 export function AppSidebar() {

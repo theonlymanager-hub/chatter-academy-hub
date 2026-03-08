@@ -15,6 +15,8 @@ import MassMessageCalendar from "./pages/MassMessageCalendar";
 import WeeklyTasks from "./pages/WeeklyTasks";
 import Analytics from "./pages/Analytics";
 import Shifts from "./pages/Shifts";
+import ClientProfiles from "./pages/ClientProfiles";
+import FanProfiles from "./pages/FanProfiles";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,8 @@ const App = () => (
           <Route path="/messages" element={<DashboardLayout><MassMessageCalendar /></DashboardLayout>} />
           <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
           <Route path="/shifts" element={<DashboardLayout><Shifts /></DashboardLayout>} />
+          <Route path="/clients" element={<DashboardLayout><ClientProfiles /></DashboardLayout>} />
+          <Route path="/fans" element={<DashboardLayout><FanProfiles /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
