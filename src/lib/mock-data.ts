@@ -110,20 +110,37 @@ export const shiftSchedule: ShiftEntry[] = [
   { id: "16", memberId: "4", memberName: "Jemimah", day: "Sunday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
 ];
 
-// Mass messages - cleared placeholder data
-// Will be populated with real schedule from team input
+// Mass messages - Week of March 9-15, 2026
 // Types: mass (general), prompt (conversation starter), ppv (pay-per-view sale)
 // PPV frequency: 2-3 per week max per model
 export const massMessages: MassMessage[] = [
-  // Example structure - to be filled with real schedule
-  // {
-  //   id: "1",
-  //   modelName: "Izzy",
-  //   theme: "Military",
-  //   date: "2026-03-10",
-  //   dayOfWeek: "Tuesday",
-  //   messagePreview: "...",
-  //   ppvTitle: "...",
-  //   ppvPrice: 15,
-  // },
+  // MONDAY March 9
+  { id: "1", modelName: "Izzy", theme: "Military", date: "2026-03-09", dayOfWeek: "Monday", messagePreview: "Mission briefing, soldier...", ppvTitle: "Workout tease", ppvPrice: 12 },
+  { id: "2", modelName: "Ashley Morris", theme: "College", date: "2026-03-09", dayOfWeek: "Monday", messagePreview: "Studying so hard rn...", ppvTitle: "Study break surprise", ppvPrice: 10 },
+  
+  // TUESDAY March 10
+  { id: "3", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-10", dayOfWeek: "Tuesday", messagePreview: "Woke up feeling extra playful today...", ppvTitle: "Morning stretch", ppvPrice: 12 },
+  { id: "4", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-10", dayOfWeek: "Tuesday", messagePreview: "The darkness calls...", ppvTitle: "Candlelit session", ppvPrice: 15 },
+  
+  // WEDNESDAY March 11
+  { id: "5", modelName: "Izzy", theme: "Military", date: "2026-03-11", dayOfWeek: "Wednesday", messagePreview: "Post-workout shower time...", ppvTitle: "Shower clean-up", ppvPrice: 15 },
+  { id: "6", modelName: "Ashley Morris", theme: "College", date: "2026-03-11", dayOfWeek: "Wednesday", messagePreview: "My roommate is gone all day...", ppvTitle: "Dorm room fun", ppvPrice: 12 },
+  
+  // THURSDAY March 12
+  { id: "7", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-12", dayOfWeek: "Thursday", messagePreview: "New lingerie just arrived...", ppvTitle: "Try-on session", ppvPrice: 15 },
+  { id: "8", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-12", dayOfWeek: "Thursday", messagePreview: "Late night thoughts...", ppvTitle: "Moonlit reveal", ppvPrice: 12 },
+  
+  // FRIDAY March 13
+  { id: "9", modelName: "Izzy", theme: "Military", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "At ease soldier... time to relax", ppvTitle: "Off-duty special", ppvPrice: 18 },
+  { id: "10", modelName: "Ashley Morris", theme: "College", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "TGIF! No classes tomorrow...", ppvTitle: "Weekend kickoff", ppvPrice: 15 },
+  { id: "11", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "Friday vibes hitting different...", ppvTitle: "Happy hour tease", ppvPrice: 12 },
+  { id: "12", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "Friday the 13th special...", ppvTitle: "Unlucky for you", ppvPrice: 13 },
+  
+  // SATURDAY March 14
+  { id: "13", modelName: "Izzy", theme: "Military", date: "2026-03-14", dayOfWeek: "Saturday", messagePreview: "Weekend warrior mode...", ppvTitle: "Training montage", ppvPrice: 15 },
+  { id: "14", modelName: "Ashley Morris", theme: "College", date: "2026-03-14", dayOfWeek: "Saturday", messagePreview: "Lazy Saturday morning...", ppvTitle: "Bed head cutie", ppvPrice: 10 },
+  
+  // SUNDAY March 15
+  { id: "15", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-15", dayOfWeek: "Sunday", messagePreview: "Sunday funday...", ppvTitle: "Rest day relaxation", ppvPrice: 12 },
+  { id: "16", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-15", dayOfWeek: "Sunday", messagePreview: "Sundays are for self-care...", ppvTitle: "Bath time ritual", ppvPrice: 15 },
 ];
