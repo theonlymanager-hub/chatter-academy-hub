@@ -25,6 +25,9 @@ const initialTasks: WeeklyTask[] = [
   { id: "wt10", title: "Complete the upsell script for Willow", assignee: "Jemimah", completed: false, category: "Script" },
   { id: "wt11", title: "Send 50 personalized openers", assignee: "Jane", completed: true, category: "Technique" },
   { id: "wt12", title: "Complete Willow mass message script", assignee: "Kenneth", completed: false, category: "Script" },
+  { id: "wt13", title: "Review and update whale profiles", assignee: "Mark", completed: false, category: "Script" },
+  { id: "wt14", title: "Hit $400 daily revenue target", assignee: "Mark", completed: false, category: "Revenue" },
+  { id: "wt15", title: "Complete Lucinda upsell script", assignee: "Mark", completed: true, category: "Script" },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -40,7 +43,7 @@ export default function WeeklyTasks() {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };
 
-  const chatters = ["Jane", "Kenneth", "Jaydee", "Jemimah"];
+  const chatters = ["Jane", "Kenneth", "Jaydee", "Jemimah", "Mark"];
 
   return (
     <div className="space-y-6 max-w-7xl">
