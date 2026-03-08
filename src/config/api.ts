@@ -23,6 +23,7 @@ export const config = {
     { id: 'kenneth', name: 'Kenneth', scheduledHours: 15 },
     { id: 'jaydee', name: 'Jaydee', scheduledHours: 15 },
     { id: 'jemimah', name: 'Jemimah', scheduledHours: 15 },
+    { id: 'mark', name: 'Mark', scheduledHours: 15 },
   ],
   
   // Shift configuration
