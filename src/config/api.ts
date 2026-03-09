@@ -19,6 +19,7 @@ export const config = {
   
   // Chatters (real team roster)
   chatters: [
+    { id: 'marc', name: 'Marc', scheduledHours: 16 },
     { id: 'jemimah', name: 'Jemimah', scheduledHours: 15 },
     { id: 'jane', name: 'Jane', scheduledHours: 15 },
     { id: 'kc', name: 'KC', scheduledHours: 15 },
