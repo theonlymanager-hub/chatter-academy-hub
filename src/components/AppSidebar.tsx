@@ -10,6 +10,7 @@ import {
   Clock,
   UserCircle,
   Heart,
+  BookOpen,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -29,6 +30,7 @@ const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Team Members", url: "/team", icon: Users },
   { title: "Training", url: "/training", icon: GraduationCap },
+  { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen },
   { title: "Tasks", url: "/tasks", icon: ClipboardList },
   { title: "Weekly Tasks", url: "/weekly-tasks", icon: ClipboardList },
   { title: "Quality Checks", url: "/quality", icon: Star },
