@@ -169,6 +169,29 @@ export const platformApi = {
     }
   },
 
+  // Earning Statistics
+  async getEarningStats(accountId: string): Promise<EarningStats | null> {
+    try {
+      const response = await fetch(`${API_BASE}/${accountId}/payouts/earning-statistics`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) return null;
+      return response.json();
+    } catch (e) {
+      console.error('Failed to fetch earning stats:', e);
+      return null;
+    }
+  },
+
+  // Get all accounts earning stats
+  async getAllEarningStats(): Promise<Record<string, EarningStats | null>> {
+    const results: Record<string, EarningStats | null> = {};
+    for (const [name, id] of Object.entries(ACCOUNT_IDS)) {
+      results[name] = await this.getEarningStats(id);
+    }
+    return results;
+  },
+
   // Calculate total revenue from recent chats (rough estimate)
   async getRevenueEstimate(accountId: string): Promise<number> {
     try {

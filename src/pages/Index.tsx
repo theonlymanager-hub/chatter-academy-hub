@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, Plug, FileSpreadsheet, Pencil, Check, LogIn, LogOut } from "lucide-react";
+import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, FileSpreadsheet, Pencil, Check, LogIn, LogOut } from "lucide-react";
 import { teamMembers, tasks, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
 
 const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const today = weekDays[new Date().getDay()];
@@ -25,13 +26,15 @@ interface ClockInStatus {
 const Index = () => {
   // Clock-in state with localStorage
   const [clockInStatus, setClockInStatus] = useState<ClockInStatus>({});
+  // Revenue from API
+  const [earningStats, setEarningStats] = useState<Record<string, EarningStats | null>>({});
+  const [revenueLoading, setRevenueLoading] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem("chatter-clock-in");
     if (saved) {
       setClockInStatus(JSON.parse(saved));
     } else {
-      // Initialize from mock data
       const initial: ClockInStatus = {};
       teamMembers.forEach(m => {
         initial[m.id] = { clockedIn: m.clockedIn || false, clockInTime: m.clockInTime || null };
@@ -46,6 +49,26 @@ const Index = () => {
     }
   }, [clockInStatus]);
 
+  // Fetch real earning stats from API
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      const apiKey = platformApi.getApiKey();
+      if (!apiKey) {
+        setRevenueLoading(false);
+        return;
+      }
+      try {
+        const stats = await platformApi.getAllEarningStats();
+        setEarningStats(stats);
+      } catch (e) {
+        console.error('Failed to fetch earning stats:', e);
+      } finally {
+        setRevenueLoading(false);
+      }
+    };
+    fetchEarnings();
+  }, []);
+
   const toggleClockIn = (memberId: string) => {
     setClockInStatus(prev => {
       const current = prev[memberId] || { clockedIn: false, clockInTime: null };
@@ -58,19 +81,44 @@ const Index = () => {
     });
   };
 
-  // Calculate chatter stats from team data
+  // Calculate totals from API earning stats
+  const totalApiRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.total || 0), 0);
+  const totalSubscriptionRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.subscriptions || 0), 0);
+  const totalMessageRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.messages || 0), 0);
+  const totalTipsRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.tips || 0), 0);
+
+  // Chatter stats
   const onlineChatters = Object.values(clockInStatus).filter(s => s.clockedIn).length || teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
   const avgQuality = (teamMembers.reduce((sum, m) => sum + m.qualityScore, 0) / teamMembers.length).toFixed(1);
   const totalTasks = teamMembers.reduce((sum, m) => sum + m.weeklyTasks, 0);
   const completedTasks = teamMembers.reduce((sum, m) => sum + m.tasksCompleted, 0);
-  const totalChatterRevenue = teamMembers.reduce((sum, m) => sum + m.revenueGenerated, 0);
 
-  const [kpis, setKpis] = useState<EditableKPI[]>([
-    { title: "Chatters Online", value: `${onlineChatters}/${teamMembers.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
-    { title: "Avg Quality Score", value: `${avgQuality}/10`, change: "+0.3 from last week", changeType: "positive", icon: Star },
-    { title: "Tasks Completed", value: `${completedTasks}/${totalTasks}`, change: `${Math.round(completedTasks/totalTasks*100)}% completion rate`, changeType: "neutral", icon: TrendingUp },
-    { title: "Chatter Revenue", value: `$${totalChatterRevenue.toLocaleString()}`, change: "This week combined", changeType: "positive", icon: DollarSign },
-  ]);
+  const formatRevenue = (amount: number) => {
+    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}k`;
+    return `$${amount.toLocaleString()}`;
+  };
+
+  const [kpis, setKpis] = useState<EditableKPI[]>([]);
+  const [kpisInitialized, setKpisInitialized] = useState(false);
+
+  // Update KPIs when revenue data loads
+  useEffect(() => {
+    if (!revenueLoading && !kpisInitialized) {
+      const revenueValue = totalApiRevenue > 0 ? formatRevenue(totalApiRevenue) : "No API key";
+      const revenueChange = totalApiRevenue > 0
+        ? `Subs: ${formatRevenue(totalSubscriptionRevenue)} | Msgs: ${formatRevenue(totalMessageRevenue)} | Tips: ${formatRevenue(totalTipsRevenue)}`
+        : "Set API key in settings";
+
+      setKpis([
+        { title: "Chatters Online", value: `${onlineChatters}/${teamMembers.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
+        { title: "Avg Quality Score", value: `${avgQuality}/10`, change: "+0.3 from last week", changeType: "positive", icon: Star },
+        { title: "Tasks Completed", value: `${completedTasks}/${totalTasks}`, change: totalTasks > 0 ? `${Math.round(completedTasks/totalTasks*100)}% completion rate` : "No tasks", changeType: "neutral", icon: TrendingUp },
+        { title: "Total Revenue", value: revenueValue, change: revenueChange, changeType: totalApiRevenue > 0 ? "positive" : "neutral", icon: DollarSign },
+      ]);
+      setKpisInitialized(true);
+    }
+  }, [revenueLoading, kpisInitialized, totalApiRevenue]);
+
   const [editingKpi, setEditingKpi] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -85,7 +133,6 @@ const Index = () => {
   };
 
   const todayShifts = shiftSchedule.filter((s) => s.day === today);
-  // Show next 5 upcoming messages from the schedule
   const upcomingMessages = massMessages.slice(0, 5);
 
   return (
@@ -95,9 +142,11 @@ const Index = () => {
         <p className="text-muted-foreground text-sm mt-1">Overview of your chatting team performance</p>
       </div>
 
-      {/* Chatter KPI Cards */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi, i) => {
+        {revenueLoading ? (
+          <div className="col-span-full text-center text-sm text-muted-foreground py-4">Loading revenue data...</div>
+        ) : kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
             <div key={kpi.title} className="glass-card p-5 space-y-3">
@@ -138,6 +187,38 @@ const Index = () => {
           );
         })}
       </div>
+
+      {/* Per-Model Revenue Breakdown */}
+      {totalApiRevenue > 0 && (
+        <div className="glass-card p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-primary" />
+            <h2 className="font-semibold">Revenue by Model</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {Object.entries(earningStats).map(([name, stats]) => {
+              if (!stats) return null;
+              const color = modelColors[name === 'izzie' ? 'Izzy' : name === 'willow' ? 'Willow' : name === 'lucinda' ? 'Lucinda Bleu' : 'Ashley Morris'] || "217 91% 60%";
+              const displayName = name === 'izzie' ? 'Izzy' : name === 'willow' ? 'Willow' : name === 'lucinda' ? 'Lucinda Bleu' : name === 'ashley' ? 'Ashley Morris' : name;
+              return (
+                <div key={name} className="p-3 rounded-lg border" style={{ borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.05)` }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
+                      {displayName.slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium">{displayName}</span>
+                  </div>
+                  <p className="text-xl font-bold">{formatRevenue(stats.total)}</p>
+                  <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                    <div>Subs: {formatRevenue(stats.subscriptions)} | Msgs: {formatRevenue(stats.messages)}</div>
+                    <div>Tips: {formatRevenue(stats.tips)} | Posts: {formatRevenue(stats.posts)}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Today's Schedule & Clock-in Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -321,7 +402,7 @@ const Index = () => {
         <div className="glass-card p-5 space-y-4">
           <h2 className="font-semibold">Recent Tasks</h2>
           <div className="space-y-3">
-            {tasks.slice(0, 5).map((task) => (
+            {tasks.length > 0 ? tasks.slice(0, 5).map((task) => (
               <div key={task.id} className="flex items-center gap-3">
                 <div className={`h-2 w-2 rounded-full ${task.status === "completed" ? "bg-success" : task.status === "in-progress" ? "bg-warning" : "bg-muted-foreground"}`} />
                 <div className="flex-1 min-w-0">
@@ -332,7 +413,9 @@ const Index = () => {
                   {task.priority}
                 </span>
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-muted-foreground text-center py-4">No tasks assigned yet</p>
+            )}
           </div>
         </div>
       </div>
@@ -361,16 +444,8 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Integration Placeholders */}
+      {/* Integration Placeholder - Google Sheets only */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="glass-card p-5 space-y-3 border-dashed">
-          <div className="flex items-center gap-2">
-            <Plug className="h-5 w-5 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-muted-foreground">Infloww Data Sync</h3>
-          </div>
-          <p className="text-xs text-muted-foreground">Connect your Infloww account to automatically sync revenue data, subscriber counts, and message analytics.</p>
-          <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-muted-foreground cursor-not-allowed opacity-50">Coming Soon</button>
-        </div>
         <div className="glass-card p-5 space-y-3 border-dashed">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />

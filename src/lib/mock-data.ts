@@ -51,7 +51,6 @@ export interface MassMessage {
 }
 
 export const chatterColors: Record<string, string> = {
-  "Marc": "217 91% 60%",      // blue
   "Jemimah": "30 80% 55%",    // orange
   "Jane": "160 84% 39%",      // green
   "KC": "270 60% 60%",        // purple
@@ -67,14 +66,13 @@ export const modelColors: Record<string, string> = {
 };
 
 // NOTE: Clock-in status should eventually pull from Discord ON DUTY voice channel
-// Team roster: Marc, Jemimah, Jane, KC, Kenneth, Jaydee
+// Team roster: Jemimah, Jane, KC, Kenneth, Jaydee
 export const teamMembers: TeamMember[] = [
-  { id: "1", name: "Marc", avatar: "MA", role: "Chatter", trainingProgress: 85, qualityScore: 8.0, revenueGenerated: 9200, status: "online", weeklyTasks: 5, tasksCompleted: 4, clockedIn: true, clockInTime: "6:00 AM" },
-  { id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", trainingProgress: 67, qualityScore: 8.1, revenueGenerated: 6780, status: "online", weeklyTasks: 5, tasksCompleted: 5, clockedIn: true, clockInTime: "6:00 AM" },
-  { id: "3", name: "Jane", avatar: "JA", role: "Senior Chatter", trainingProgress: 100, qualityScore: 9.2, revenueGenerated: 12450, status: "offline", weeklyTasks: 5, tasksCompleted: 4, clockedIn: false },
-  { id: "4", name: "KC", avatar: "KC", role: "Chatter", trainingProgress: 72, qualityScore: 7.5, revenueGenerated: 5100, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
-  { id: "5", name: "Kenneth", avatar: "KE", role: "Chatter", trainingProgress: 83, qualityScore: 7.8, revenueGenerated: 8320, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
-  { id: "6", name: "Jaydee", avatar: "JD", role: "Junior Chatter", trainingProgress: 50, qualityScore: 6.5, revenueGenerated: 3200, status: "offline", weeklyTasks: 4, tasksCompleted: 2, clockedIn: false },
+  { id: "1", name: "Jemimah", avatar: "JM", role: "Chatter", trainingProgress: 67, qualityScore: 8.1, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 5, clockedIn: false },
+  { id: "2", name: "Jane", avatar: "JA", role: "Senior Chatter", trainingProgress: 100, qualityScore: 9.2, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 4, clockedIn: false },
+  { id: "3", name: "KC", avatar: "KC", role: "Chatter", trainingProgress: 72, qualityScore: 7.5, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
+  { id: "4", name: "Kenneth", avatar: "KE", role: "Chatter", trainingProgress: 83, qualityScore: 7.8, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
+  { id: "5", name: "Jaydee", avatar: "JD", role: "Junior Chatter", trainingProgress: 50, qualityScore: 6.5, revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 2, clockedIn: false },
 ];
 
 export const trainingCurriculum: TrainingModule[] = [
