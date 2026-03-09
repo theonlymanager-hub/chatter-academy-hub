@@ -3,7 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { platformApi, EarningStats, Transaction } from '@/services/platformApi';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { platformApi, ACCOUNT_IDS, AccountStats, Fan } from '@/services/platformApi';
+import { Settings, RefreshCw, Check, AlertCircle } from 'lucide-react';
 
 interface ChatterShift {
   chatterId: string;
@@ -61,7 +64,57 @@ export default function ChatterAnalytics() {
   const [isLoading, setIsLoading] = useState(false);
   const [todayShifts, setTodayShifts] = useState<ChatterShift[]>(mockShifts);
   const [performance, setPerformance] = useState<ChatterPerformance[]>(mockPerformance);
-  const [totalEarnings, setTotalEarnings] = useState<EarningStats | null>(null);
+  const [apiKey, setApiKey] = useState('');
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'disconnected' | 'connected' | 'error'>('disconnected');
+  const [liveStats, setLiveStats] = useState<Record<string, AccountStats | null>>({});
+  const [topSpenders, setTopSpenders] = useState<Record<string, Fan[]>>({});
+
+  // Load API key from localStorage
+  useEffect(() => {
+    const savedKey = platformApi.getApiKey();
+    if (savedKey) {
+      setApiKey(savedKey);
+      setApiKeyInput(savedKey);
+      fetchLiveData(savedKey);
+    }
+  }, []);
+
+  const saveApiKey = () => {
+    platformApi.setApiKey(apiKeyInput);
+    setApiKey(apiKeyInput);
+    fetchLiveData(apiKeyInput);
+    setShowSettings(false);
+  };
+
+  const fetchLiveData = async (key?: string) => {
+    setIsLoading(true);
+    try {
+      // Temporarily set the key for fetching
+      if (key) platformApi.setApiKey(key);
+      
+      // Fetch account stats for all models
+      const stats = await platformApi.getAllAccountsStats();
+      setLiveStats(stats);
+
+      // Fetch top spenders for each account
+      const spenders: Record<string, Fan[]> = {};
+      for (const [name, id] of Object.entries(ACCOUNT_IDS)) {
+        spenders[name] = await platformApi.getTopSpenders(id, 5);
+      }
+      setTopSpenders(spenders);
+
+      // Check if we got data
+      const hasData = Object.values(stats).some(s => s !== null);
+      setApiStatus(hasData ? 'connected' : 'error');
+    } catch (e) {
+      console.error('Failed to fetch live data:', e);
+      setApiStatus('error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getQualityBadge = (score: number) => {
     if (score >= 90) return <Badge className="bg-green-500">Excellent</Badge>;
@@ -79,10 +132,79 @@ export default function ChatterAnalytics() {
           <h2 className="text-2xl font-bold">Chatter Analytics</h2>
           <p className="text-muted-foreground">Track chatter performance and message revenue attribution</p>
         </div>
-        <Badge variant="outline" className="text-lg px-4 py-2">
-          Live Data
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge 
+            variant="outline" 
+            className={`px-4 py-2 ${apiStatus === 'connected' ? 'border-green-500 text-green-500' : apiStatus === 'error' ? 'border-red-500 text-red-500' : ''}`}
+          >
+            {apiStatus === 'connected' ? <Check className="h-4 w-4 mr-1" /> : apiStatus === 'error' ? <AlertCircle className="h-4 w-4 mr-1" /> : null}
+            {apiStatus === 'connected' ? 'API Connected' : apiStatus === 'error' ? 'API Error' : 'Not Connected'}
+          </Badge>
+          <Button variant="outline" size="sm" onClick={() => fetchLiveData()} disabled={isLoading || !apiKey}>
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
+      {/* API Settings Panel */}
+      {showSettings && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">API Configuration</CardTitle>
+            <CardDescription>Connect to OnlyFans API for live data</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                type="password"
+                placeholder="Enter API key (starts with ofapi_...)"
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={saveApiKey}>Save & Connect</Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Get your API key from app.onlyfansapi.com. The key is stored locally in your browser.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Live Account Stats */}
+      {apiStatus === 'connected' && Object.keys(liveStats).length > 0 && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Object.entries(liveStats).map(([name, stats]) => stats && (
+            <Card key={name}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg capitalize">{name}</CardTitle>
+                <CardDescription>{stats.subscribersCount?.toLocaleString()} subscribers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Posts</span>
+                    <span>{stats.postsCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Favorites</span>
+                    <span>{stats.favoritesCount}</span>
+                  </div>
+                  {topSpenders[name]?.length > 0 && (
+                    <div className="pt-2 border-t mt-2">
+                      <span className="text-xs text-muted-foreground">Top Spender:</span>
+                      <p className="font-medium">{topSpenders[name][0].name} - ${topSpenders[name][0].totalSpent}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Tabs defaultValue="today" className="space-y-4">
         <TabsList>

@@ -1,30 +1,62 @@
 // Platform API Integration Service
-// Generic creator platform API integration
+// OnlyFans API integration via app.onlyfansapi.com
 
-const API_BASE = 'https://api.example.com/v1';
+const API_BASE = 'https://app.onlyfansapi.com/api';
 
-// Note: API key should be stored securely, not in client code
-// This will be proxied through a backend in production
-const getHeaders = (apiKey: string) => ({
-  'Authorization': `Bearer ${apiKey}`,
+// Account IDs for each model
+export const ACCOUNT_IDS = {
+  ashley: 'acct_71750a6057e34776b9b6ca0903b5ee1a',
+  izzie: 'acct_6140bb9805e9416a928d4d7a788f3939',
+  willow: 'acct_f968a6be8f2041dcb9d52f8113f2d258',
+  lucinda: 'acct_62e65e4c2c0740b386cde14811762f4d',
+} as const;
+
+// Note: API key should be stored securely - in production use environment variables
+// For now using localStorage for demo purposes
+const getApiKey = () => {
+  return localStorage.getItem('platform-api-key') || '';
+};
+
+const getHeaders = (apiKey?: string) => ({
+  'Authorization': `Bearer ${apiKey || getApiKey()}`,
   'Content-Type': 'application/json',
 });
 
+export interface AccountStats {
+  id: string;
+  name: string;
+  subscribersCount: number;
+  postsCount: number;
+  favoritesCount: number;
+  location: string;
+  subscribedOnData?: {
+    price: number;
+    status: string;
+  };
+}
+
 export interface Chat {
   id: string;
-  fanId: string;
-  fanUsername: string;
-  fanName: string;
-  lastMessage: string;
-  lastMessageAt: string;
-  unreadCount: number;
+  fan: {
+    id: number;
+    name: string;
+    username: string;
+    subscribedOnData?: {
+      totalSumm: number;
+      status: string;
+    };
+    lastSeen?: string;
+  };
+  lastMessage?: {
+    text: string;
+    createdAt: string;
+  };
 }
 
 export interface ChatMessage {
   id: string;
-  chatId: string;
   text: string;
-  fromFan: boolean;
+  fromUser: boolean;
   createdAt: string;
   price?: number;
   isPurchased?: boolean;
@@ -38,99 +70,119 @@ export interface EarningStats {
   posts: number;
   referrals: number;
   streams: number;
-  period: string;
-}
-
-export interface Transaction {
-  id: string;
-  type: 'subscription' | 'tip' | 'message' | 'post' | 'referral' | 'stream';
-  amount: number;
-  fanId: string;
-  fanUsername: string;
-  description: string;
-  createdAt: string;
 }
 
 export interface Fan {
-  id: string;
+  id: number;
   username: string;
   name: string;
   totalSpent: number;
-  subscriptionStatus: 'active' | 'expired' | 'none';
+  status: 'active' | 'expired';
   subscribedAt?: string;
-  expiredAt?: string;
-  isOnline: boolean;
+  lastSeen?: string;
 }
 
 // API Functions
 export const platformApi = {
+  // Set API Key
+  setApiKey(key: string) {
+    localStorage.setItem('platform-api-key', key);
+  },
+
+  getApiKey() {
+    return getApiKey();
+  },
+
+  // Account Stats
+  async getAccountStats(accountId: string): Promise<AccountStats | null> {
+    try {
+      const response = await fetch(`${API_BASE}/${accountId}`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) return null;
+      return response.json();
+    } catch (e) {
+      console.error('Failed to fetch account stats:', e);
+      return null;
+    }
+  },
+
+  // Get all accounts stats
+  async getAllAccountsStats(): Promise<Record<string, AccountStats | null>> {
+    const results: Record<string, AccountStats | null> = {};
+    for (const [name, id] of Object.entries(ACCOUNT_IDS)) {
+      results[name] = await this.getAccountStats(id);
+    }
+    return results;
+  },
+
   // Chats
-  async listChats(apiKey: string, accountId: string): Promise<Chat[]> {
-    const response = await fetch(`${API_BASE}/accounts/${accountId}/chats`, {
-      headers: getHeaders(apiKey),
-    });
-    if (!response.ok) throw new Error('Failed to fetch chats');
-    return response.json();
+  async listChats(accountId: string, limit: number = 20): Promise<Chat[]> {
+    try {
+      const response = await fetch(`${API_BASE}/${accountId}/chats?limit=${limit}`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.data || [];
+    } catch (e) {
+      console.error('Failed to fetch chats:', e);
+      return [];
+    }
   },
 
-  async listChatMessages(apiKey: string, accountId: string, chatId: string): Promise<ChatMessage[]> {
-    const response = await fetch(`${API_BASE}/accounts/${accountId}/chats/${chatId}/messages`, {
-      headers: getHeaders(apiKey),
-    });
-    if (!response.ok) throw new Error('Failed to fetch messages');
-    return response.json();
+  // Get chat messages
+  async getChatMessages(accountId: string, chatId: string): Promise<ChatMessage[]> {
+    try {
+      const response = await fetch(`${API_BASE}/${accountId}/chats/${chatId}/messages`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.data || [];
+    } catch (e) {
+      console.error('Failed to fetch messages:', e);
+      return [];
+    }
   },
 
-  // Earnings
-  async getEarningStats(apiKey: string, accountId: string, period: string = 'today'): Promise<EarningStats> {
-    const response = await fetch(`${API_BASE}/accounts/${accountId}/earnings/stats?period=${period}`, {
-      headers: getHeaders(apiKey),
-    });
-    if (!response.ok) throw new Error('Failed to fetch earning stats');
-    return response.json();
+  // Get top spenders from recent chats
+  async getTopSpenders(accountId: string, limit: number = 10): Promise<Fan[]> {
+    try {
+      const chats = await this.listChats(accountId, 50);
+      const fans: Fan[] = chats
+        .filter(c => c.fan?.subscribedOnData?.totalSumm > 0)
+        .map(c => ({
+          id: c.fan.id,
+          username: c.fan.username,
+          name: c.fan.name,
+          totalSpent: c.fan.subscribedOnData?.totalSumm || 0,
+          status: c.fan.subscribedOnData?.status === 'active' ? 'active' : 'expired',
+          lastSeen: c.fan.lastSeen,
+        }))
+        .sort((a, b) => b.totalSpent - a.totalSpent)
+        .slice(0, limit);
+      return fans;
+    } catch (e) {
+      console.error('Failed to get top spenders:', e);
+      return [];
+    }
   },
 
-  async listTransactions(apiKey: string, accountId: string, params?: {
-    type?: string;
-    startDate?: string;
-    endDate?: string;
-    limit?: number;
-  }): Promise<Transaction[]> {
-    const queryParams = new URLSearchParams();
-    if (params?.type) queryParams.set('type', params.type);
-    if (params?.startDate) queryParams.set('start_date', params.startDate);
-    if (params?.endDate) queryParams.set('end_date', params.endDate);
-    if (params?.limit) queryParams.set('limit', params.limit.toString());
-
-    const response = await fetch(`${API_BASE}/accounts/${accountId}/earnings/transactions?${queryParams}`, {
-      headers: getHeaders(apiKey),
-    });
-    if (!response.ok) throw new Error('Failed to fetch transactions');
-    return response.json();
+  // Calculate total revenue from recent chats (rough estimate)
+  async getRevenueEstimate(accountId: string): Promise<number> {
+    try {
+      const chats = await this.listChats(accountId, 100);
+      return chats.reduce((sum, c) => sum + (c.fan?.subscribedOnData?.totalSumm || 0), 0);
+    } catch (e) {
+      return 0;
+    }
   },
 
-  // Fans
-  async listFans(apiKey: string, accountId: string, status?: 'active' | 'expired' | 'all'): Promise<Fan[]> {
-    const endpoint = status === 'active' 
-      ? 'fans/active' 
-      : status === 'expired' 
-        ? 'fans/expired' 
-        : 'fans';
-    
-    const response = await fetch(`${API_BASE}/accounts/${accountId}/${endpoint}`, {
-      headers: getHeaders(apiKey),
-    });
-    if (!response.ok) throw new Error('Failed to fetch fans');
-    return response.json();
-  },
-
-  // Message Attribution (for chatter tracking)
-  async getMessageEarnings(apiKey: string, accountId: string, startDate: string, endDate: string): Promise<Transaction[]> {
-    return this.listTransactions(apiKey, accountId, {
-      type: 'message',
-      startDate,
-      endDate,
-    });
+  // Get active subscribers count
+  async getActiveSubscribers(accountId: string): Promise<number> {
+    const stats = await this.getAccountStats(accountId);
+    return stats?.subscribersCount || 0;
   },
 };
 
