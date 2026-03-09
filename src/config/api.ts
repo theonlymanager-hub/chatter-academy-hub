@@ -2,14 +2,14 @@
 // In production, these should be environment variables loaded via backend
 
 export const config = {
-  onlyfansApi: {
-    baseUrl: 'https://api.onlyfansapi.com/v1',
+  platformApi: {
+    baseUrl: 'https://api.example.com/v1',
     // API key should be stored securely - use backend proxy in production
     // For development, this can be set via .env.local
-    apiKey: import.meta.env.VITE_ONLYFANS_API_KEY || '',
+    apiKey: import.meta.env.VITE_PLATFORM_API_KEY || '',
   },
   
-  // Connected OF model accounts (from Infloww)
+  // Connected model accounts
   models: [
     { id: 'izzie', name: 'Izzie', handle: '@myizzyreal', type: 'AI' },
     { id: 'lucinda', name: 'Lucinda', handle: '@lucibleu', type: 'AI' },
@@ -17,13 +17,14 @@ export const config = {
     { id: 'ashley', name: 'Ashley Morris', handle: '@ashleymorris', type: 'AI' },
   ],
   
-  // Chatters (from Infloww employee list)
+  // Chatters (real team roster)
   chatters: [
-    { id: 'jane', name: 'Jane', scheduledHours: 16 },
+    { id: 'marc', name: 'Marc', scheduledHours: 16 },
+    { id: 'jemimah', name: 'Jemimah', scheduledHours: 15 },
+    { id: 'jane', name: 'Jane', scheduledHours: 15 },
+    { id: 'kc', name: 'KC', scheduledHours: 15 },
     { id: 'kenneth', name: 'Kenneth', scheduledHours: 15 },
     { id: 'jaydee', name: 'Jaydee', scheduledHours: 15 },
-    { id: 'jemimah', name: 'Jemimah', scheduledHours: 15 },
-    { id: 'mark', name: 'Mark', scheduledHours: 15 },
   ],
   
   // Shift configuration

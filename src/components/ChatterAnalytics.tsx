@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { onlyfansApi, EarningStats, Transaction } from '@/services/onlyfansApi';
+import { platformApi, EarningStats, Transaction } from '@/services/platformApi';
 
 interface ChatterShift {
   chatterId: string;
@@ -26,31 +26,35 @@ interface ChatterPerformance {
   topModel: string;
 }
 
-// Real chatters - from Infloww dashboard
+// Real team roster
 const CHATTERS = {
-  jane: { id: '1', name: 'Jane', scheduledHours: 16 },
-  kenneth: { id: '2', name: 'Kenneth', scheduledHours: 15 },
-  jaydee: { id: '3', name: 'Jaydee', scheduledHours: 15 },
-  jemimah: { id: '4', name: 'Jemimah', scheduledHours: 15 },
+  marc: { id: '1', name: 'Marc', scheduledHours: 16 },
+  jemimah: { id: '2', name: 'Jemimah', scheduledHours: 15 },
+  jane: { id: '3', name: 'Jane', scheduledHours: 15 },
+  kc: { id: '4', name: 'KC', scheduledHours: 15 },
+  kenneth: { id: '5', name: 'Kenneth', scheduledHours: 15 },
+  jaydee: { id: '6', name: 'Jaydee', scheduledHours: 15 },
 };
 
-// Models from OnlyFansAPI
-const MODELS = ['Izzie', 'Lucinda', 'Willow'];
+// Models
+const MODELS = ['Izzie', 'Lucinda', 'Willow', 'Ashley'];
 
 // Today's shifts - 1 chatter per model per shift for attribution
 const mockShifts: ChatterShift[] = [
-  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, model: 'Izzie', startTime: '2026-03-06T09:00:00', endTime: '2026-03-06T15:00:00', messageRevenue: 245.50, messageCount: 42, conversionRate: 12.5 },
-  { chatterId: CHATTERS.kenneth.id, chatterName: CHATTERS.kenneth.name, model: 'Lucinda', startTime: '2026-03-06T15:00:00', endTime: '2026-03-06T21:00:00', messageRevenue: 189.20, messageCount: 38, conversionRate: 10.2 },
-  { chatterId: CHATTERS.jaydee.id, chatterName: CHATTERS.jaydee.name, model: 'Willow', startTime: '2026-03-06T09:00:00', endTime: '2026-03-06T15:00:00', messageRevenue: 312.00, messageCount: 56, conversionRate: 15.8 },
-  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, model: 'Izzie', startTime: '2026-03-06T21:00:00', endTime: '2026-03-07T03:00:00', messageRevenue: 178.90, messageCount: 31, conversionRate: 9.4 },
+  { chatterId: CHATTERS.marc.id, chatterName: CHATTERS.marc.name, model: 'Izzie', startTime: '2026-03-09T09:00:00', endTime: '2026-03-09T15:00:00', messageRevenue: 245.50, messageCount: 42, conversionRate: 12.5 },
+  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, model: 'Lucinda', startTime: '2026-03-09T15:00:00', endTime: '2026-03-09T21:00:00', messageRevenue: 189.20, messageCount: 38, conversionRate: 10.2 },
+  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, model: 'Willow', startTime: '2026-03-09T09:00:00', endTime: '2026-03-09T15:00:00', messageRevenue: 312.00, messageCount: 56, conversionRate: 15.8 },
+  { chatterId: CHATTERS.kc.id, chatterName: CHATTERS.kc.name, model: 'Ashley', startTime: '2026-03-09T21:00:00', endTime: '2026-03-10T03:00:00', messageRevenue: 178.90, messageCount: 31, conversionRate: 9.4 },
 ];
 
-// Monthly performance data - pulled from OnlyFansAPI message transactions
+// Monthly performance data
 const mockPerformance: ChatterPerformance[] = [
-  { chatterId: CHATTERS.jaydee.id, chatterName: CHATTERS.jaydee.name, totalRevenue: 4520.00, avgRevenuePerShift: 301.33, shiftsWorked: 15, qualityScore: 92, topModel: 'Willow' },
-  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, totalRevenue: 3890.50, avgRevenuePerShift: 259.37, shiftsWorked: 15, qualityScore: 88, topModel: 'Izzie' },
-  { chatterId: CHATTERS.kenneth.id, chatterName: CHATTERS.kenneth.name, totalRevenue: 3245.20, avgRevenuePerShift: 216.35, shiftsWorked: 15, qualityScore: 82, topModel: 'Lucinda' },
-  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, totalRevenue: 2890.00, avgRevenuePerShift: 192.67, shiftsWorked: 15, qualityScore: 78, topModel: 'Izzie' },
+  { chatterId: CHATTERS.marc.id, chatterName: CHATTERS.marc.name, totalRevenue: 4520.00, avgRevenuePerShift: 301.33, shiftsWorked: 15, qualityScore: 92, topModel: 'Izzie' },
+  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, totalRevenue: 3890.50, avgRevenuePerShift: 259.37, shiftsWorked: 15, qualityScore: 88, topModel: 'Lucinda' },
+  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, totalRevenue: 3245.20, avgRevenuePerShift: 216.35, shiftsWorked: 15, qualityScore: 82, topModel: 'Willow' },
+  { chatterId: CHATTERS.kc.id, chatterName: CHATTERS.kc.name, totalRevenue: 2890.00, avgRevenuePerShift: 192.67, shiftsWorked: 15, qualityScore: 78, topModel: 'Ashley' },
+  { chatterId: CHATTERS.kenneth.id, chatterName: CHATTERS.kenneth.name, totalRevenue: 2650.00, avgRevenuePerShift: 176.67, shiftsWorked: 15, qualityScore: 75, topModel: 'Izzie' },
+  { chatterId: CHATTERS.jaydee.id, chatterName: CHATTERS.jaydee.name, totalRevenue: 2420.00, avgRevenuePerShift: 161.33, shiftsWorked: 15, qualityScore: 72, topModel: 'Willow' },
 ];
 
 export default function ChatterAnalytics() {
@@ -76,7 +80,7 @@ export default function ChatterAnalytics() {
           <p className="text-muted-foreground">Track chatter performance and message revenue attribution</p>
         </div>
         <Badge variant="outline" className="text-lg px-4 py-2">
-          Live Data via OnlyFansAPI
+          Live Data
         </Badge>
       </div>
 
@@ -173,7 +177,7 @@ export default function ChatterAnalytics() {
                   <h4 className="font-semibold mb-2">How Attribution Works</h4>
                   <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                     <li>Each shift has exactly 1 chatter assigned per model</li>
-                    <li>OnlyFansAPI tracks all message revenue during that shift</li>
+                    <li>Platform API tracks all message revenue during that shift</li>
                     <li>Revenue is automatically attributed to the assigned chatter</li>
                     <li>Quality scores calculated based on conversion rates and average message value</li>
                   </ol>

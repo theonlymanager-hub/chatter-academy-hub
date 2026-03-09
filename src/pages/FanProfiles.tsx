@@ -261,7 +261,7 @@ export default function FanProfiles() {
       {fansByModel["Lucinda Bleu"]?.length === 0 && (
         <div className="glass-card p-6 text-center text-muted-foreground">
           <p>No whale profiles for Lucinda Bleu yet</p>
-          <p className="text-xs mt-1">Add fan data from OnlyFans API</p>
+          <p className="text-xs mt-1">Add fan data from Platform API</p>
         </div>
       )}
     </div>

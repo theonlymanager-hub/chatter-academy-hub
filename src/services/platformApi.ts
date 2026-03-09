@@ -1,7 +1,7 @@
-// OnlyFans API Integration Service
-// Docs: https://docs.onlyfansapi.com
+// Platform API Integration Service
+// Generic creator platform API integration
 
-const API_BASE = 'https://api.onlyfansapi.com/v1';
+const API_BASE = 'https://api.example.com/v1';
 
 // Note: API key should be stored securely, not in client code
 // This will be proxied through a backend in production
@@ -63,7 +63,7 @@ export interface Fan {
 }
 
 // API Functions
-export const onlyfansApi = {
+export const platformApi = {
   // Chats
   async listChats(apiKey: string, accountId: string): Promise<Chat[]> {
     const response = await fetch(`${API_BASE}/accounts/${accountId}/chats`, {
@@ -134,4 +134,4 @@ export const onlyfansApi = {
   },
 };
 
-export default onlyfansApi;
+export default platformApi;
