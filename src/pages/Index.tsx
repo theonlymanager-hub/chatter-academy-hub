@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, Plug, FileSpreadsheet, Pencil, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, Plug, FileSpreadsheet, Pencil, Check, LogIn, LogOut } from "lucide-react";
 import { teamMembers, tasks, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -15,9 +15,51 @@ interface EditableKPI {
   icon: any;
 }
 
+interface ClockInStatus {
+  [memberId: string]: {
+    clockedIn: boolean;
+    clockInTime: string | null;
+  };
+}
+
 const Index = () => {
+  // Clock-in state with localStorage
+  const [clockInStatus, setClockInStatus] = useState<ClockInStatus>({});
+
+  useEffect(() => {
+    const saved = localStorage.getItem("chatter-clock-in");
+    if (saved) {
+      setClockInStatus(JSON.parse(saved));
+    } else {
+      // Initialize from mock data
+      const initial: ClockInStatus = {};
+      teamMembers.forEach(m => {
+        initial[m.id] = { clockedIn: m.clockedIn || false, clockInTime: m.clockInTime || null };
+      });
+      setClockInStatus(initial);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(clockInStatus).length > 0) {
+      localStorage.setItem("chatter-clock-in", JSON.stringify(clockInStatus));
+    }
+  }, [clockInStatus]);
+
+  const toggleClockIn = (memberId: string) => {
+    setClockInStatus(prev => {
+      const current = prev[memberId] || { clockedIn: false, clockInTime: null };
+      if (current.clockedIn) {
+        return { ...prev, [memberId]: { clockedIn: false, clockInTime: null } };
+      } else {
+        const now = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+        return { ...prev, [memberId]: { clockedIn: true, clockInTime: now } };
+      }
+    });
+  };
+
   // Calculate chatter stats from team data
-  const onlineChatters = teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
+  const onlineChatters = Object.values(clockInStatus).filter(s => s.clockedIn).length || teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
   const avgQuality = (teamMembers.reduce((sum, m) => sum + m.qualityScore, 0) / teamMembers.length).toFixed(1);
   const totalTasks = teamMembers.reduce((sum, m) => sum + m.weeklyTasks, 0);
   const completedTasks = teamMembers.reduce((sum, m) => sum + m.tasksCompleted, 0);
@@ -136,6 +178,7 @@ const Index = () => {
           <div className="space-y-2">
             {teamMembers.map((m) => {
               const color = chatterColors[m.name] || "217 91% 60%";
+              const status = clockInStatus[m.id] || { clockedIn: m.clockedIn, clockInTime: m.clockInTime };
               return (
                 <div key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
                   <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
@@ -146,10 +189,10 @@ const Index = () => {
                     <p className="text-[10px] text-muted-foreground">{m.role}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {m.clockedIn ? (
+                    {status.clockedIn ? (
                       <>
                         <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                        <span className="text-xs text-success">In since {m.clockInTime}</span>
+                        <span className="text-xs text-success">In since {status.clockInTime}</span>
                       </>
                     ) : (
                       <>
@@ -157,6 +200,13 @@ const Index = () => {
                         <span className="text-xs text-muted-foreground">Clocked out</span>
                       </>
                     )}
+                    <button
+                      onClick={() => toggleClockIn(m.id)}
+                      className={`ml-2 p-1.5 rounded-md transition-colors ${status.clockedIn ? "bg-destructive/20 hover:bg-destructive/30 text-destructive" : "bg-success/20 hover:bg-success/30 text-success"}`}
+                      title={status.clockedIn ? "Clock out" : "Clock in"}
+                    >
+                      {status.clockedIn ? <LogOut className="h-3.5 w-3.5" /> : <LogIn className="h-3.5 w-3.5" />}
+                    </button>
                   </div>
                 </div>
               );
