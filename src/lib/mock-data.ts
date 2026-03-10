@@ -69,18 +69,18 @@ export const modelColors: Record<string, string> = {
 // NOTE: Clock-in status should eventually pull from Discord ON DUTY voice channel
 // Team roster: Jemimah, Jane, KC, Kenneth, Jaydee
 export const teamMembers: TeamMember[] = [
-  { id: "1", name: "Marc", avatar: "MA", role: "Chatter", trainingProgress: 75, qualityScore: 7.5, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 4, clockedIn: false },
-  { id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", trainingProgress: 67, qualityScore: 8.1, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 5, clockedIn: false },
-  { id: "3", name: "Jane", avatar: "JA", role: "Senior Chatter", trainingProgress: 100, qualityScore: 9.2, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 4, clockedIn: false },
-  { id: "4", name: "KC", avatar: "KC", role: "Chatter", trainingProgress: 72, qualityScore: 7.5, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
-  { id: "5", name: "Kenneth", avatar: "KE", role: "Chatter", trainingProgress: 83, qualityScore: 7.8, revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false },
-  { id: "6", name: "Jaydee", avatar: "JD", role: "Junior Chatter", trainingProgress: 50, qualityScore: 6.5, revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 2, clockedIn: false },
+  { id: "1", name: "Marc", avatar: "MA", role: "Chatter", trainingProgress: 0, qualityScore: 0, revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false },
+  { id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", trainingProgress: 0, qualityScore: 0, revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false },
+  { id: "3", name: "Jane", avatar: "JA", role: "Senior Chatter", trainingProgress: 0, qualityScore: 0, revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false },
+  { id: "4", name: "KC", avatar: "KC", role: "Chatter", trainingProgress: 0, qualityScore: 0, revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false },
+  { id: "5", name: "Kenneth", avatar: "KE", role: "Chatter", trainingProgress: 0, qualityScore: 0, revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false },
+  { id: "6", name: "Jaydee", avatar: "JD", role: "Junior Chatter", trainingProgress: 0, qualityScore: 0, revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false },
 ];
 
 export const trainingCurriculum: TrainingModule[] = [
-  { week: 1, title: "Foundations & Platform Basics", lessons: [{ name: "Platform Navigation", completed: true }, { name: "Profile Setup", completed: true }, { name: "Basic Messaging Etiquette", completed: true }, { name: "Content Guidelines", completed: true }], testPassed: true },
-  { week: 2, title: "Conversation Techniques", lessons: [{ name: "Opening Messages", completed: true }, { name: "Building Rapport", completed: true }, { name: "Active Listening Signals", completed: true }, { name: "Personality Matching", completed: false }], testPassed: false },
-  { week: 3, title: "Revenue Generation", lessons: [{ name: "Upsell Techniques", completed: true }, { name: "PPV Strategy", completed: false }, { name: "Tip Menu Optimization", completed: false }, { name: "Custom Content Pricing", completed: false }], testPassed: false },
+  { week: 1, title: "Foundations & Platform Basics", lessons: [{ name: "Platform Navigation", completed: false }, { name: "Profile Setup", completed: false }, { name: "Basic Messaging Etiquette", completed: false }, { name: "Content Guidelines", completed: false }], testPassed: false },
+  { week: 2, title: "Conversation Techniques", lessons: [{ name: "Opening Messages", completed: false }, { name: "Building Rapport", completed: false }, { name: "Active Listening Signals", completed: false }, { name: "Personality Matching", completed: false }], testPassed: false },
+  { week: 3, title: "Revenue Generation", lessons: [{ name: "Upsell Techniques", completed: false }, { name: "PPV Strategy", completed: false }, { name: "Tip Menu Optimization", completed: false }, { name: "Custom Content Pricing", completed: false }], testPassed: false },
   { week: 4, title: "Whale Management", lessons: [{ name: "Identifying High Spenders", completed: false }, { name: "VIP Treatment", completed: false }, { name: "Long-term Retention", completed: false }, { name: "Exclusive Offers", completed: false }], testPassed: false },
   { week: 5, title: "Advanced Strategies", lessons: [{ name: "Mass Messaging", completed: false }, { name: "Scheduling & Timing", completed: false }, { name: "A/B Testing Messages", completed: false }, { name: "Analytics Reading", completed: false }], testPassed: false },
   { week: 6, title: "Mastery & Scaling", lessons: [{ name: "Multi-Account Management", completed: false }, { name: "Team Coordination", completed: false }, { name: "Crisis Management", completed: false }, { name: "Performance Review", completed: false }], testPassed: false },

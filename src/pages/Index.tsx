@@ -89,7 +89,8 @@ const Index = () => {
 
   // Chatter stats
   const onlineChatters = Object.values(clockInStatus).filter(s => s.clockedIn).length || teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
-  const avgQuality = (teamMembers.reduce((sum, m) => sum + m.qualityScore, 0) / teamMembers.length).toFixed(1);
+  const totalQuality = teamMembers.reduce((sum, m) => sum + m.qualityScore, 0);
+  const avgQuality = totalQuality > 0 ? (totalQuality / teamMembers.length).toFixed(1) : "—";
   const totalTasks = teamMembers.reduce((sum, m) => sum + m.weeklyTasks, 0);
   const completedTasks = teamMembers.reduce((sum, m) => sum + m.tasksCompleted, 0);
 
@@ -111,8 +112,8 @@ const Index = () => {
 
       setKpis([
         { title: "Chatters Online", value: `${onlineChatters}/${teamMembers.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
-        { title: "Avg Quality Score", value: `${avgQuality}/10`, change: "+0.3 from last week", changeType: "positive", icon: Star },
-        { title: "Tasks Completed", value: `${completedTasks}/${totalTasks}`, change: totalTasks > 0 ? `${Math.round(completedTasks/totalTasks*100)}% completion rate` : "No tasks", changeType: "neutral", icon: TrendingUp },
+        { title: "Avg Quality Score", value: totalQuality > 0 ? `${avgQuality}/10` : "No data", change: totalQuality > 0 ? "From quality checks" : "Run quality checks to populate", changeType: "neutral", icon: Star },
+        { title: "Tasks Completed", value: totalTasks > 0 ? `${completedTasks}/${totalTasks}` : "No tasks", change: totalTasks > 0 ? `${Math.round(completedTasks/totalTasks*100)}% completion rate` : "Assign tasks to get started", changeType: "neutral", icon: TrendingUp },
         { title: "Total Revenue", value: revenueValue, change: revenueChange, changeType: totalApiRevenue > 0 ? "positive" : "neutral", icon: DollarSign },
       ]);
       setKpisInitialized(true);
