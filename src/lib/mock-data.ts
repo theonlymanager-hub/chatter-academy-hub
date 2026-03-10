@@ -57,6 +57,8 @@ export const chatterColors: Record<string, string> = {
   "KC": "270 60% 60%",        // purple
   "Kenneth": "340 75% 55%",   // pink/magenta
   "Jaydee": "45 90% 50%",     // gold
+  "Zar": "190 70% 45%",       // teal (supervisor)
+  "Mateo": "15 85% 50%",      // red-orange (client comms)
 };
 
 export const modelColors: Record<string, string> = {

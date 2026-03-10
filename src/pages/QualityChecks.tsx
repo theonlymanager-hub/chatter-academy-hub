@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { Info, ClipboardCheck } from "lucide-react";
 
-const categories = ["Personalisation", "Sales Technique", "Rapport Building", "Response Quality", "Revenue Maximisation", "Mistake Avoidance"];
+const categories = ["Personalisation", "Sales Technique", "Rapport Building", "Response Quality", "Revenue Maximisation", "Mistake Avoidance", "Grammar", "Aftercare"];
 
 const categoryDescriptions: Record<string, string> = {
   "Personalisation": "Using the fan's name, remembering details, referencing past conversations. Making them feel like they're the only one.",
