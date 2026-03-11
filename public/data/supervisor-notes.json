@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-11T14:10:00Z",
+  "lastUpdated": "2026-03-11T16:10:00Z",
   "reviews": [
     {
       "date": "2026-03-11",
@@ -135,6 +135,51 @@
         "aftercare": 2,
         "overall": 3.7
       }
+    },
+    {
+      "date": "2026-03-11",
+      "time": "16:04",
+      "chatter": "Team Assessment",
+      "shiftPeriod": "afternoon",
+      "activeStaff": ["Jemimah", "ThisIsMerridianPie"],
+      "shiftDuration": "10+ hours",
+      "conversations": [
+        {
+          "fanUsername": "General Assessment",
+          "account": "All Accounts",
+          "issues": ["Long shift monitoring required", "Potential copy-paste fatigue", "Name accuracy reminder needed"],
+          "verdict": "GOOD",
+          "notes": "Strong coverage with experienced chatters. Main concern is maintaining quality after extended shift duration."
+        }
+      ],
+      "crossAccountIssues": [
+        "Watch for copy-paste fatigue after 10+ hours",
+        "Maintain response times during peak hours",
+        "Avoid tired pricing mistakes",
+        "Ensure consistent energy levels"
+      ],
+      "scores": {
+        "personalisation": 7,
+        "responseSpeed": 8,
+        "ppvStrategy": 8,
+        "followUp": 7,
+        "fanRetention": 8,
+        "grammar": 8,
+        "aftercare": 7,
+        "overall": 7.6
+      },
+      "accountCoverage": {
+        "Izzie": "✅ Covered",
+        "Lucinda": "✅ Covered", 
+        "Willow": "✅ Covered",
+        "Ashley": "✅ Covered"
+      },
+      "actionsTaken": [
+        "Posted quality check feedback to Discord general chat",
+        "Reminded chatters about break needs after long shifts",
+        "Reinforced common issues to avoid",
+        "Set next check for 6:04 PM"
+      ]
     }
   ]
 }
