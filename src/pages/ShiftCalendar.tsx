@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
-import { Clock, MessageSquare } from "lucide-react";
+import { shiftSchedule, chatterColors } from "@/lib/mock-data";
+import { Clock } from "lucide-react";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const shiftTypes = ["morning", "afternoon", "night"] as const;
@@ -18,13 +18,7 @@ export default function ShiftCalendar() {
 
   const getWeeklyHours = (name: string) => getChatterShifts(name).length * 8;
 
-  // Get mass messages grouped by day of week
-  const getMessagesByDay = (day: string) => {
-    return massMessages.filter(m => m.dayOfWeek === day).reduce((acc, m) => {
-      if (!acc.find(x => x.modelName === m.modelName)) acc.push(m);
-      return acc;
-    }, [] as typeof massMessages);
-  };
+
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -161,80 +155,7 @@ export default function ShiftCalendar() {
         ))}
       </div>
 
-      {/* Mass Message / PPV Schedule */}
-      <div className="glass-card p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Mass Message & PPV Schedule</h2>
-          <span className="text-[10px] text-muted-foreground ml-auto">So chatters know when to expect message spikes</span>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]">
-            <thead>
-              <tr className="border-b border-border/50">
-                <th className="text-left text-xs font-medium text-muted-foreground p-3 w-28">Model</th>
-                {days.map(day => (
-                  <th key={day} className="text-center text-xs font-medium text-muted-foreground p-3">{day.slice(0, 3)}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(modelColors).map(([model, color]) => {
-                return (
-                  <tr key={model} className="border-b border-border/30 last:border-0">
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />
-                        <span className="text-xs font-medium">{model}</span>
-                      </div>
-                    </td>
-                    {days.map(day => {
-                      const msgs = getMessagesByDay(day).filter(m => m.modelName === model);
-                      return (
-                        <td key={day} className="p-2 text-center">
-                          {msgs.length > 0 ? (
-                            <div className="space-y-1">
-                              {msgs.map(m => (
-                                <div
-                                  key={m.id}
-                                  className="text-[10px] px-1.5 py-1 rounded-md border group relative"
-                                  style={{ backgroundColor: `hsl(${color} / 0.1)`, borderColor: `hsl(${color} / 0.3)`, color: `hsl(${color})` }}
-                                >
-                                  <div className="font-medium">MM + PPV</div>
-                                  <div className="opacity-60">${m.ppvPrice}</div>
-                                  {/* Tooltip */}
-                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 w-40">
-                                    <div className="bg-popover border border-border rounded-lg p-2 shadow-lg text-left">
-                                      <p className="text-[10px] font-medium text-foreground">{m.ppvTitle}</p>
-                                      <p className="text-[10px] text-muted-foreground mt-0.5">{m.messagePreview}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground/30">—</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex flex-wrap gap-4 pt-2 border-t border-border/50">
-          {Object.entries(modelColors).map(([name, color]) => (
-            <div key={name} className="flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />
-              <span className="text-xs text-muted-foreground">{name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

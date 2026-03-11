@@ -5,8 +5,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import { Info, ClipboardCheck } from "lucide-react";
 
-const categories = ["Response Quality", "Upsell Technique", "Tone & Personality", "Revenue Impact", "Subscriber Retention"];
+const categories = ["Personalisation", "Sales Technique", "Rapport Building", "Response Quality", "Revenue Maximisation", "Mistake Avoidance", "Grammar", "Aftercare"];
+
+const categoryDescriptions: Record<string, string> = {
+  "Personalisation": "Using the fan's name, remembering details, referencing past conversations. Making them feel like they're the only one.",
+  "Sales Technique": "Smooth upsells, natural transitions to paid content, handling objections, offering alternatives when they say no.",
+  "Rapport Building": "Creating genuine connection, mirroring energy, building trust before pitching. Quality of the relationship foundation.",
+  "Response Quality": "Message length, engagement level, creativity, tone matching. Are responses thoughtful or generic?",
+  "Revenue Maximisation": "Making the most of every interaction. Tips, PPV, customs, renewals — leaving no money on the table.",
+  "Mistake Avoidance": "No broken character, no rushed pitches, no ignored messages, no off-brand replies. Clean, error-free chatting.",
+};
 
 export default function QualityChecks() {
   const [selectedMember, setSelectedMember] = useState("");
@@ -33,6 +43,40 @@ export default function QualityChecks() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Quality Checks</h1>
         <p className="text-muted-foreground text-sm mt-1">Score chatter performance</p>
+      </div>
+
+      {/* Quality Check Methodology */}
+      <div className="glass-card p-5 space-y-3 border-l-4 border-primary">
+        <div className="flex items-center gap-2">
+          <ClipboardCheck className="h-5 w-5 text-primary" />
+          <h2 className="text-sm font-bold uppercase tracking-wide">How Quality Checks Work</h2>
+        </div>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">Each chatter is reviewed <span className="text-primary font-bold">6 times per shift</span>, spread across different times.</p>
+          <ul className="list-disc list-inside space-y-1 ml-1">
+            <li>Reviews happen at <strong>random intervals</strong> throughout the shift — not all at once</li>
+            <li>Each review samples <strong>3–4 different chats</strong> (not just one conversation)</li>
+            <li>This gives a <strong>broad, representative picture</strong> of how they're chatting across the whole shift</li>
+            <li>Scores are based on the <strong>overall pattern</strong>, not a single cherry-picked interaction</li>
+          </ul>
+          <p className="text-xs mt-2 italic">Supervisor checks the chats via OnlyFans API, scores each category below, and adds specific feedback notes.</p>
+        </div>
+      </div>
+
+      {/* Scoring Categories Reference */}
+      <div className="glass-card p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold">Scoring Categories</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {categories.map((cat) => (
+            <div key={cat} className="p-3 rounded-lg bg-secondary/30">
+              <p className="text-sm font-medium">{cat}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{categoryDescriptions[cat]}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="glass-card p-6 space-y-6">

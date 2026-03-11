@@ -17,6 +17,7 @@ import Analytics from "./pages/Analytics";
 import Shifts from "./pages/Shifts";
 import ClientProfiles from "./pages/ClientProfiles";
 import FanProfiles from "./pages/FanProfiles";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/" element={<DashboardLayout><Index /></DashboardLayout>} />
           <Route path="/team" element={<DashboardLayout><TeamMembers /></DashboardLayout>} />
           <Route path="/training" element={<DashboardLayout><Training /></DashboardLayout>} />
+          <Route path="/knowledge-base" element={<DashboardLayout><KnowledgeBase /></DashboardLayout>} />
           <Route path="/tasks" element={<DashboardLayout><Tasks /></DashboardLayout>} />
           <Route path="/weekly-tasks" element={<DashboardLayout><WeeklyTasks /></DashboardLayout>} />
           <Route path="/quality" element={<DashboardLayout><QualityChecks /></DashboardLayout>} />

@@ -71,12 +71,14 @@ export interface MassMessage {
 }
 
 export const chatterColors: Record<string, string> = {
-  "Marc": "217 91% 60%",      // blue
+  "Marc": "200 70% 50%",      // blue
   "Jemimah": "30 80% 55%",    // orange
   "Jane": "160 84% 39%",      // green
   "KC": "270 60% 60%",        // purple
   "Kenneth": "340 75% 55%",   // pink/magenta
   "Jaydee": "45 90% 50%",     // gold
+  "Zar": "190 70% 45%",       // teal (supervisor)
+  "Mateo": "15 85% 50%",      // red-orange (client comms)
 };
 
 export const modelColors: Record<string, string> = {
