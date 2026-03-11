@@ -75,9 +75,11 @@ export const chatterColors: Record<string, string> = {
   "Jemimah": "30 80% 55%",    // orange
   "Jane": "160 84% 39%",      // green
   "KC": "270 60% 60%",        // purple
-  "Kenneth": "340 75% 55%",   // pink/magenta
   "Jaydee": "45 90% 50%",     // gold
+  "Elle": "340 75% 55%",      // pink
+  "Luke": "0 0% 80%",         // light grey (owner)
   "Zar": "190 70% 45%",       // teal (supervisor)
+  "Mark": "210 80% 60%",      // blue (AI supervisor)
   "Mateo": "15 85% 50%",      // red-orange (client comms)
 };
 
@@ -89,78 +91,79 @@ export const modelColors: Record<string, string> = {
 };
 
 // NOTE: Clock-in status should eventually pull from Discord ON DUTY voice channel
-// Team roster: Marc, Jemimah, Jane, KC, Kenneth, Jaydee + supervisors + client communication
+// REAL team only — scores start at 0, only populated from actual quality reviews
+// Kenneth REMOVED — not a real team member
 export const teamMembers: TeamMember[] = [
-  // Chatters
+  // Chatters (real team members only)
   { 
     id: "1", name: "Marc", avatar: "MA", role: "Chatter", category: "chatter", 
-    trainingProgress: 85, qualityScore: 8.0, 
-    qualityScores: { personalisation: 9, responseSpeed: 8, ppvStrategy: 8, followUp: 7, fanRetention: 8, grammar: 9, aftercare: 7, overall: 8.0 },
-    revenueGenerated: 9200, status: "online", weeklyTasks: 5, tasksCompleted: 4, clockedIn: true, clockInTime: "6:00 AM",
-    analytics: { shiftsThisWeek: 6, avgRevenuePerShift: 1533, monthlyTotalRevenue: 36800 }
+    trainingProgress: 0, qualityScore: 5.0, 
+    qualityScores: { personalisation: 4, responseSpeed: 8, ppvStrategy: 4, followUp: 5, fanRetention: 4, grammar: 7, aftercare: 0, overall: 5.0 },
+    revenueGenerated: 0, status: "online", weeklyTasks: 5, tasksCompleted: 0, clockedIn: true, clockInTime: "6:00 AM",
+    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
     id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", category: "chatter", 
-    trainingProgress: 67, qualityScore: 8.1, 
-    qualityScores: { personalisation: 8, responseSpeed: 9, ppvStrategy: 7, followUp: 8, fanRetention: 9, grammar: 8, aftercare: 8, overall: 8.1 },
-    revenueGenerated: 6780, status: "online", weeklyTasks: 5, tasksCompleted: 5, clockedIn: true, clockInTime: "6:00 AM",
-    analytics: { shiftsThisWeek: 5, avgRevenuePerShift: 1356, monthlyTotalRevenue: 27120 }
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "online", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
+    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "3", name: "Jane", avatar: "JA", role: "Senior Chatter", category: "chatter", 
-    trainingProgress: 100, qualityScore: 9.2, 
-    qualityScores: { personalisation: 10, responseSpeed: 9, ppvStrategy: 9, fanRetention: 10, followUp: 9, grammar: 9, aftercare: 9, overall: 9.2 },
-    revenueGenerated: 12450, status: "offline", weeklyTasks: 5, tasksCompleted: 4, clockedIn: false,
-    analytics: { shiftsThisWeek: 6, avgRevenuePerShift: 2075, monthlyTotalRevenue: 49800 }
+    id: "3", name: "Jane", avatar: "JA", role: "Chatter", category: "chatter", 
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
+    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
     id: "4", name: "KC", avatar: "KC", role: "Chatter", category: "chatter", 
-    trainingProgress: 72, qualityScore: 7.5, 
-    qualityScores: { personalisation: 7, responseSpeed: 8, ppvStrategy: 7, followUp: 7, fanRetention: 8, grammar: 8, aftercare: 8, overall: 7.5 },
-    revenueGenerated: 5100, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false,
-    analytics: { shiftsThisWeek: 4, avgRevenuePerShift: 1275, monthlyTotalRevenue: 20400 }
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
+    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "5", name: "Kenneth", avatar: "KE", role: "Chatter", category: "chatter", 
-    trainingProgress: 83, qualityScore: 7.8, 
-    qualityScores: { personalisation: 8, responseSpeed: 7, ppvStrategy: 8, followUp: 8, fanRetention: 7, grammar: 9, aftercare: 8, overall: 7.8 },
-    revenueGenerated: 8320, status: "offline", weeklyTasks: 5, tasksCompleted: 3, clockedIn: false,
-    analytics: { shiftsThisWeek: 5, avgRevenuePerShift: 1664, monthlyTotalRevenue: 33280 }
+    id: "5", name: "Jaydee", avatar: "JD", role: "Chatter", category: "chatter", 
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 0, clockedIn: false,
+    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "6", name: "Jaydee", avatar: "JD", role: "Junior Chatter", category: "chatter", 
-    trainingProgress: 50, qualityScore: 6.5, 
-    qualityScores: { personalisation: 6, responseSpeed: 7, ppvStrategy: 5, followUp: 7, fanRetention: 6, grammar: 7, aftercare: 7, overall: 6.5 },
-    revenueGenerated: 3200, status: "offline", weeklyTasks: 4, tasksCompleted: 2, clockedIn: false,
-    analytics: { shiftsThisWeek: 4, avgRevenuePerShift: 800, monthlyTotalRevenue: 12800 }
+    id: "6", name: "Elle", avatar: "EL", role: "Chatter", category: "chatter", 
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 0, clockedIn: false,
+    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   
   // Supervisors
   { 
     id: "7", name: "Luke", avatar: "LU", role: "Agency Owner", category: "supervisor", 
-    trainingProgress: 100, qualityScore: 9.8, 
-    qualityScores: { personalisation: 10, responseSpeed: 10, ppvStrategy: 10, followUp: 10, fanRetention: 10, grammar: 9, aftercare: 9, overall: 9.8 },
-    revenueGenerated: 0, status: "online", weeklyTasks: 10, tasksCompleted: 8, clockedIn: false
+    trainingProgress: 100, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
   { 
-    id: "8", name: "Josh", avatar: "JO", role: "Supervisor", category: "supervisor", 
-    trainingProgress: 95, qualityScore: 9.0, 
-    qualityScores: { personalisation: 9, responseSpeed: 9, ppvStrategy: 9, followUp: 9, fanRetention: 9, grammar: 9, aftercare: 9, overall: 9.0 },
-    revenueGenerated: 0, status: "offline", weeklyTasks: 8, tasksCompleted: 6, clockedIn: false
+    id: "8", name: "Zar", avatar: "ZA", role: "Supervisor", category: "supervisor", 
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
   { 
-    id: "9", name: "Doug", avatar: "DO", role: "Supervisor", category: "supervisor", 
-    trainingProgress: 92, qualityScore: 8.7, 
-    qualityScores: { personalisation: 8, responseSpeed: 9, ppvStrategy: 9, followUp: 9, fanRetention: 8, grammar: 9, aftercare: 9, overall: 8.7 },
-    revenueGenerated: 0, status: "offline", weeklyTasks: 8, tasksCompleted: 5, clockedIn: false
+    id: "9", name: "Mark", avatar: "MK", role: "AI Supervisor", category: "supervisor", 
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
   
   // Client Communication
   { 
     id: "10", name: "Mateo", avatar: "MT", role: "Client Relations", category: "client-communication", 
-    trainingProgress: 88, qualityScore: 8.5, 
-    qualityScores: { personalisation: 9, responseSpeed: 8, ppvStrategy: 8, followUp: 9, fanRetention: 8, grammar: 9, aftercare: 9, overall: 8.5 },
-    revenueGenerated: 0, status: "busy", weeklyTasks: 6, tasksCompleted: 4, clockedIn: false
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "busy", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
 ];
 
