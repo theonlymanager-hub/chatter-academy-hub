@@ -1,0 +1,140 @@
+{
+  "lastUpdated": "2026-03-11T14:10:00Z",
+  "reviews": [
+    {
+      "date": "2026-03-11",
+      "time": "10:00",
+      "chatter": "Marc",
+      "shiftPeriod": "morning",
+      "conversations": [
+        {
+          "fanUsername": "Frankie Ramirez",
+          "account": "Ashley",
+          "issues": ["Sent 3 free media before any purchase"],
+          "verdict": "GOOD",
+          "notes": "Natural rapport building, quick replies, good teasing and escalation"
+        },
+        {
+          "fanUsername": "Lamar",
+          "account": "Ashley",
+          "issues": ["Ignored fan's budget signal", "Sent $100 PPV after fan said 'not expensive'", "Immediate price drop after no purchase"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Should have started at $25-40 or built more desire. Fan went silent."
+        },
+        {
+          "fanUsername": "Nomaniks",
+          "account": "Ashley",
+          "issues": [],
+          "verdict": "OK",
+          "notes": "Active sexting flow, no obvious issues"
+        },
+        {
+          "fanUsername": "Davis",
+          "account": "Izzie",
+          "issues": ["NAME ERROR: Called Davis 'David'"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Name carelessness. Otherwise decent opener and teasing."
+        },
+        {
+          "fanUsername": "Lil Rascal",
+          "account": "Lucinda",
+          "issues": [],
+          "verdict": "OK",
+          "notes": "Good handling of evasive fan, kept it playful"
+        }
+      ],
+      "crossAccountIssues": [
+        "COPY-PASTE OPENER across Izzie and Lucinda",
+        "Name carelessness (Davis → David)",
+        "PPV pricing misread on Lamar",
+        "Quick discount offers killing perceived value"
+      ],
+      "scores": {
+        "personalisation": 4,
+        "responseSpeed": 8,
+        "ppvStrategy": 4,
+        "followUp": 5,
+        "fanRetention": 4,
+        "grammar": 7,
+        "aftercare": null,
+        "overall": 5.0
+      }
+    },
+    {
+      "date": "2026-03-11",
+      "time": "11:27",
+      "chatter": "Marc",
+      "shiftPeriod": "morning",
+      "conversations": [
+        {
+          "fanUsername": "Davis",
+          "account": "Izzie",
+          "issues": ["Copy-paste line used across accounts"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Same 'booty compliments' line used on Izzie and Lucinda"
+        },
+        {
+          "fanUsername": "Lil Rascal",
+          "account": "Lucinda",
+          "issues": ["Copy-paste line used across accounts"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Same 'booty compliments' line as Izzie"
+        },
+        {
+          "fanUsername": "ty",
+          "account": "Izzie",
+          "issues": ["Guilt tripping", "Immediate price drop $25→$17 in 3 mins"],
+          "verdict": "POOR",
+          "notes": "Fan said 'you always cut me short' — guilt tripping backfiring"
+        },
+        {
+          "fanUsername": "John Doe",
+          "account": "unknown",
+          "issues": ["Called fan a bot", "Not reading the room"],
+          "verdict": "POOR",
+          "notes": "Passive-aggressive response to fan"
+        },
+        {
+          "fanUsername": "Yander",
+          "account": "unknown",
+          "issues": ["Stopped engaging with fan who wanted connection"],
+          "verdict": "POOR",
+          "notes": "Fan wanted connection, chatter disengaged"
+        },
+        {
+          "fanUsername": "Dale",
+          "account": "unknown",
+          "issues": ["Passive-aggressive tone"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Tone mismatch with fan"
+        },
+        {
+          "fanUsername": "Jim Burgundy",
+          "account": "Willow",
+          "issues": ["4 hour reply gap (6:12AM → 10:33AM)"],
+          "verdict": "POOR",
+          "notes": "Unacceptable response time"
+        }
+      ],
+      "crossAccountIssues": [
+        "COPY-PASTE across accounts (booty compliments line)",
+        "GUILT TRIPPING multiple fans",
+        "NOT READING THE ROOM on 3 fans",
+        "IMMEDIATE PRICE DROPS",
+        "4 HOUR REPLY GAP on Willow",
+        "ZERO AFTERCARE post-PPV",
+        "Identical sexting scripts across Lucinda and Willow"
+      ],
+      "scores": {
+        "personalisation": 3,
+        "responseSpeed": 5,
+        "ppvStrategy": 3,
+        "followUp": 4,
+        "fanRetention": 3,
+        "grammar": 6,
+        "aftercare": 2,
+        "overall": 3.7
+      }
+    }
+  ]
+}
