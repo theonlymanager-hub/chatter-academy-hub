@@ -77,7 +77,7 @@ export const chatterColors: Record<string, string> = {
   "KC": "270 60% 60%",        // purple
   "Jaydee": "45 90% 50%",     // gold
   "Elle": "340 75% 55%",      // pink
-  "Kenneth": "25 75% 50%",    // amber
+
   "Luke": "0 0% 80%",         // light grey (owner)
   "Zar": "190 70% 45%",       // teal (supervisor)
   "Mark": "210 80% 60%",      // blue (AI supervisor)
@@ -138,13 +138,7 @@ export const teamMembers: TeamMember[] = [
     revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
-  { 
-    id: "11", name: "Kenneth", avatar: "KE", role: "Chatter", category: "chatter", 
-    trainingProgress: 0, qualityScore: 0, 
-    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
-    revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
-    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
-  },
+
   
   // Supervisors
   { 
