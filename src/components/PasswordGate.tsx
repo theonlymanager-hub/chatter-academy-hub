@@ -38,7 +38,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
             <Lock className="h-7 w-7 text-primary" />
           </div>
-          <h1 className="text-xl font-semibold text-foreground">Chatting University</h1>
+          <h1 className="text-xl font-semibold text-foreground">The Only Board</h1>
           <p className="text-sm text-muted-foreground text-center">Enter the password to access the dashboard</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">

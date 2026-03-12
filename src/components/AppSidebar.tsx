@@ -11,6 +11,7 @@ import {
   UserCircle,
   Heart,
   BookOpen,
+  Palette,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -58,6 +59,12 @@ const sections = [
     ],
   },
   {
+    label: "Operations",
+    items: [
+      { title: "Customs Board", url: "/customs", icon: Palette },
+    ],
+  },
+  {
     label: "Profiles",
     items: [
       { title: "Client Profiles", url: "/clients", icon: UserCircle },
@@ -76,9 +83,9 @@ export function AppSidebar() {
       <SidebarContent>
         <div className={`px-4 py-5 ${collapsed ? "px-2" : ""}`}>
           {!collapsed ? (
-            <h1 className="text-lg font-bold gradient-text">Chatting University</h1>
+            <h1 className="text-lg font-bold gradient-text">The Only Board</h1>
           ) : (
-            <span className="text-xl font-bold text-primary block text-center">CU</span>
+            <span className="text-xl font-bold text-primary block text-center">OB</span>
           )}
         </div>
         {sections.map((section) => (

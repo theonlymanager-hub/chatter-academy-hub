@@ -23,7 +23,7 @@ export const config = {
     { id: 'jemimah', name: 'Jemimah', scheduledHours: 15 },
     { id: 'jane', name: 'Jane', scheduledHours: 15 },
     { id: 'kc', name: 'KC', scheduledHours: 15 },
-    { id: 'kenneth', name: 'Kenneth', scheduledHours: 15 },
+    { id: 'kenneth', name: 'KC', scheduledHours: 15 },
     { id: 'jaydee', name: 'Jaydee', scheduledHours: 15 },
   ],
   

@@ -82,7 +82,7 @@ export default function Tasks() {
     completed: { label: "Completed", color: "bg-success" },
   } as const;
 
-  const chatters = ["Jane", "Marc", "Jemimah", "KC", "Kenneth", "Jaydee"];
+  const chatters = ["Jane", "Marc", "Jemimah", "KC", "Jaydee", "Zar", "Elle"];
 
   return (
     <div className="space-y-6 max-w-7xl">

@@ -5,7 +5,7 @@ import { Clock } from "lucide-react";
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const shiftTypes = ["morning", "afternoon", "night"] as const;
 const shiftLabels = { morning: "6AM–2PM", afternoon: "2PM–10PM", night: "10PM–6AM" };
-const chatters = ["Jane", "Kenneth", "Jaydee", "Jemimah"];
+const chatters = ["Jane", "KC", "Jaydee", "Jemimah"];
 
 export default function ShiftCalendar() {
   const [view, setView] = useState<"grid" | "chatter">("grid");

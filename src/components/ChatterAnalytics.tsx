@@ -35,7 +35,7 @@ const CHATTERS = {
   jemimah: { id: '2', name: 'Jemimah', scheduledHours: 15 },
   jane: { id: '3', name: 'Jane', scheduledHours: 15 },
   kc: { id: '4', name: 'KC', scheduledHours: 15 },
-  kenneth: { id: '5', name: 'Kenneth', scheduledHours: 15 },
+  kenneth: { id: '5', name: 'KC', scheduledHours: 15 },
   jaydee: { id: '6', name: 'Jaydee', scheduledHours: 15 },
 };
 

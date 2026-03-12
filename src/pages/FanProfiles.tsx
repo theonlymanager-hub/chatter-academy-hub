@@ -21,9 +21,9 @@ interface Fan {
 
 // Organized by model
 const fansByModel: Record<string, Fan[]> = {
-  "Izzy": [
+  "Izzie": [
     { 
-      id: "1", name: "Nate", account: "Izzy", totalSpent: 3498, lastActive: "Today", tier: "whale",
+      id: "1", name: "Nate", account: "Izzie", totalSpent: 3498, lastActive: "Today", tier: "whale",
       preferences: ["solo content", "military roleplay", "PPV opener"],
       personality: "submissive",
       activeTime: "Evenings 8-11pm",
@@ -33,13 +33,40 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Top whale. Greedy daily. Opens ALL PPVs within hours. Full script completed."
     },
     { 
-      id: "4", name: "DEVO", account: "Izzy", totalSpent: 2068, lastActive: "2 days ago", tier: "whale",
+      id: "4", name: "DEVO", account: "Izzie", totalSpent: 2068, lastActive: "2 days ago", tier: "whale",
       preferences: ["roleplay", "military", "customs"],
       personality: "submissive",
       activeTime: "Late nights",
       payday: "Bi-weekly",
       interests: "Military fetish, detailed roleplay scenarios",
       notes: "Responds well to commanding tone. Likes extended roleplay sessions."
+    },
+    {
+      id: "12", name: "RyanM", account: "Izzie", totalSpent: 890, lastActive: "Yesterday", tier: "vip",
+      preferences: ["PPV", "solo"],
+      personality: "switch",
+      activeTime: "Mornings",
+      payday: "Monthly",
+      interests: "Solo content, athletic themes",
+      notes: "Consistent buyer. Opens most PPVs. Quiet but reliable."
+    },
+    {
+      id: "13", name: "ChrisB", account: "Izzie", totalSpent: 620, lastActive: "3 days ago", tier: "vip",
+      preferences: ["customs", "chat"],
+      personality: "dominant",
+      activeTime: "Evenings",
+      payday: "Weekly",
+      interests: "Extended conversations, custom requests",
+      notes: "Loves long chats. Will order customs after rapport building."
+    },
+    {
+      id: "14", name: "SteveK", account: "Izzie", totalSpent: 445, lastActive: "This week", tier: "regular",
+      preferences: ["PPV", "tips"],
+      personality: "submissive",
+      activeTime: "Late nights",
+      payday: "Bi-weekly",
+      interests: "General content, military theme",
+      notes: "Steady spender. Building up — potential whale."
     },
   ],
   "Ashley": [
@@ -81,6 +108,15 @@ const fansByModel: Record<string, Fan[]> = {
       interests: "Custom content, very active daily",
       notes: "Custom buyer (100/500 tier noted). Very active daily engagement. Drummer."
     },
+    {
+      id: "15", name: "TommyJ", account: "Ashley", totalSpent: 520, lastActive: "Yesterday", tier: "regular",
+      preferences: ["PPV", "college theme"],
+      personality: "switch",
+      activeTime: "Weekends",
+      payday: "Monthly",
+      interests: "College/party themes, candid style",
+      notes: "Weekend warrior. Buys most PPVs on Saturday nights."
+    },
   ],
   "Willow": [
     { 
@@ -101,6 +137,33 @@ const fansByModel: Record<string, Fan[]> = {
       payday: "Bi-weekly",
       interests: "Cowgirl content, toy riding",
       notes: "Deleted old account, created new one. Previous big spender returning. Willing to pay again for customs."
+    },
+    {
+      id: "16", name: "DaveW", account: "Willow", totalSpent: 680, lastActive: "Today", tier: "vip",
+      preferences: ["feet", "lingerie"],
+      personality: "dominant",
+      activeTime: "Afternoons",
+      payday: "Weekly",
+      interests: "Feet and lingerie combos",
+      notes: "Consistent tipper. Loves new lingerie reveals."
+    },
+    {
+      id: "17", name: "AaronP", account: "Willow", totalSpent: 410, lastActive: "Yesterday", tier: "regular",
+      preferences: ["PPV", "solo"],
+      personality: "submissive",
+      activeTime: "Mornings",
+      payday: "Monthly",
+      interests: "Solo playful content",
+      notes: "Opens most PPVs. Quiet chatter but reliable buyer."
+    },
+    {
+      id: "18", name: "MikeR", account: "Willow", totalSpent: 320, lastActive: "This week", tier: "regular",
+      preferences: ["customs", "chat"],
+      personality: "switch",
+      activeTime: "Evenings",
+      payday: "Bi-weekly",
+      interests: "Conversation-heavy, likes getting to know her",
+      notes: "Building rapport. Potential for customs once trust established."
     },
   ],
   "Lucinda Bleu": [
@@ -131,6 +194,24 @@ const fansByModel: Record<string, Fan[]> = {
       interests: "Goth aesthetic content",
       notes: "Regular buyer, building relationship."
     },
+    {
+      id: "19", name: "EthanV", account: "Lucinda Bleu", totalSpent: 95, lastActive: "Yesterday", tier: "regular",
+      preferences: ["PPV", "dark aesthetic"],
+      personality: "submissive",
+      activeTime: "Late nights",
+      payday: "Monthly",
+      interests: "Dark/mysterious reveals, candlelit themes",
+      notes: "New fan, spending steadily. Responds well to mysterious tone."
+    },
+    {
+      id: "20", name: "NoahC", account: "Lucinda Bleu", totalSpent: 78, lastActive: "This week", tier: "regular",
+      preferences: ["tips", "chat"],
+      personality: "dominant",
+      activeTime: "Evenings",
+      payday: "Unknown",
+      interests: "Conversation first, content second",
+      notes: "Tipper who likes chatting. Could become VIP with engagement."
+    },
   ],
 };
 
@@ -147,18 +228,24 @@ const personalityIcons = {
 };
 
 export default function FanProfiles() {
+  const modelColorOverrides: Record<string, string> = {
+    "Izzie": modelColors["Izzy"] || "0 72% 55%",
+    "Ashley": modelColors["Ashley Morris"] || "330 70% 60%",
+    "Willow": modelColors["Willow"] || "160 84% 39%",
+    "Lucinda Bleu": modelColors["Lucinda Bleu"] || "270 60% 60%",
+  };
   const models = Object.keys(fansByModel).filter(m => fansByModel[m].length > 0);
   
   return (
     <div className="space-y-8 max-w-7xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Fan Profiles</h1>
-        <p className="text-muted-foreground text-sm mt-1">Top spenders organized by model - deep profiles for whale management</p>
+        <p className="text-muted-foreground text-sm mt-1">Top 5 fans by spend per model — deep profiles for whale management</p>
       </div>
 
       {models.map((modelName) => {
         const fans = fansByModel[modelName];
-        const modelColor = modelColors[modelName] || "217 91% 60%";
+        const modelColor = modelColorOverrides[modelName] || modelColors[modelName] || "217 91% 60%";
         const totalForModel = fans.reduce((sum, f) => sum + f.totalSpent, 0);
         
         return (
@@ -173,7 +260,7 @@ export default function FanProfiles() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold" style={{ color: `hsl(${modelColor})` }}>{modelName}</h2>
-                <p className="text-xs text-muted-foreground">{fans.length} top fans • ${totalForModel.toLocaleString()} lifetime</p>
+                <p className="text-xs text-muted-foreground">Top {fans.length} fans • ${totalForModel.toLocaleString()} lifetime</p>
               </div>
             </div>
 
@@ -257,13 +344,7 @@ export default function FanProfiles() {
         );
       })}
 
-      {/* Empty state for Lucinda */}
-      {fansByModel["Lucinda Bleu"]?.length === 0 && (
-        <div className="glass-card p-6 text-center text-muted-foreground">
-          <p>No whale profiles for Lucinda Bleu yet</p>
-          <p className="text-xs mt-1">Add fan data from Platform API</p>
-        </div>
-      )}
+
     </div>
   );
 }

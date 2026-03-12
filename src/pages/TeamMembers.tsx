@@ -105,6 +105,7 @@ export default function TeamMembers() {
   const groupedMembers = {
     chatters: teamMembers.filter(m => m.category === "chatter"),
     supervisors: teamMembers.filter(m => m.category === "supervisor"),
+    management: teamMembers.filter(m => m.category === "management"),
     clientCommunication: teamMembers.filter(m => m.category === "client-communication")
   };
 
@@ -163,6 +164,11 @@ export default function TeamMembers() {
               <Badge variant="outline" className="capitalize text-[10px]">
                 {member.status}
               </Badge>
+              {member.shiftTimes && (
+                <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                  🕐 {member.shiftTimes}
+                </Badge>
+              )}
             </div>
           </div>
           {member.clockedIn && (
@@ -385,24 +391,45 @@ export default function TeamMembers() {
         )}
       </div>
 
-      {/* Client Communication Section */}
+      {/* Management Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => toggleSection("client-communication")}
+            onClick={() => toggleSection("management")}
             className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
           >
-            {collapsedSections["client-communication"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-            📞 Client Communication - Mateo ({groupedMembers.clientCommunication.length})
+            {collapsedSections["management"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+            👑 Management ({groupedMembers.management.length})
           </button>
         </div>
         
-        {!collapsedSections["client-communication"] && (
+        {!collapsedSections["management"] && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-            {groupedMembers.clientCommunication.map(renderMemberCard)}
+            {groupedMembers.management.map(renderMemberCard)}
           </div>
         )}
       </div>
+
+      {/* Client Communication Section */}
+      {groupedMembers.clientCommunication.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleSection("client-communication")}
+              className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
+            >
+              {collapsedSections["client-communication"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+              📞 Client Communication ({groupedMembers.clientCommunication.length})
+            </button>
+          </div>
+          
+          {!collapsedSections["client-communication"] && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+              {groupedMembers.clientCommunication.map(renderMemberCard)}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Chat Leaderboard */}
       <div className="space-y-4">

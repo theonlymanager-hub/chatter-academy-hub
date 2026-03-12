@@ -20,7 +20,8 @@ export interface TeamMember {
   name: string;
   avatar: string;
   role: string;
-  category: "chatter" | "supervisor" | "client-communication";
+  category: "chatter" | "supervisor" | "management" | "client-communication";
+  shiftTimes?: string;
   trainingProgress: number;
   qualityScore: number;
   qualityScores: QualityScores;
@@ -93,68 +94,68 @@ export const modelColors: Record<string, string> = {
 
 // NOTE: Clock-in status should eventually pull from Discord ON DUTY voice channel
 // REAL team only — scores start at 0, only populated from actual quality reviews
-// Kenneth REMOVED — not a real team member
+// KC REMOVED — not a real team member
 export const teamMembers: TeamMember[] = [
   // Chatters (real team members only)
   { 
-    id: "1", name: "Marc", avatar: "MA", role: "Chatter", category: "chatter", 
+    id: "1", name: "Marc", avatar: "MA", role: "Chatter", category: "chatter", shiftTimes: "6AM–2PM",
     trainingProgress: 0, qualityScore: 5.0, 
     qualityScores: { personalisation: 4, responseSpeed: 8, ppvStrategy: 4, followUp: 5, fanRetention: 4, grammar: 7, aftercare: 0, overall: 5.0 },
     revenueGenerated: 0, status: "online", weeklyTasks: 5, tasksCompleted: 0, clockedIn: true, clockInTime: "6:00 AM",
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", category: "chatter", 
+    id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", category: "chatter", shiftTimes: "6AM–2PM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "online", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "3", name: "Jane", avatar: "JA", role: "Chatter", category: "chatter", 
+    id: "3", name: "Jane", avatar: "JA", role: "Chatter", category: "chatter", shiftTimes: "2PM–10PM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "4", name: "KC", avatar: "KC", role: "Chatter", category: "chatter", 
+    id: "4", name: "KC", avatar: "KC", role: "Chatter", category: "chatter", shiftTimes: "2PM–10PM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "5", name: "Jaydee", avatar: "JD", role: "Chatter", category: "chatter", 
+    id: "5", name: "Jaydee", avatar: "JD", role: "Chatter", category: "chatter", shiftTimes: "10PM–6AM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
-  { 
-    id: "6", name: "Elle", avatar: "EL", role: "Chatter", category: "chatter", 
-    trainingProgress: 0, qualityScore: 0, 
-    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
-    revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 0, clockedIn: false,
-    analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
-  },
-
   
   // Supervisors
   { 
-    id: "7", name: "Luke", avatar: "LU", role: "Agency Owner", category: "supervisor", 
+    id: "6", name: "Zar", avatar: "ZA", role: "Supervisor", category: "supervisor", shiftTimes: "Flexible",
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
+  },
+  { 
+    id: "7", name: "Elle", avatar: "EL", role: "Supervisor", category: "supervisor", shiftTimes: "Flexible",
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
+  },
+  
+  // Management
+  { 
+    id: "8", name: "Luke", avatar: "LU", role: "Agency Owner", category: "management", shiftTimes: "Always on",
     trainingProgress: 100, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
   { 
-    id: "8", name: "Zar", avatar: "ZA", role: "Supervisor", category: "supervisor", 
-    trainingProgress: 0, qualityScore: 0, 
-    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
-    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
-  },
-  { 
-    id: "9", name: "Mark", avatar: "MK", role: "AI Supervisor", category: "supervisor", 
+    id: "9", name: "Mark", avatar: "MK", role: "AI Supervisor", category: "management", shiftTimes: "24/7",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
@@ -187,20 +188,20 @@ export const tasks: Task[] = [
 // Chatter shift schedule with specific times
 export const shiftSchedule: ShiftEntry[] = [
   { id: "1", memberId: "1", memberName: "Jane", day: "Monday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: "2", memberId: "2", memberName: "Kenneth", day: "Monday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
+  { id: "2", memberId: "2", memberName: "KC", day: "Monday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
   { id: "3", memberId: "3", memberName: "Jaydee", day: "Monday", shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
   { id: "4", memberId: "4", memberName: "Jemimah", day: "Tuesday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
   { id: "5", memberId: "1", memberName: "Jane", day: "Tuesday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
   { id: "6", memberId: "3", memberName: "Jaydee", day: "Tuesday", shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
-  { id: "7", memberId: "2", memberName: "Kenneth", day: "Wednesday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
+  { id: "7", memberId: "2", memberName: "KC", day: "Wednesday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
   { id: "8", memberId: "1", memberName: "Jane", day: "Wednesday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
   { id: "9", memberId: "4", memberName: "Jemimah", day: "Thursday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
   { id: "10", memberId: "3", memberName: "Jaydee", day: "Thursday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: "11", memberId: "2", memberName: "Kenneth", day: "Friday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
+  { id: "11", memberId: "2", memberName: "KC", day: "Friday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
   { id: "12", memberId: "4", memberName: "Jemimah", day: "Friday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
   { id: "13", memberId: "1", memberName: "Jane", day: "Saturday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
   { id: "14", memberId: "3", memberName: "Jaydee", day: "Saturday", shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
-  { id: "15", memberId: "2", memberName: "Kenneth", day: "Sunday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
+  { id: "15", memberId: "2", memberName: "KC", day: "Sunday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
   { id: "16", memberId: "4", memberName: "Jemimah", day: "Sunday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
 ];
 

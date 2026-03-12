@@ -18,6 +18,7 @@ import Shifts from "./pages/Shifts";
 import ClientProfiles from "./pages/ClientProfiles";
 import FanProfiles from "./pages/FanProfiles";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import Customs from "./pages/Customs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/shifts" element={<DashboardLayout><Shifts /></DashboardLayout>} />
           <Route path="/clients" element={<DashboardLayout><ClientProfiles /></DashboardLayout>} />
           <Route path="/fans" element={<DashboardLayout><FanProfiles /></DashboardLayout>} />
+          <Route path="/customs" element={<DashboardLayout><Customs /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

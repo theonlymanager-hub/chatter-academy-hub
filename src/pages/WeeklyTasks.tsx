@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { teamMembers, chatterColors } from "@/lib/mock-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +15,8 @@ interface WeeklyTask {
 const initialTasks: WeeklyTask[] = [
   { id: "wt1", title: "Create a whale (subscriber spending $500+)", assignee: "Jane", completed: false, category: "Revenue" },
   { id: "wt2", title: "Hit $500 daily revenue target", assignee: "Jane", completed: false, category: "Revenue" },
-  { id: "wt3", title: "Use 3 upsell techniques in one conversation", assignee: "Kenneth", completed: true, category: "Technique" },
-  { id: "wt4", title: "Complete the PPV script for Izzy", assignee: "Kenneth", completed: false, category: "Script" },
+  { id: "wt3", title: "Use 3 upsell techniques in one conversation", assignee: "Marc", completed: true, category: "Technique" },
+  { id: "wt4", title: "Complete the PPV script for Izzy", assignee: "Marc", completed: false, category: "Script" },
   { id: "wt5", title: "Create a whale (subscriber spending $500+)", assignee: "Jaydee", completed: false, category: "Revenue" },
   { id: "wt6", title: "Use the rapport-building technique 5 times", assignee: "Jaydee", completed: false, category: "Technique" },
   { id: "wt7", title: "Complete the opening message script", assignee: "Jaydee", completed: true, category: "Script" },
@@ -24,10 +24,10 @@ const initialTasks: WeeklyTask[] = [
   { id: "wt9", title: "Use the VIP treatment technique on 3 subs", assignee: "Jemimah", completed: false, category: "Technique" },
   { id: "wt10", title: "Complete the upsell script for Willow", assignee: "Jemimah", completed: false, category: "Script" },
   { id: "wt11", title: "Send 50 personalized openers", assignee: "Jane", completed: true, category: "Technique" },
-  { id: "wt12", title: "Complete Willow mass message script", assignee: "Kenneth", completed: false, category: "Script" },
-  { id: "wt13", title: "Review and update whale profiles", assignee: "Mark", completed: false, category: "Script" },
-  { id: "wt14", title: "Hit $400 daily revenue target", assignee: "Mark", completed: false, category: "Revenue" },
-  { id: "wt15", title: "Complete Lucinda upsell script", assignee: "Mark", completed: true, category: "Script" },
+  { id: "wt12", title: "Complete Willow mass message script", assignee: "KC", completed: false, category: "Script" },
+  { id: "wt13", title: "Review and update whale profiles", assignee: "KC", completed: false, category: "Script" },
+  { id: "wt14", title: "Hit $400 daily revenue target", assignee: "KC", completed: false, category: "Revenue" },
+  { id: "wt15", title: "Complete Lucinda upsell script", assignee: "KC", completed: true, category: "Script" },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -37,13 +37,20 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function WeeklyTasks() {
-  const [tasks, setTasks] = useState<WeeklyTask[]>(initialTasks);
+  const [tasks, setTasks] = useState<WeeklyTask[]>(() => {
+    const saved = localStorage.getItem("chatter-weekly-tasks");
+    return saved ? JSON.parse(saved) : initialTasks;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("chatter-weekly-tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const toggleTask = (id: string) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };
 
-  const chatters = ["Jane", "Kenneth", "Jaydee", "Jemimah", "Mark"];
+  const chatters = ["Jane", "Marc", "Jaydee", "Jemimah", "KC"];
 
   return (
     <div className="space-y-6 max-w-7xl">
