@@ -214,6 +214,32 @@ const quizQuestions: Question[] = [
   }
 ];
 
+// Get current user from session storage
+function getCurrentUser(): string {
+  try {
+    const auth = sessionStorage.getItem('onlyboard_auth');
+    if (auth) {
+      const parsed = JSON.parse(auth);
+      return parsed.displayName || parsed.username || 'Unknown';
+    }
+  } catch {}
+  return 'Unknown';
+}
+
+// Save quiz result for management view
+function saveQuizResult(username: string, score: number, total: number, categoryScores: Record<string, { correct: number; total: number }>) {
+  const results = JSON.parse(localStorage.getItem('training-quiz-results') || '[]');
+  results.push({
+    username,
+    score,
+    total,
+    percentage: Math.round((score / total) * 100),
+    categoryScores,
+    date: new Date().toISOString(),
+  });
+  localStorage.setItem('training-quiz-results', JSON.stringify(results));
+}
+
 export default function Training() {
   const [gameState, setGameState] = useState<'welcome' | 'playing' | 'finished'>('welcome');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -271,6 +297,19 @@ export default function Training() {
         setBestScore(finalScore);
         localStorage.setItem('training-quiz-best-score', finalScore.toString());
       }
+
+      // Save detailed results for management
+      const categoryScores: Record<string, { correct: number; total: number }> = {};
+      const allAnswers = [...userAnswers, selectedAnswer!];
+      quizQuestions.forEach((q, i) => {
+        if (!categoryScores[q.category]) categoryScores[q.category] = { correct: 0, total: 0 };
+        categoryScores[q.category].total++;
+        const ans = allAnswers[i];
+        if (ans === q.correctAnswer || (q.altCorrectAnswer !== undefined && ans === q.altCorrectAnswer)) {
+          categoryScores[q.category].correct++;
+        }
+      });
+      saveQuizResult(getCurrentUser(), finalScore, quizQuestions.length, categoryScores);
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);

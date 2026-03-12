@@ -11,6 +11,7 @@ import Login from "./components/Login";
 import Index from "./pages/Index";
 import TeamMembers from "./pages/TeamMembers";
 import Training from "./pages/Training";
+import TrainingResults from "./pages/TrainingResults";
 import Tasks from "./pages/Tasks";
 import QualityChecks from "./pages/QualityChecks";
 import ShiftCalendar from "./pages/ShiftCalendar";
@@ -88,6 +89,16 @@ function AppContent() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Training />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/training-results" 
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <TrainingResults />
               </DashboardLayout>
             </ProtectedRoute>
           } 

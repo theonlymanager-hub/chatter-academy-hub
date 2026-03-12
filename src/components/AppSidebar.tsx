@@ -52,6 +52,7 @@ const getAllSections = () => [
     label: "Training",
     items: [
       { title: "Training", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Training Results", url: "/training-results", icon: Star, roles: ['admin', 'supervisor'] },
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
