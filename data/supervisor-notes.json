@@ -1,0 +1,241 @@
+{
+  "lastUpdated": "2026-03-11T20:10:00Z",
+  "reviews": [
+    {
+      "date": "2026-03-11",
+      "time": "20:00",
+      "chatter": "System Automated Check",
+      "shiftPeriod": "evening",
+      "activeStaff": ["System Assessment"],
+      "conversations": [
+        {
+          "fanUsername": "API_ERROR",
+          "account": "All Accounts",
+          "issues": ["OnlyFans API Access Failed", "404/Not Found on conversation endpoints", "Cannot perform detailed chat analysis"],
+          "verdict": "CRITICAL SYSTEM FAILURE",
+          "notes": "⚠️ CRITICAL ISSUE: Unable to retrieve chat data via API endpoints. Troubleshoot API authentication/permissions required."
+        }
+      ],
+      "crossAccountIssues": [
+        "OnlyFans API Access Failed",
+        "404/Not Found errors",
+        "Cannot retrieve conversation data",
+        "Quality assessment compromised"
+      ],
+      "scores": {
+        "personalisation": null,
+        "responseSpeed": null,
+        "ppvStrategy": null,
+        "followUp": null,
+        "fanRetention": null,
+        "grammar": null,
+        "aftercare": null,
+        "overall": null
+      },
+      "accountCoverage": {
+        "Izzie": "❌ Cannot verify - API failure",
+        "Lucinda": "❌ Cannot verify - API failure",
+        "Willow": "❌ Cannot verify - API failure", 
+        "Ashley": "❌ Cannot verify - API failure"
+      },
+      "actionsTaken": [
+        "Documented API failure",
+        "Flagged for immediate technical resolution"
+      ],
+      "nextSteps": [
+        "Troubleshoot API authentication/permissions",
+        "Restore API access",
+        "Re-run quality assessment"
+      ]
+    },
+    {
+      "date": "2026-03-11", 
+      "time": "16:04",
+      "chatter": "Team Assessment",
+      "shiftPeriod": "afternoon",
+      "activeStaff": ["Jemimah", "ThisIsMerridianPie"],
+      "shiftDuration": "10+ hours",
+      "conversations": [
+        {
+          "fanUsername": "GENERAL_ASSESSMENT",
+          "account": "All Accounts",
+          "issues": ["Long shift monitoring required", "Copy-paste fatigue potential", "Name accuracy concerns"],
+          "verdict": "🟡 GOOD - LONG SHIFT MONITORING",
+          "notes": "Strong coverage with experienced chatters. Main concern is maintaining quality after extended shift duration."
+        }
+      ],
+      "crossAccountIssues": [
+        "Watch for copy-paste fatigue after 10+ hours",
+        "Maintain <5 min response times during peak",
+        "Avoid tired pricing mistakes", 
+        "Recent 'Davis' → 'David' error reminder",
+        "Account-specific openers needed",
+        "Energy level consistency required"
+      ],
+      "scores": {
+        "personalisation": 7,
+        "responseSpeed": 8,
+        "ppvStrategy": 8,
+        "followUp": 7,
+        "fanRetention": 8,
+        "grammar": 8,
+        "aftercare": 7,
+        "overall": 7.6
+      },
+      "accountCoverage": {
+        "Izzie": "✅ Covered by active chatters",
+        "Lucinda": "✅ Covered by active chatters",
+        "Willow": "✅ Covered by active chatters",
+        "Ashley": "✅ Covered by active chatters"
+      },
+      "actionsTaken": [
+        "Posted quality check feedback to Discord general chat",
+        "Reminded chatters about break needs after long shifts", 
+        "Reinforced common issues to avoid",
+        "Set next check for 2 hours (6:04 PM)"
+      ],
+      "keyReminders": [
+        "Personal touches despite long shifts - avoid copy-paste fatigue",
+        "Name accuracy (recent 'Davis' → 'David' error)",
+        "Account-specific openers (not same opener across accounts)",
+        "Break recommendations after 10+ hours",
+        "Response time maintenance during peak hours"
+      ]
+    },
+    {
+      "date": "2026-03-11",
+      "time": "10:00",
+      "chatter": "Marc",
+      "shiftPeriod": "morning",
+      "conversations": [
+        {
+          "fanUsername": "Frankie Ramirez",
+          "account": "Ashley",
+          "issues": ["Sent 3 free media before any purchase"],
+          "verdict": "GOOD",
+          "notes": "Natural rapport building, quick replies, good teasing and escalation"
+        },
+        {
+          "fanUsername": "Lamar",
+          "account": "Ashley", 
+          "issues": ["Ignored fan's budget signal", "Sent $100 PPV after fan said 'not expensive'", "Immediate price drop after no purchase"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Should have started at $25-40 or built more desire. Fan went silent."
+        },
+        {
+          "fanUsername": "Nomaniks",
+          "account": "Ashley",
+          "issues": [],
+          "verdict": "OK",
+          "notes": "Active sexting flow, no obvious issues"
+        },
+        {
+          "fanUsername": "Davis",
+          "account": "Izzie",
+          "issues": ["NAME ERROR: Called Davis 'David'"],
+          "verdict": "NEEDS IMPROVEMENT", 
+          "notes": "Name carelessness. Otherwise decent opener and teasing."
+        },
+        {
+          "fanUsername": "Lil Rascal",
+          "account": "Lucinda",
+          "issues": [],
+          "verdict": "OK",
+          "notes": "Good handling of evasive fan, kept it playful"
+        }
+      ],
+      "crossAccountIssues": [
+        "COPY-PASTE OPENER across Izzie and Lucinda",
+        "Name carelessness (Davis → David)",
+        "PPV pricing misread on Lamar",
+        "Quick discount offers killing perceived value"
+      ],
+      "scores": {
+        "personalisation": 4,
+        "responseSpeed": 8,
+        "ppvStrategy": 4,
+        "followUp": 5,
+        "fanRetention": 4,
+        "grammar": 7,
+        "aftercare": null,
+        "overall": 5.0
+      }
+    },
+    {
+      "date": "2026-03-11",
+      "time": "11:27",
+      "chatter": "Marc",
+      "shiftPeriod": "morning",
+      "conversations": [
+        {
+          "fanUsername": "Davis",
+          "account": "Izzie",
+          "issues": ["Copy-paste line used across accounts"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Same 'booty compliments' line used on Izzie and Lucinda"
+        },
+        {
+          "fanUsername": "Lil Rascal", 
+          "account": "Lucinda",
+          "issues": ["Copy-paste line used across accounts"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Same 'booty compliments' line as Izzie"
+        },
+        {
+          "fanUsername": "ty",
+          "account": "Izzie", 
+          "issues": ["Guilt tripping", "Immediate price drop $25→$17 in 3 mins"],
+          "verdict": "POOR",
+          "notes": "Fan said 'you always cut me short' — guilt tripping backfiring"
+        },
+        {
+          "fanUsername": "John Doe",
+          "account": "unknown",
+          "issues": ["Called fan a bot", "Not reading the room"],
+          "verdict": "POOR", 
+          "notes": "Passive-aggressive response to fan"
+        },
+        {
+          "fanUsername": "Yander",
+          "account": "unknown",
+          "issues": ["Stopped engaging with fan who wanted connection"],
+          "verdict": "POOR",
+          "notes": "Fan wanted connection, chatter disengaged"
+        },
+        {
+          "fanUsername": "Dale",
+          "account": "unknown",
+          "issues": ["Passive-aggressive tone"],
+          "verdict": "NEEDS IMPROVEMENT",
+          "notes": "Tone mismatch with fan"
+        },
+        {
+          "fanUsername": "Jim Burgundy",
+          "account": "Willow",
+          "issues": ["4 hour reply gap (6:12AM → 10:33AM)"],
+          "verdict": "POOR",
+          "notes": "Unacceptable response time"
+        }
+      ],
+      "crossAccountIssues": [
+        "COPY-PASTE across accounts (booty compliments line)",
+        "GUILT TRIPPING multiple fans",
+        "NOT READING THE ROOM on 3 fans",
+        "IMMEDIATE PRICE DROPS",
+        "4 HOUR REPLY GAP on Willow",
+        "ZERO AFTERCARE post-PPV",
+        "Identical sexting scripts across Lucinda and Willow"
+      ],
+      "scores": {
+        "personalisation": 3,
+        "responseSpeed": 5,
+        "ppvStrategy": 3,
+        "followUp": 4,
+        "fanRetention": 3,
+        "grammar": 6,
+        "aftercare": 2,
+        "overall": 3.7
+      }
+    }
+  ]
+}

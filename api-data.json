@@ -1,0 +1,43 @@
+{
+  "lastUpdated": "2026-03-08T17:03:29.064Z",
+  "revenue": {
+    "gross": "121787.44",
+    "net": "97429.78",
+    "grossFormatted": "$121.8K",
+    "netFormatted": "$97.4K"
+  },
+  "accounts": [
+    {
+      "name": "Izzie",
+      "username": "izzierae",
+      "grossRevenue": "61242.89",
+      "netRevenue": "48994.31",
+      "messagesRevenue": "49342.88",
+      "tipsRevenue": "11893.01"
+    },
+    {
+      "name": "Lucinda",
+      "username": "lucindableu",
+      "grossRevenue": "3453.20",
+      "netRevenue": "2762.56",
+      "messagesRevenue": "2971.00",
+      "tipsRevenue": "482.20"
+    },
+    {
+      "name": "Willow",
+      "username": "willowxjoy",
+      "grossRevenue": "12643.61",
+      "netRevenue": "10114.80",
+      "messagesRevenue": "10991.11",
+      "tipsRevenue": "942.00"
+    },
+    {
+      "name": "Ashley",
+      "username": "ashleyxmorris",
+      "grossRevenue": "44447.74",
+      "netRevenue": "35558.11",
+      "messagesRevenue": "38277.24",
+      "tipsRevenue": "6170.50"
+    }
+  ]
+}
