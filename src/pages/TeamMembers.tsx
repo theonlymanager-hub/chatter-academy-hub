@@ -25,7 +25,10 @@ interface MemberNotes {
 export default function TeamMembers() {
   const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
   const [expandedQuality, setExpandedQuality] = useState<Record<string, boolean>>({});
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem("chatter-team-sections");
+    return saved ? JSON.parse(saved) : {};
+  });
   const [memberNotes, setMemberNotes] = useState<MemberNotes>({});
   const [newNoteText, setNewNoteText] = useState<Record<string, string>>({});
   const [newNoteCategory, setNewNoteCategory] = useState<Record<string, keyof QualityScores>>({});
@@ -55,7 +58,11 @@ export default function TeamMembers() {
   };
 
   const toggleSection = (sectionId: string) => {
-    setCollapsedSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+    setCollapsedSections(prev => {
+      const updated = { ...prev, [sectionId]: !prev[sectionId] };
+      localStorage.setItem("chatter-team-sections", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const addNote = (memberId: string) => {

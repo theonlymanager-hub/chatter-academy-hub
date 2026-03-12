@@ -9,7 +9,7 @@ import { modelColors } from "@/lib/mock-data";
 interface CustomOrder {
   id: string;
   description: string;
-  status: "pending" | "in-progress" | "complete";
+  status: "pending" | "complete";
   dateRequested: string;
   fanName: string;
   model: string;
@@ -28,19 +28,20 @@ const modelColorMap: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  "in-progress": "bg-blue-500/20 text-blue-400 border-blue-500/30",
   complete: "bg-green-500/20 text-green-400 border-green-500/30",
 };
 
 const statusIcons: Record<string, React.ReactNode> = {
   pending: <Clock className="h-3 w-3" />,
-  "in-progress": <Pencil className="h-3 w-3" />,
   complete: <Check className="h-3 w-3" />,
 };
 
 export default function Customs() {
   const [customs, setCustoms] = useState<CustomOrder[]>([]);
-  const [collapsedModels, setCollapsedModels] = useState<Record<string, boolean>>({});
+  const [collapsedModels, setCollapsedModels] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem("customs-collapsed");
+    return saved ? JSON.parse(saved) : {};
+  });
   const [addingTo, setAddingTo] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -56,15 +57,8 @@ export default function Customs() {
     if (saved) {
       setCustoms(JSON.parse(saved));
     } else {
-      // Placeholder data
-      setCustoms([
-        { id: "1", description: "Solo shower video - 5 min", status: "pending", dateRequested: "2026-03-10", fanName: "Patrick", model: "Ashley" },
-        { id: "2", description: "Feet pics in red heels", status: "in-progress", dateRequested: "2026-03-09", fanName: "Jay41", model: "Willow" },
-        { id: "3", description: "Military roleplay video - 3 min", status: "pending", dateRequested: "2026-03-11", fanName: "Nate", model: "Izzie" },
-        { id: "4", description: "Goth candlelit photoshoot", status: "complete", dateRequested: "2026-03-08", fanName: "Zaza", model: "Lucinda" },
-        { id: "5", description: "Lingerie try-on haul", status: "pending", dateRequested: "2026-03-12", fanName: "Derek", model: "Ashley" },
-        { id: "6", description: "JOI video - dom tone", status: "in-progress", dateRequested: "2026-03-10", fanName: "DEVO", model: "Izzie" },
-      ]);
+      // Start empty - customs added by Elle or from Discord bot
+      setCustoms([]);
     }
   }, []);
 
@@ -75,7 +69,11 @@ export default function Customs() {
   }, [customs]);
 
   const toggleModel = (model: string) => {
-    setCollapsedModels(prev => ({ ...prev, [model]: !prev[model] }));
+    setCollapsedModels(prev => {
+      const updated = { ...prev, [model]: !prev[model] };
+      localStorage.setItem("customs-collapsed", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const addCustom = (model: string) => {
@@ -128,13 +126,13 @@ export default function Customs() {
         {MODELS.map(model => {
           const modelCustoms = getModelCustoms(model);
           const pending = modelCustoms.filter(c => c.status === "pending").length;
-          const inProgress = modelCustoms.filter(c => c.status === "in-progress").length;
+          const complete = modelCustoms.filter(c => c.status === "complete").length;
           const color = modelColorMap[model];
           return (
             <div key={model} className="glass-card p-4" style={{ borderColor: `hsl(${color} / 0.2)` }}>
               <p className="text-sm font-medium" style={{ color: `hsl(${color})` }}>{model}</p>
               <p className="text-2xl font-bold mt-1">{modelCustoms.length}</p>
-              <p className="text-[10px] text-muted-foreground">{pending} pending · {inProgress} in progress</p>
+              <p className="text-[10px] text-muted-foreground">{pending} pending · {complete} complete</p>
             </div>
           );
         })}
@@ -196,7 +194,6 @@ export default function Customs() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="in-progress">In Progress</SelectItem>
                               <SelectItem value="complete">Complete</SelectItem>
                             </SelectContent>
                           </Select>
@@ -210,7 +207,7 @@ export default function Customs() {
                       <div className="flex items-start gap-3">
                         <button
                           onClick={() => {
-                            const next = custom.status === "pending" ? "in-progress" : custom.status === "in-progress" ? "complete" : "pending";
+                            const next = custom.status === "pending" ? "complete" : "pending";
                             updateStatus(custom.id, next);
                           }}
                           className={`mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border ${statusColors[custom.status]} hover:opacity-80 transition-opacity`}
