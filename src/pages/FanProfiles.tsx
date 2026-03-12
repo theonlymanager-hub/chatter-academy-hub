@@ -6,6 +6,7 @@ interface Fan {
   id: string;
   name: string;
   account: string;
+  ofUsername: string; // OnlyFans @ username
   totalSpent: number;
   lastActive: string;
   tier: "whale" | "vip" | "regular";
@@ -23,7 +24,7 @@ interface Fan {
 const fansByModel: Record<string, Fan[]> = {
   "Izzie": [
     { 
-      id: "1", name: "Nate", account: "Izzie", totalSpent: 3498, lastActive: "Today", tier: "whale",
+      id: "1", name: "Nate", account: "Izzie", ofUsername: "@nate_real", totalSpent: 3498, lastActive: "Today", tier: "whale",
       preferences: ["solo content", "military roleplay", "PPV opener"],
       personality: "submissive",
       activeTime: "Evenings 8-11pm",
@@ -33,7 +34,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Top whale. Greedy daily. Opens ALL PPVs within hours. Full script completed."
     },
     { 
-      id: "4", name: "DEVO", account: "Izzie", totalSpent: 2068, lastActive: "2 days ago", tier: "whale",
+      id: "4", name: "DEVO", account: "Izzie", ofUsername: "@u567823", totalSpent: 2068, lastActive: "2 days ago", tier: "whale",
       preferences: ["roleplay", "military", "customs"],
       personality: "submissive",
       activeTime: "Late nights",
@@ -42,7 +43,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Responds well to commanding tone. Likes extended roleplay sessions."
     },
     {
-      id: "12", name: "RyanM", account: "Izzie", totalSpent: 890, lastActive: "Yesterday", tier: "vip",
+      id: "12", name: "RyanM", account: "Izzie", ofUsername: "@ryan_muscle", totalSpent: 890, lastActive: "Yesterday", tier: "vip",
       preferences: ["PPV", "solo"],
       personality: "switch",
       activeTime: "Mornings",
@@ -51,7 +52,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Consistent buyer. Opens most PPVs. Quiet but reliable."
     },
     {
-      id: "13", name: "ChrisB", account: "Izzie", totalSpent: 620, lastActive: "3 days ago", tier: "vip",
+      id: "13", name: "ChrisB", account: "Izzie", ofUsername: "@chris_b_92", totalSpent: 620, lastActive: "3 days ago", tier: "vip",
       preferences: ["customs", "chat"],
       personality: "dominant",
       activeTime: "Evenings",
@@ -60,7 +61,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Loves long chats. Will order customs after rapport building."
     },
     {
-      id: "14", name: "SteveK", account: "Izzie", totalSpent: 445, lastActive: "This week", tier: "regular",
+      id: "14", name: "SteveK", account: "Izzie", ofUsername: "@u234567", totalSpent: 445, lastActive: "This week", tier: "regular",
       preferences: ["PPV", "tips"],
       personality: "submissive",
       activeTime: "Late nights",
@@ -71,7 +72,7 @@ const fansByModel: Record<string, Fan[]> = {
   ],
   "Ashley": [
     { 
-      id: "2", name: "Patrick", account: "Ashley", totalSpent: 2549, lastActive: "Today", tier: "whale",
+      id: "2", name: "Patrick", account: "Ashley", ofUsername: "@patrick_night", totalSpent: 2549, lastActive: "Today", tier: "whale",
       preferences: ["customs", "tipping", "college theme"],
       personality: "dominant",
       activeTime: "8-11pm weeknights",
@@ -81,7 +82,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Big tipper. Loves ordering customs. Night owl - most active 8-11pm."
     },
     { 
-      id: "3", name: "Derek", account: "Ashley", totalSpent: 2364, lastActive: "Yesterday", tier: "whale",
+      id: "3", name: "Derek", account: "Ashley", ofUsername: "@derek_weekends", totalSpent: 2364, lastActive: "Yesterday", tier: "whale",
       preferences: ["weekly PPV", "consistent buyer"],
       personality: "switch",
       activeTime: "Weekends",
@@ -90,7 +91,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Consistent weekly spender. Reliable Saturday purchases."
     },
     { 
-      id: "10", name: "adamo", account: "Ashley", totalSpent: 805, lastActive: "Today", tier: "vip",
+      id: "10", name: "adamo", account: "Ashley", ofUsername: "@u789456", totalSpent: 805, lastActive: "Today", tier: "vip",
       preferences: ["PPV", "daily buyer"],
       personality: "dominant",
       activeTime: "Daily",
@@ -99,7 +100,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "New but spending fast (joined Feb 21). Daily engagement, pure PPV buyer."
     },
     { 
-      id: "11", name: "Mikey", account: "Ashley", totalSpent: 734, lastActive: "Today", tier: "vip",
+      id: "11", name: "Mikey", account: "Ashley", ofUsername: "@mikey_drums", totalSpent: 734, lastActive: "Today", tier: "vip",
       preferences: ["customs", "100/500 tier"],
       personality: "submissive",
       activeTime: "Early mornings",
@@ -109,7 +110,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Custom buyer (100/500 tier noted). Very active daily engagement. Drummer."
     },
     {
-      id: "15", name: "TommyJ", account: "Ashley", totalSpent: 520, lastActive: "Yesterday", tier: "regular",
+      id: "15", name: "TommyJ", account: "Ashley", ofUsername: "@tommy_college", totalSpent: 520, lastActive: "Yesterday", tier: "regular",
       preferences: ["PPV", "college theme"],
       personality: "switch",
       activeTime: "Weekends",
@@ -120,7 +121,7 @@ const fansByModel: Record<string, Fan[]> = {
   ],
   "Willow": [
     { 
-      id: "5", name: "Jay41", account: "Willow", totalSpent: 1200, lastActive: "Today", tier: "vip",
+      id: "5", name: "Jay41", account: "Willow", ofUsername: "@jay41_feet", totalSpent: 1200, lastActive: "Today", tier: "vip",
       preferences: ["feet", "customs", "no toys"],
       personality: "dominant",
       activeTime: "Afternoons",
@@ -130,7 +131,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Very specific requests. NO TOYS - he hates them. Feet + fingers only. Red/French nails preferred."
     },
     { 
-      id: "6", name: "James", account: "Willow", totalSpent: 950, lastActive: "3 days ago", tier: "vip",
+      id: "6", name: "James", account: "Willow", ofUsername: "@james_cowboy", totalSpent: 950, lastActive: "3 days ago", tier: "vip",
       preferences: ["customs", "toy play"],
       personality: "submissive",
       activeTime: "Evenings",
@@ -139,7 +140,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Deleted old account, created new one. Previous big spender returning. Willing to pay again for customs."
     },
     {
-      id: "16", name: "DaveW", account: "Willow", totalSpent: 680, lastActive: "Today", tier: "vip",
+      id: "16", name: "DaveW", account: "Willow", ofUsername: "@u345678", totalSpent: 680, lastActive: "Today", tier: "vip",
       preferences: ["feet", "lingerie"],
       personality: "dominant",
       activeTime: "Afternoons",
@@ -148,7 +149,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Consistent tipper. Loves new lingerie reveals."
     },
     {
-      id: "17", name: "AaronP", account: "Willow", totalSpent: 410, lastActive: "Yesterday", tier: "regular",
+      id: "17", name: "AaronP", account: "Willow", ofUsername: "@aaron_quiet", totalSpent: 410, lastActive: "Yesterday", tier: "regular",
       preferences: ["PPV", "solo"],
       personality: "submissive",
       activeTime: "Mornings",
@@ -157,7 +158,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Opens most PPVs. Quiet chatter but reliable buyer."
     },
     {
-      id: "18", name: "MikeR", account: "Willow", totalSpent: 320, lastActive: "This week", tier: "regular",
+      id: "18", name: "MikeR", account: "Willow", ofUsername: "@mike_talker", totalSpent: 320, lastActive: "This week", tier: "regular",
       preferences: ["customs", "chat"],
       personality: "switch",
       activeTime: "Evenings",
@@ -168,7 +169,7 @@ const fansByModel: Record<string, Fan[]> = {
   ],
   "Lucinda Bleu": [
     { 
-      id: "7", name: "Zaza", account: "Lucinda Bleu", totalSpent: 183, lastActive: "This week", tier: "vip",
+      id: "7", name: "Zaza", account: "Lucinda Bleu", ofUsername: "@zaza_dark", totalSpent: 183, lastActive: "This week", tier: "vip",
       preferences: ["goth aesthetic", "mysterious content"],
       personality: "submissive",
       activeTime: "Late nights",
@@ -177,7 +178,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Top spender for Lucinda. Responds well to dark aesthetic."
     },
     { 
-      id: "8", name: "Todd Whiting", account: "Lucinda Bleu", totalSpent: 136, lastActive: "This week", tier: "regular",
+      id: "8", name: "Todd Whiting", account: "Lucinda Bleu", ofUsername: "@todd_appreciation", totalSpent: 136, lastActive: "This week", tier: "regular",
       preferences: ["tips only", "no PPV"],
       personality: "dominant",
       activeTime: "Evenings",
@@ -186,7 +187,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "$136 in tips only, $0 messages. Appreciation spender."
     },
     { 
-      id: "9", name: "Brandon", account: "Lucinda Bleu", totalSpent: 112, lastActive: "This week", tier: "regular",
+      id: "9", name: "Brandon", account: "Lucinda Bleu", ofUsername: "@brandon_goth", totalSpent: 112, lastActive: "This week", tier: "regular",
       preferences: ["goth content"],
       personality: "switch",
       activeTime: "Unknown",
@@ -195,7 +196,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "Regular buyer, building relationship."
     },
     {
-      id: "19", name: "EthanV", account: "Lucinda Bleu", totalSpent: 95, lastActive: "Yesterday", tier: "regular",
+      id: "19", name: "EthanV", account: "Lucinda Bleu", ofUsername: "@u456789", totalSpent: 95, lastActive: "Yesterday", tier: "regular",
       preferences: ["PPV", "dark aesthetic"],
       personality: "submissive",
       activeTime: "Late nights",
@@ -204,7 +205,7 @@ const fansByModel: Record<string, Fan[]> = {
       notes: "New fan, spending steadily. Responds well to mysterious tone."
     },
     {
-      id: "20", name: "NoahC", account: "Lucinda Bleu", totalSpent: 78, lastActive: "This week", tier: "regular",
+      id: "20", name: "NoahC", account: "Lucinda Bleu", ofUsername: "@noah_chatter", totalSpent: 78, lastActive: "This week", tier: "regular",
       preferences: ["tips", "chat"],
       personality: "dominant",
       activeTime: "Evenings",
@@ -285,7 +286,10 @@ export default function FanProfiles() {
                       {/* Main Info */}
                       <div className="flex-1 min-w-0 space-y-3">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold">{fan.name}</p>
+                          <div className="space-y-1">
+                            <p className="font-semibold">{fan.name}</p>
+                            <p className="text-sm text-primary font-mono bg-primary/10 px-2 py-0.5 rounded">{fan.ofUsername}</p>
+                          </div>
                           <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${color} / 0.4)`, color: `hsl(${color})` }}>
                             {fan.tier.toUpperCase()}
                           </Badge>

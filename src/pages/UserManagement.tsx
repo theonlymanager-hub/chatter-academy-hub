@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, UserRole } from "@/types/auth";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,9 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Trash2, Shield, User as UserIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Edit2, Trash2, Shield, User as UserIcon, Settings2, LayoutDashboard, Users, GraduationCap, ClipboardList, Star, CalendarDays, MessageSquare, BarChart3, Clock, UserCircle, Heart, BookOpen, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ROLE_COLORS = {
@@ -45,11 +47,51 @@ const ROLE_LABELS = {
   chatter: "Chatter",
 };
 
+// Navigation items that can be controlled per role
+const NAVIGATION_ITEMS = [
+  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, category: "Main" },
+  { id: "team", name: "Team Members", icon: Users, category: "Team" },
+  { id: "quality", name: "Quality Checks", icon: Star, category: "Team" },
+  { id: "tasks", name: "Mark Tasks", icon: ClipboardList, category: "Team" },
+  { id: "weekly-tasks", name: "Chatter Tasks", icon: ClipboardList, category: "Team" },
+  { id: "training", name: "Training", icon: GraduationCap, category: "Training" },
+  { id: "knowledge-base", name: "Knowledge Base", icon: BookOpen, category: "Training" },
+  { id: "calendar", name: "Shift Calendar", icon: CalendarDays, category: "Calendar" },
+  { id: "shifts", name: "Shift Scheduler", icon: Clock, category: "Calendar" },
+  { id: "messages", name: "Mass Messages", icon: MessageSquare, category: "Calendar" },
+  { id: "customs", name: "Customs Board", icon: Palette, category: "Operations" },
+  { id: "fans", name: "Fan Profiles", icon: Heart, category: "Operations" },
+  { id: "clients", name: "Client Profiles", icon: UserCircle, category: "Profiles" },
+  { id: "analytics", name: "Analytics", icon: BarChart3, category: "Analytics" },
+  { id: "users", name: "User Management", icon: Settings2, category: "Management" },
+];
+
+// Default permissions for each role
+const DEFAULT_ROLE_PERMISSIONS = {
+  admin: [...NAVIGATION_ITEMS.map(item => item.id)],
+  supervisor: [
+    "dashboard", "team", "quality", "tasks", "weekly-tasks", "training", 
+    "knowledge-base", "calendar", "shifts", "messages", "customs", 
+    "fans", "clients", "analytics"
+  ],
+  data_entry: [
+    "dashboard", "team", "quality", "tasks", "weekly-tasks", "training",
+    "knowledge-base", "calendar", "shifts", "messages", "customs",
+    "fans", "clients", "analytics"
+  ],
+  chatter: [
+    "dashboard", "team", "quality", "weekly-tasks", "training", 
+    "knowledge-base", "calendar", "messages", "customs", "fans"
+  ],
+};
+
 export default function UserManagement() {
   const { users, createUser, updateUser, deleteUser, user: currentUser } = useAuth();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [rolePermissions, setRolePermissions] = useState(DEFAULT_ROLE_PERMISSIONS);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -58,6 +100,48 @@ export default function UserManagement() {
     displayName: "",
     role: "chatter" as UserRole,
   });
+
+  // Load permissions from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('role-permissions');
+    if (saved) {
+      try {
+        setRolePermissions(JSON.parse(saved));
+      } catch {
+        // If parsing fails, use defaults
+        setRolePermissions(DEFAULT_ROLE_PERMISSIONS);
+      }
+    }
+  }, []);
+
+  // Save permissions to localStorage when changed
+  const saveRolePermissions = (permissions: typeof DEFAULT_ROLE_PERMISSIONS) => {
+    setRolePermissions(permissions);
+    localStorage.setItem('role-permissions', JSON.stringify(permissions));
+    toast({
+      title: "Success",
+      description: "Role permissions updated successfully",
+    });
+  };
+
+  const handlePermissionToggle = (role: UserRole, itemId: string) => {
+    const newPermissions = { ...rolePermissions };
+    const currentPerms = newPermissions[role] || [];
+    
+    if (currentPerms.includes(itemId)) {
+      newPermissions[role] = currentPerms.filter(p => p !== itemId);
+    } else {
+      newPermissions[role] = [...currentPerms, itemId];
+    }
+    
+    saveRolePermissions(newPermissions);
+  };
+
+  const resetRoleToDefaults = (role: UserRole) => {
+    const newPermissions = { ...rolePermissions };
+    newPermissions[role] = [...DEFAULT_ROLE_PERMISSIONS[role]];
+    saveRolePermissions(newPermissions);
+  };
 
   const resetForm = () => {
     setFormData({
