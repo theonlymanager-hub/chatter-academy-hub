@@ -42,17 +42,17 @@ const getAllSections = () => [
   {
     label: "Team",
     items: [
-      { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry'] },
-      { title: "Quality Checks", url: "/quality", icon: Star, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Quality Checks", url: "/quality", icon: Star, roles: ['admin', 'supervisor', 'data_entry'] },
       { title: "Mark Tasks", url: "/tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry'] },
-      { title: "Chatter Tasks", url: "/weekly-tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Chatter Tasks", url: "/weekly-tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
     label: "Training",
     items: [
       { title: "Training", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
@@ -60,20 +60,20 @@ const getAllSections = () => [
     items: [
       { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Shift Scheduler", url: "/shifts", icon: Clock, roles: ['admin', 'supervisor', 'data_entry'] },
-      { title: "Mass Messages", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Mass Messages", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
     label: "Operations",
     items: [
-      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
     label: "Profiles",
     items: [
       { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry'] },
-      { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry'] },
     ],
   },
   {
