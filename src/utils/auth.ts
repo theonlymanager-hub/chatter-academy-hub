@@ -17,14 +17,13 @@ export function generateId(): string {
 }
 
 export function createInitialUsers(): User[] {
-  const defaultPassword = hashPassword('only2026');
   const now = new Date().toISOString();
 
   return [
     {
       id: generateId(),
       username: 'luke',
-      password: defaultPassword,
+      password: hashPassword('Boss2026!'),
       role: 'admin' as UserRole,
       displayName: 'Luke',
       createdAt: now,
@@ -32,7 +31,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'zar',
-      password: defaultPassword,
+      password: hashPassword('Zar$uper9'),
       role: 'supervisor' as UserRole,
       displayName: 'Zar',
       createdAt: now,
@@ -40,7 +39,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'mark',
-      password: defaultPassword,
+      password: hashPassword('M4rkExec!'),
       role: 'supervisor' as UserRole,
       displayName: 'Mark',
       createdAt: now,
@@ -48,7 +47,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'elle',
-      password: defaultPassword,
+      password: hashPassword('Elle#Data5'),
       role: 'data_entry' as UserRole,
       displayName: 'Elle',
       createdAt: now,
@@ -56,7 +55,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'marc',
-      password: defaultPassword,
+      password: hashPassword('Ch4tMarc!'),
       role: 'chatter' as UserRole,
       displayName: 'Marc',
       createdAt: now,
@@ -64,7 +63,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'jd',
-      password: defaultPassword,
+      password: hashPassword('JDshift#7'),
       role: 'chatter' as UserRole,
       displayName: 'JD',
       createdAt: now,
@@ -72,7 +71,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'jemimah',
-      password: defaultPassword,
+      password: hashPassword('Jem!mah22'),
       role: 'chatter' as UserRole,
       displayName: 'Jemimah',
       createdAt: now,
@@ -80,7 +79,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'kc',
-      password: defaultPassword,
+      password: hashPassword('KCwork$8'),
       role: 'chatter' as UserRole,
       displayName: 'KC',
       createdAt: now,
@@ -88,7 +87,7 @@ export function createInitialUsers(): User[] {
     {
       id: generateId(),
       username: 'jane',
-      password: defaultPassword,
+      password: hashPassword('Jan3shift!'),
       role: 'chatter' as UserRole,
       displayName: 'Jane',
       createdAt: now,

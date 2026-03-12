@@ -6,6 +6,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'onlyboard_auth';
 const USERS_STORAGE_KEY = 'onlyboard_users';
+const USERS_VERSION_KEY = 'onlyboard_users_version';
+const CURRENT_USERS_VERSION = '2'; // Bump this to force re-init of user data
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -13,11 +15,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize users if not already stored
+    // Initialize users if not already stored or if version changed
+    const storedVersion = localStorage.getItem(USERS_VERSION_KEY);
     const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-    if (!storedUsers) {
+    if (!storedUsers || storedVersion !== CURRENT_USERS_VERSION) {
       const initialUsers = createInitialUsers();
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(initialUsers));
+      localStorage.setItem(USERS_VERSION_KEY, CURRENT_USERS_VERSION);
+      sessionStorage.removeItem(AUTH_STORAGE_KEY); // Force re-login
       setUsers(initialUsers);
     } else {
       setUsers(JSON.parse(storedUsers));
