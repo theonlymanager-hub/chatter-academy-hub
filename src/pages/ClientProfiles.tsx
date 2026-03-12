@@ -13,10 +13,10 @@ interface Client {
 }
 
 const clients: Client[] = [
-  { id: "1", name: "Izzy", username: "myizzyreal", theme: "Military", status: "active", driveLink: "#", notes: "AI model. TOP 5.1%. Discipline/command roleplay works best. Q1 net: $61K" },
-  { id: "2", name: "Willow", username: "ginger5foot", theme: "Playful Redhead", status: "active", driveLink: "#", notes: "REAL model. TOP 6.4%. Keep content authentic and playful. Q1 net: $12K" },
-  { id: "3", name: "Lucinda Bleu", username: "lucibleu", theme: "Goth Aesthetic", status: "active", driveLink: "#", notes: "AI model. TOP 9.1%. Dark/mysterious vibe. Candlelit content performs well. Q1 net: $3K" },
-  { id: "4", name: "Ashley Morris", username: "ashleymorris", theme: "College", status: "active", driveLink: "#", notes: "AI model. TOP 1.1%! Best performer. Shy/innocent angle. Q1 net: $27K" },
+  { id: "1", name: "Izzy", username: "myizzyreal", theme: "Military", status: "active", driveLink: "#", notes: "TOP 5.1%. Discipline/command roleplay works best. Q1 net: $61K" },
+  { id: "2", name: "Willow", username: "ginger5foot", theme: "Playful Redhead", status: "active", driveLink: "#", notes: "TOP 6.4%. Keep content authentic and playful. Q1 net: $12K" },
+  { id: "3", name: "Lucinda Bleu", username: "lucibleu", theme: "Goth Aesthetic", status: "active", driveLink: "#", notes: "TOP 9.1%. Dark/mysterious vibe. Candlelit content performs well. Q1 net: $3K" },
+  { id: "4", name: "Ashley Morris", username: "ashleymorris", theme: "College", status: "active", driveLink: "#", notes: "TOP 1.1%! Best performer. Shy/innocent angle. Q1 net: $27K" },
 ];
 
 export default function ClientProfiles() {

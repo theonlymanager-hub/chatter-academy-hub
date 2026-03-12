@@ -92,5 +92,13 @@ export function createInitialUsers(): User[] {
       displayName: 'Jane',
       createdAt: now,
     },
+    {
+      id: generateId(),
+      username: 'doug',
+      password: hashPassword('Doug@Admin1'),
+      role: 'admin' as UserRole,
+      displayName: 'Doug',
+      createdAt: now,
+    },
   ];
 }

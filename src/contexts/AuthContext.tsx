@@ -7,7 +7,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'onlyboard_auth';
 const USERS_STORAGE_KEY = 'onlyboard_users';
 const USERS_VERSION_KEY = 'onlyboard_users_version';
-const CURRENT_USERS_VERSION = '3'; // Bump this to force re-init of user data
+const CURRENT_USERS_VERSION = '4'; // Bump this to force re-init of user data
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
