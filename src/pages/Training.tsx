@@ -10,6 +10,7 @@ interface Question {
   question: string;
   options: string[];
   correctAnswer: number;
+  altCorrectAnswer?: number;
   explanation?: string;
   category: string;
 }
@@ -38,7 +39,8 @@ const quizQuestions: Question[] = [
       "Mirror & Connect"
     ],
     correctAnswer: 2,
-    explanation: "Information gathering is the foundation - you can't create a whale without knowing who they are.",
+    altCorrectAnswer: 3,
+    explanation: "Information Gathering is ideal — but Mirror & Connect is also valid. Not every fan opens up straight away. Some fans are closed off and need to trust you before sharing info. A good chatter reads the fan: if they're open, gather info first. If they're guarded, mirror their energy and connect before asking questions. Every fan is different.",
     category: "Whale Creation"
   },
   {
@@ -250,7 +252,8 @@ export default function Training() {
     const newAnswers = [...userAnswers, selectedAnswer];
     setUserAnswers(newAnswers);
     
-    if (selectedAnswer === quizQuestions[currentQuestionIndex].correctAnswer) {
+    const q = quizQuestions[currentQuestionIndex];
+    if (selectedAnswer === q.correctAnswer || (q.altCorrectAnswer !== undefined && selectedAnswer === q.altCorrectAnswer)) {
       setScore(score + 1);
     }
   };
@@ -259,7 +262,9 @@ export default function Training() {
     if (currentQuestionIndex + 1 >= quizQuestions.length) {
       // Quiz finished
       setGameState('finished');
-      const finalScore = score + (selectedAnswer === quizQuestions[currentQuestionIndex].correctAnswer ? 1 : 0);
+      const q = quizQuestions[currentQuestionIndex];
+      const isLastCorrect = selectedAnswer === q.correctAnswer || (q.altCorrectAnswer !== undefined && selectedAnswer === q.altCorrectAnswer);
+      const finalScore = score + (isLastCorrect ? 1 : 0);
       
       // Save best score
       if (finalScore > bestScore) {
@@ -434,7 +439,7 @@ export default function Training() {
           <div className="space-y-3">
             {currentQuestion.options.map((option, index) => {
               const isSelected = selectedAnswer === index;
-              const isCorrect = index === currentQuestion.correctAnswer;
+              const isCorrect = index === currentQuestion.correctAnswer || (currentQuestion.altCorrectAnswer !== undefined && index === currentQuestion.altCorrectAnswer);
               const isIncorrect = showFeedback && isSelected && !isCorrect;
               const showAsCorrect = showFeedback && isCorrect;
 

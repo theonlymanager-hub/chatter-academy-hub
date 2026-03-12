@@ -903,6 +903,108 @@ export default function KnowledgeBase() {
             </div>
           </AccordionContent>
         </AccordionItem>
+        {/* ─── TYPES OF FANS ─── */}
+        <AccordionItem value="fan-types" className="glass-card border rounded-lg px-5">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-bold">Types of Fans & How to Handle Them</h2>
+                <p className="text-xs text-muted-foreground font-normal">Not every fan is the same — adapt your approach</p>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6">
+            <div className="p-4 rounded-lg bg-orange-500/5 border border-orange-500/10">
+              <h3 className="font-bold text-orange-400 mb-2 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Golden Rule</h3>
+              <p className="text-sm text-muted-foreground">
+                <strong>Not all fans are the same.</strong> A good chatter reads each fan individually and adapts.
+                Don't use the same approach for every person. Be independent, assess the situation, and handle it accordingly.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {[
+                {
+                  type: "The Open Book",
+                  emoji: "📖",
+                  desc: "Shares info freely, chatty, responds fast. Easy to build rapport with.",
+                  approach: "Go straight into info gathering. Ask about their interests, where they're from, what they like. They'll tell you everything."
+                },
+                {
+                  type: "The Closed-Off Fan",
+                  emoji: "🔒",
+                  desc: "Short replies, guarded, doesn't share much. Needs to trust you first.",
+                  approach: "DON'T push for info immediately. Mirror their energy, connect on a human level. Be patient. Build trust before asking questions. They'll open up when they feel safe."
+                },
+                {
+                  type: "The Shy One",
+                  emoji: "🙈",
+                  desc: "Nervous, unsure, might be new to the platform.",
+                  approach: "Be warm and reassuring. Make them feel comfortable. Don't be too sexual too fast. Let them set the pace. Light teasing, build confidence."
+                },
+                {
+                  type: "The Big Spender",
+                  emoji: "💰",
+                  desc: "Tips quickly, buys PPVs without much push. Has money and isn't afraid to spend.",
+                  approach: "Don't undersell. Give them premium treatment. Exclusive content, personal attention. Whale creation pipeline — they're already halfway there."
+                },
+                {
+                  type: "The Window Shopper",
+                  emoji: "👀",
+                  desc: "Subscribes but rarely buys. Might just be browsing.",
+                  approach: "Engage first, sell later. Build genuine connection. Tease content strategically. Use FOMO (limited time, exclusive). Don't spam PPVs — it pushes them away."
+                },
+                {
+                  type: "The Aggressive One",
+                  emoji: "🔥",
+                  desc: "Very forward, explicit quickly, knows what they want.",
+                  approach: "Match their energy but stay in control. Guide the conversation toward sales. They want action — give it to them through PPVs and customs, not free chat."
+                },
+                {
+                  type: "The Lonely Fan",
+                  emoji: "💙",
+                  desc: "Looking for genuine connection, emotionally invested.",
+                  approach: "Be their person. Make them feel special and heard. These fans become whales when treated right. Aftercare is CRITICAL. Don't just sell — connect."
+                },
+                {
+                  type: "The Returner",
+                  emoji: "🔄",
+                  desc: "Comes back after periods of inactivity.",
+                  approach: "Welcome back warmly. Don't guilt trip about being away. Make them feel missed, not punished. 'I was thinking about you' > 'where have you been?'"
+                },
+              ].map((fan, i) => (
+                <div key={i} className="p-4 rounded-lg bg-secondary/30 border border-border/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">{fan.emoji}</span>
+                    <h4 className="font-bold text-sm">{fan.type}</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">{fan.desc}</p>
+                  <p className="text-xs"><strong className="text-orange-400">Approach:</strong> <span className="text-muted-foreground">{fan.approach}</span></p>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-lg bg-orange-500/5 border border-orange-500/10">
+              <h3 className="font-bold text-orange-400 mb-2 flex items-center gap-2"><Brain className="h-4 w-4" /> Trust Before Information</h3>
+              <p className="text-sm text-muted-foreground">
+                Some fans won't give info straight away — and that's normal. Not everyone trusts immediately.
+                If a fan is closed off, <strong>mirror their energy and connect first.</strong> Match their vibe, 
+                show genuine interest, let them feel comfortable. Once trust is built, they'll naturally start sharing.
+                <br /><br />
+                <strong>The pipeline:</strong> Mirror → Connect → Trust → Information → Whale Creation.
+                <br />
+                For open fans: Skip straight to information gathering.
+                <br />
+                For guarded fans: Mirror & connect first, then ease into questions.
+                <br /><br />
+                <strong>A good chatter reads the situation and adapts.</strong> There is no one-size-fits-all approach.
+              </p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
     </div>
   );
