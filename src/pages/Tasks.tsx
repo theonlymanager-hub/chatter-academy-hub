@@ -23,7 +23,7 @@ export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [newTask, setNewTask] = useState({ title: "", assignee: "", priority: "medium" as const });
+  const [newTask, setNewTask] = useState<{ title: string; assignee: string; priority: "low" | "medium" | "high" }>({ title: "", assignee: "", priority: "medium" });
 
   // Load tasks from localStorage on mount
   useEffect(() => {
