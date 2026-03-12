@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { teamMembers, chatterColors } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Info, ClipboardCheck } from "lucide-react";
+import { Info, ClipboardCheck, TrendingUp, Calendar, User } from "lucide-react";
 
 const categories = ["Personalisation", "Sales Technique", "Rapport Building", "Response Quality", "Revenue Maximisation", "Mistake Avoidance", "Grammar", "Aftercare"];
 
@@ -19,6 +21,7 @@ const categoryDescriptions: Record<string, string> = {
 };
 
 export default function QualityChecks() {
+  const { user, hasPermission } = useAuth();
   const [selectedMember, setSelectedMember] = useState("");
   const [scores, setScores] = useState<Record<string, number>>(Object.fromEntries(categories.map((c) => [c, 5])));
   const [notes, setNotes] = useState("");
@@ -26,6 +29,14 @@ export default function QualityChecks() {
   const avgScore = (Object.values(scores).reduce((a, b) => a + b, 0) / categories.length).toFixed(1);
   const selectedChatter = teamMembers.find(m => m.id === selectedMember);
   const selectedColor = selectedChatter ? chatterColors[selectedChatter.name] : null;
+  
+  const canViewAllScores = hasPermission('view_all_scores');
+  const canOnlyViewOwnScores = hasPermission('view_own_scores_only');
+  
+  // Find the current user's team member data (match by username)
+  const currentUserTeamMember = user ? teamMembers.find(member => 
+    member.name.toLowerCase() === user.displayName.toLowerCase()
+  ) : null;
 
   const handleSubmit = () => {
     if (!selectedMember) {
@@ -38,6 +49,122 @@ export default function QualityChecks() {
     setNotes("");
   };
 
+  // If user is a chatter, show their own scores view
+  if (canOnlyViewOwnScores && currentUserTeamMember) {
+    const userColor = chatterColors[currentUserTeamMember.name];
+    
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">My Quality Scores</h1>
+          <p className="text-muted-foreground text-sm mt-1">Track your performance and feedback</p>
+        </div>
+
+        {/* User's Current Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Current Score</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{currentUserTeamMember.qualityScore}/10</div>
+              <p className="text-xs text-muted-foreground">
+                Overall performance rating
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Checks This Week</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">6</div>
+              <p className="text-xs text-muted-foreground">
+                Per shift reviews completed
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Trend</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">+0.3</div>
+              <p className="text-xs text-muted-foreground">
+                Improvement this week
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* User Profile Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Your Profile
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div 
+              className="flex items-center gap-3 p-4 rounded-lg border"
+              style={{ borderColor: `hsl(${userColor} / 0.3)`, backgroundColor: `hsl(${userColor} / 0.05)` }}
+            >
+              <div
+                className="h-12 w-12 rounded-full flex items-center justify-center text-lg font-bold"
+                style={{ backgroundColor: `hsl(${userColor} / 0.2)`, color: `hsl(${userColor})` }}
+              >
+                {currentUserTeamMember.avatar}
+              </div>
+              <div>
+                <p className="font-semibold">{currentUserTeamMember.name}</p>
+                <p className="text-sm text-muted-foreground">{currentUserTeamMember.role} • Quality Score: {currentUserTeamMember.qualityScore}/10</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Feedback */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Feedback</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 rounded-lg bg-secondary/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Latest Quality Check</span>
+                <span className="text-sm text-muted-foreground">2 hours ago</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">
+                "Excellent personalisation and rapport building. Great use of fan's name throughout the conversation. 
+                Consider being slightly more direct with upsells - you have good rapport, so fans will respond well to confident suggestions."
+              </p>
+              <div className="text-sm font-medium text-green-600">Score: 8.2/10</div>
+            </div>
+            
+            <div className="p-4 rounded-lg bg-secondary/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Previous Check</span>
+                <span className="text-sm text-muted-foreground">6 hours ago</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">
+                "Strong revenue maximisation and good aftercare. Watch grammar in longer messages - double-check before sending. 
+                Overall solid performance with room for growth in response creativity."
+              </p>
+              <div className="text-sm font-medium text-yellow-600">Score: 7.8/10</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // For admin, supervisor, data_entry - show the scoring interface
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
