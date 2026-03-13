@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, FileSpreadsheet, Pencil, Check } from "lucide-react";
-import { teamMembers, tasks, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
-import { Progress } from "@/components/ui/progress";
+import { DollarSign, Users, Star, TrendingUp, Clock, MessageSquare, Pencil, Check } from "lucide-react";
+import { teamMembers, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
 import { Input } from "@/components/ui/input";
 import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
 
@@ -98,7 +97,13 @@ const Index = () => {
     setEditingKpi(null);
   };
 
-  const upcomingMessages = massMessages.slice(0, 5);
+  // Today's mass messages only
+  const todayDate = new Date().toISOString().split("T")[0];
+  const todayDayName = weekDays[new Date().getDay()];
+  const todayMessages = massMessages.filter(m => m.dayOfWeek === todayDayName);
+
+  // Leaderboard: chatters sorted by quality score
+  const leaderboard = [...chattersOnly].filter(m => m.qualityScore > 0).sort((a, b) => b.qualityScore - a.qualityScore);
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -248,15 +253,16 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Upcoming Messages */}
+      {/* Today's Mass Messages */}
       <div className="glass-card p-5 space-y-4">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Upcoming Mass Messages</h2>
+          <h2 className="font-semibold">Today's Mass Messages</h2>
+          <span className="text-xs text-muted-foreground ml-auto">{todayDayName}</span>
         </div>
-        {upcomingMessages.length > 0 ? (
+        {todayMessages.length > 0 ? (
           <div className="space-y-2">
-            {upcomingMessages.map((m) => {
+            {todayMessages.map((m) => {
               const color = modelColors[m.modelName] || "217 91% 60%";
               return (
                 <div key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
@@ -264,10 +270,7 @@ const Index = () => {
                     {m.modelName.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium" style={{ color: `hsl(${color})` }}>{m.modelName}</span>
-                      <span className="text-[10px] text-muted-foreground">{m.dayOfWeek}</span>
-                    </div>
+                    <span className="text-sm font-medium" style={{ color: `hsl(${color})` }}>{m.modelName}</span>
                     <p className="text-xs text-muted-foreground truncate">{m.messagePreview}</p>
                   </div>
                   <span className="text-xs font-medium text-accent">${m.ppvPrice}</span>
@@ -276,106 +279,43 @@ const Index = () => {
             })}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground py-4 text-center">No messages scheduled</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">No messages scheduled for today</p>
         )}
       </div>
 
-      {/* Mass Message Schedule */}
+      {/* Leaderboard */}
       <div className="glass-card p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Mass Message Schedule</h2>
+          <Star className="h-5 w-5 text-primary" />
+          <h2 className="font-semibold">Leaderboard</h2>
+          <span className="text-xs text-muted-foreground ml-auto">Quality Score</span>
         </div>
-        <div className="overflow-x-auto">
-          <div className="min-w-[700px]">
-            <div className="grid grid-cols-8 gap-1 mb-2">
-              <div className="p-2 text-xs font-medium text-muted-foreground">Model</div>
-              {weekDays.map((day) => (
-                <div key={day} className="p-2 text-xs font-medium text-muted-foreground text-center">{day.slice(0, 3)}</div>
-              ))}
-            </div>
-            {Object.entries(modelColors).map(([name, color]) => (
-              <div key={name} className="grid grid-cols-8 gap-1 mb-1">
-                <div className="p-2 flex flex-col justify-center">
-                  <span className="text-sm font-medium truncate">{name}</span>
-                </div>
-                {weekDays.map((day) => {
-                  const isScheduled = ["Monday", "Wednesday", "Friday"].includes(day);
-                  return (
-                    <div key={day} className={`rounded-md p-2 text-center flex items-center justify-center transition-colors ${isScheduled ? "bg-secondary border border-border" : "bg-transparent"}`}>
-                      {isScheduled && <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-4 pt-2 border-t border-border/50">
-          {Object.entries(modelColors).map(([name, color]) => (
-            <div key={name} className="flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />
-              <span className="text-xs text-muted-foreground">{name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Tasks */}
-      <div className="glass-card p-5 space-y-4">
-        <h2 className="font-semibold">Recent Tasks</h2>
-        <div className="space-y-3">
-          {tasks.length > 0 ? tasks.slice(0, 5).map((task) => (
-            <div key={task.id} className="flex items-center gap-3">
-              <div className={`h-2 w-2 rounded-full ${task.status === "completed" ? "bg-success" : task.status === "in-progress" ? "bg-warning" : "bg-muted-foreground"}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm truncate">{task.title}</p>
-                <p className="text-xs text-muted-foreground">{task.assignee}</p>
-              </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${task.priority === "high" ? "bg-destructive/20 text-destructive" : task.priority === "medium" ? "bg-warning/20 text-warning" : "bg-muted text-muted-foreground"}`}>
-                {task.priority}
-              </span>
-            </div>
-          )) : (
-            <p className="text-sm text-muted-foreground text-center py-4">No tasks assigned yet</p>
-          )}
-        </div>
-      </div>
-
-      {/* Training Progress */}
-      <div className="glass-card p-5 space-y-4">
-        <h2 className="font-semibold">Training Progress</h2>
-        <div className="space-y-3">
-          {teamMembers.map((member) => {
-            const color = chatterColors[member.name] || "217 91% 60%";
-            return (
-              <div key={member.id} className="flex items-center gap-4">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                  {member.avatar}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium truncate">{member.name}</span>
-                    <span className="text-xs text-muted-foreground">{member.trainingProgress}%</span>
+        {leaderboard.length > 0 ? (
+          <div className="space-y-2">
+            {leaderboard.map((member, i) => {
+              const color = chatterColors[member.name] || "217 91% 60%";
+              const medals = ["🥇", "🥈", "🥉"];
+              return (
+                <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
+                  <span className="text-lg w-8 text-center">{medals[i] || `#${i + 1}`}</span>
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
+                    {member.avatar}
                   </div>
-                  <Progress value={member.trainingProgress} className="h-1.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{member.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{member.shiftTimes}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold" style={{ color: `hsl(${color})` }}>{member.qualityScore.toFixed(1)}</p>
+                    <p className="text-[10px] text-muted-foreground">/10</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Integration Placeholder - Google Sheets only */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="glass-card p-5 space-y-3 border-dashed">
-          <div className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-muted-foreground">Google Sheets Import</h3>
+              );
+            })}
           </div>
-          <p className="text-xs text-muted-foreground">Import schedules, team data, and performance metrics directly from Google Sheets for seamless updates.</p>
-          <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-muted-foreground cursor-not-allowed opacity-50">Coming Soon</button>
-        </div>
+        ) : (
+          <p className="text-sm text-muted-foreground py-4 text-center">Quality scores will appear after reviews</p>
+        )}
       </div>
     </div>
   );
