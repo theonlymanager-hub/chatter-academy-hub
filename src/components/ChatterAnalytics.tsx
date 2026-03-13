@@ -44,10 +44,10 @@ const MODELS = ['Izzie', 'Lucinda', 'Willow', 'Ashley'];
 
 // Today's shifts - 1 chatter per model per shift for attribution
 const mockShifts: ChatterShift[] = [
-  { chatterId: CHATTERS.marc.id, chatterName: CHATTERS.marc.name, model: 'Izzie', startTime: '2026-03-09T09:00:00', endTime: '2026-03-09T15:00:00', messageRevenue: 245.50, messageCount: 42, conversionRate: 12.5 },
-  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, model: 'Lucinda', startTime: '2026-03-09T15:00:00', endTime: '2026-03-09T21:00:00', messageRevenue: 189.20, messageCount: 38, conversionRate: 10.2 },
-  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, model: 'Willow', startTime: '2026-03-09T09:00:00', endTime: '2026-03-09T15:00:00', messageRevenue: 312.00, messageCount: 56, conversionRate: 15.8 },
-  { chatterId: CHATTERS.kc.id, chatterName: CHATTERS.kc.name, model: 'Ashley', startTime: '2026-03-09T21:00:00', endTime: '2026-03-10T03:00:00', messageRevenue: 178.90, messageCount: 31, conversionRate: 9.4 },
+  { chatterId: CHATTERS.marc.id, chatterName: CHATTERS.marc.name, model: 'Izzie', startTime: '2026-03-09T06:00:00', endTime: '2026-03-09T14:00:00', messageRevenue: 245.50, messageCount: 42, conversionRate: 12.5 },
+  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, model: 'Lucinda', startTime: '2026-03-09T14:00:00', endTime: '2026-03-09T22:00:00', messageRevenue: 189.20, messageCount: 38, conversionRate: 10.2 },
+  { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, model: 'Willow', startTime: '2026-03-09T06:00:00', endTime: '2026-03-09T14:00:00', messageRevenue: 312.00, messageCount: 56, conversionRate: 15.8 },
+  { chatterId: CHATTERS.kc.id, chatterName: CHATTERS.kc.name, model: 'Ashley', startTime: '2026-03-09T22:00:00', endTime: '2026-03-10T06:00:00', messageRevenue: 178.90, messageCount: 31, conversionRate: 9.4 },
 ];
 
 // Monthly performance data

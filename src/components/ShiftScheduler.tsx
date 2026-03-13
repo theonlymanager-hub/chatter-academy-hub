@@ -86,9 +86,11 @@ export default function ShiftScheduler() {
                         <User className="h-4 w-4" />
                         <span className="font-medium">{model.name}</span>
                       </div>
-                      <Badge variant={model.type === 'AI' ? 'secondary' : 'default'}>
-                        {model.type}
-                      </Badge>
+                      {model.type && (
+                        <Badge variant={model.type === 'AI' ? 'secondary' : 'default'}>
+                          {model.type}
+                        </Badge>
+                      )}
                     </div>
                     
                     <Select
