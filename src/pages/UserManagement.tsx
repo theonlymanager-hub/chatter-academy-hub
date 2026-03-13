@@ -338,7 +338,6 @@ export default function UserManagement() {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Last Login</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -361,12 +360,6 @@ export default function UserManagement() {
                     <Badge className={`text-white ${ROLE_COLORS[user.role]}`}>
                       {ROLE_LABELS[user.role]}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {user.lastLogin 
-                      ? new Date(user.lastLogin).toLocaleDateString()
-                      : "Never"
-                    }
                   </TableCell>
                   <TableCell className="text-sm">
                     {new Date(user.createdAt).toLocaleDateString()}

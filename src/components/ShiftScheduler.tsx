@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, User, Users } from 'lucide-react';
@@ -16,28 +15,21 @@ interface ShiftAssignment {
 export default function ShiftScheduler() {
   const [assignments, setAssignments] = useState<ShiftAssignment[]>([
     // Today's default assignments
-    { date: '2026-03-06', shiftType: 'morning', modelId: 'izzie', chatterId: 'jane' },
-    { date: '2026-03-06', shiftType: 'morning', modelId: 'willow', chatterId: 'jaydee' },
-    { date: '2026-03-06', shiftType: 'afternoon', modelId: 'lucinda', chatterId: 'kenneth' },
-    { date: '2026-03-06', shiftType: 'afternoon', modelId: 'izzie', chatterId: 'jane' },
-    { date: '2026-03-06', shiftType: 'night', modelId: 'izzie', chatterId: 'jemimah' },
-    { date: '2026-03-06', shiftType: 'night', modelId: 'willow', chatterId: 'kenneth' },
+    { date: '2026-03-06', shiftType: 'morning', modelId: 'izzie', chatterId: 'marc' },
+    { date: '2026-03-06', shiftType: 'morning', modelId: 'willow', chatterId: 'marc' },
+    { date: '2026-03-06', shiftType: 'morning', modelId: 'lucinda', chatterId: 'marc' },
+    { date: '2026-03-06', shiftType: 'morning', modelId: 'ashley', chatterId: 'marc' },
+    { date: '2026-03-06', shiftType: 'afternoon', modelId: 'izzie', chatterId: 'jaydee' },
+    { date: '2026-03-06', shiftType: 'afternoon', modelId: 'willow', chatterId: 'jaydee' },
+    { date: '2026-03-06', shiftType: 'afternoon', modelId: 'lucinda', chatterId: 'jemimah' },
+    { date: '2026-03-06', shiftType: 'afternoon', modelId: 'ashley', chatterId: 'jemimah' },
+    { date: '2026-03-06', shiftType: 'night', modelId: 'izzie', chatterId: 'kc' },
+    { date: '2026-03-06', shiftType: 'night', modelId: 'willow', chatterId: 'kc' },
+    { date: '2026-03-06', shiftType: 'night', modelId: 'lucinda', chatterId: 'jane' },
+    { date: '2026-03-06', shiftType: 'night', modelId: 'ashley', chatterId: 'jane' },
   ]);
 
   const [selectedDate, setSelectedDate] = useState('2026-03-06');
-
-  const getShiftLabel = (shiftType: string) => {
-    const shift = config.shifts[shiftType as keyof typeof config.shifts];
-    return `${shift.label} (${shift.start} - ${shift.end})`;
-  };
-
-  const getModelName = (modelId: string) => {
-    return config.models.find(m => m.id === modelId)?.name || modelId;
-  };
-
-  const getChatterName = (chatterId: string) => {
-    return config.chatters.find(c => c.id === chatterId)?.name || chatterId;
-  };
 
   const assignmentsForDate = assignments.filter(a => a.date === selectedDate);
 
@@ -48,15 +40,18 @@ export default function ShiftScheduler() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Shift Scheduler</h2>
-          <p className="text-muted-foreground">Assign 1 chatter per model per shift for clear revenue attribution</p>
+          <p className="text-muted-foreground">Assign chatters to models per shift</p>
+          <Badge variant="outline" className="mt-2 text-sm font-medium">
+            🇬🇧 All times are UK time (GMT/BST)
+          </Badge>
         </div>
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
+          <Calendar className="h-4 w-4 text-muted-foreground" />
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="border rounded px-3 py-2"
+            className="border rounded px-3 py-2 bg-background text-foreground"
           />
         </div>
       </div>
@@ -133,37 +128,6 @@ export default function ShiftScheduler() {
           </Card>
         ))}
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Why 1 Chatter Per Model Per Shift?</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="p-4 rounded-lg border">
-              <h4 className="font-semibold mb-2">📊 Clear Attribution</h4>
-              <p className="text-sm text-muted-foreground">
-                Every message sent during a shift is attributed to exactly one chatter.
-                No confusion about who generated which revenue.
-              </p>
-            </div>
-            <div className="p-4 rounded-lg border">
-              <h4 className="font-semibold mb-2">⭐ Accurate Quality Scores</h4>
-              <p className="text-sm text-muted-foreground">
-                Review individual chatter performance without overlap.
-                Give targeted feedback based on their actual work.
-              </p>
-            </div>
-            <div className="p-4 rounded-lg border">
-              <h4 className="font-semibold mb-2">💰 Fair Bonuses</h4>
-              <p className="text-sm text-muted-foreground">
-                Reward top performers fairly. Track who actually generates revenue,
-                not who happens to be online.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

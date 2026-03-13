@@ -113,7 +113,13 @@ export default function TeamMembers() {
     chatters: teamMembers.filter(m => m.category === "chatter"),
     supervisors: teamMembers.filter(m => m.category === "supervisor"),
     management: teamMembers.filter(m => m.category === "management"),
-    clientCommunication: teamMembers.filter(m => m.category === "client-communication")
+  };
+
+  const jobDescriptions: Record<string, string> = {
+    "Luke": "Strategy, quality oversight, client relationships, team direction",
+    "Mark": "Quality checks, dashboard management, cron automation, chat monitoring",
+    "Zar": "Shift management, chatter oversight, scheduling, vault management, hiring",
+    "Elle": "Dashboard updates, customs tracking, client communication, mass message scheduling",
   };
 
   // Create leaderboard
@@ -185,6 +191,13 @@ export default function TeamMembers() {
             </div>
           )}
         </div>
+
+        {/* Job Description */}
+        {jobDescriptions[member.name] && (
+          <p className="text-xs text-muted-foreground italic border-l-2 pl-2" style={{ borderColor: `hsl(${color} / 0.5)` }}>
+            {jobDescriptions[member.name]}
+          </p>
+        )}
 
         <div className={`grid ${gridCols} gap-3`}>
           <div className="bg-secondary/50 rounded-lg p-3">
@@ -398,41 +411,22 @@ export default function TeamMembers() {
         )}
       </div>
 
-      {/* Management Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => toggleSection("management")}
-            className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
-          >
-            {collapsedSections["management"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-            👑 Management ({groupedMembers.management.length})
-          </button>
-        </div>
-        
-        {!collapsedSections["management"] && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-            {groupedMembers.management.map(renderMemberCard)}
-          </div>
-        )}
-      </div>
-
-      {/* Client Communication Section */}
-      {groupedMembers.clientCommunication.length > 0 && (
+      {/* Management Section - only shown if any members still have management category */}
+      {groupedMembers.management.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => toggleSection("client-communication")}
+              onClick={() => toggleSection("management")}
               className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
             >
-              {collapsedSections["client-communication"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-              📞 Client Communication ({groupedMembers.clientCommunication.length})
+              {collapsedSections["management"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+              👑 Management ({groupedMembers.management.length})
             </button>
           </div>
           
-          {!collapsedSections["client-communication"] && (
+          {!collapsedSections["management"] && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-              {groupedMembers.clientCommunication.map(renderMemberCard)}
+              {groupedMembers.management.map(renderMemberCard)}
             </div>
           )}
         </div>
