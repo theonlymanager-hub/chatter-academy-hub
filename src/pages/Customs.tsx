@@ -2,18 +2,25 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronDown, ChevronUp, Plus, Check, Clock, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Check, Clock, Pencil, Trash2, DollarSign, CalendarClock, AlertTriangle } from "lucide-react";
 import { modelColors } from "@/lib/mock-data";
 
 interface CustomOrder {
   id: string;
   description: string;
+  detailedDescription: string;
+  price: number;
+  deadline: string;
+  fanOfUsername: string;
   status: "pending" | "complete";
   dateRequested: string;
   fanName: string;
   model: string;
 }
+
+type FilterStatus = "all" | "pending" | "complete";
 
 const STORAGE_KEY = "the-only-board-customs";
 
@@ -36,8 +43,33 @@ const statusIcons: Record<string, React.ReactNode> = {
   complete: <Check className="h-3 w-3" />,
 };
 
+function getDeadlineColor(deadline: string): string {
+  if (!deadline) return "text-muted-foreground";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dl = new Date(deadline + "T00:00:00");
+  const diff = dl.getTime() - today.getTime();
+  const daysDiff = diff / (1000 * 60 * 60 * 24);
+  if (daysDiff < 0) return "text-red-400";
+  if (daysDiff < 1) return "text-yellow-400";
+  return "text-green-400";
+}
+
+function getDeadlineBg(deadline: string): string {
+  if (!deadline) return "bg-muted/20";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dl = new Date(deadline + "T00:00:00");
+  const diff = dl.getTime() - today.getTime();
+  const daysDiff = diff / (1000 * 60 * 60 * 24);
+  if (daysDiff < 0) return "bg-red-500/10 border-red-500/30";
+  if (daysDiff < 1) return "bg-yellow-500/10 border-yellow-500/30";
+  return "bg-green-500/10 border-green-500/30";
+}
+
 export default function Customs() {
   const [customs, setCustoms] = useState<CustomOrder[]>([]);
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [collapsedModels, setCollapsedModels] = useState<Record<string, boolean>>(() => {
     const saved = localStorage.getItem("customs-collapsed");
     return saved ? JSON.parse(saved) : {};
@@ -47,8 +79,18 @@ export default function Customs() {
 
   // Form state
   const [newDesc, setNewDesc] = useState("");
+  const [newDetailedDesc, setNewDetailedDesc] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [newDeadline, setNewDeadline] = useState("");
+  const [newFanOfUsername, setNewFanOfUsername] = useState("");
   const [newFan, setNewFan] = useState("");
+
+  // Edit state
   const [editDesc, setEditDesc] = useState("");
+  const [editDetailedDesc, setEditDetailedDesc] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
+  const [editFanOfUsername, setEditFanOfUsername] = useState("");
   const [editFan, setEditFan] = useState("");
   const [editStatus, setEditStatus] = useState<CustomOrder["status"]>("pending");
 
@@ -57,7 +99,6 @@ export default function Customs() {
     if (saved) {
       setCustoms(JSON.parse(saved));
     } else {
-      // Start empty - customs added by Elle or from Discord bot
       setCustoms([]);
     }
   }, []);
@@ -81,6 +122,10 @@ export default function Customs() {
     const custom: CustomOrder = {
       id: Date.now().toString(),
       description: newDesc.trim(),
+      detailedDescription: newDetailedDesc.trim(),
+      price: parseFloat(newPrice) || 0,
+      deadline: newDeadline,
+      fanOfUsername: newFanOfUsername.trim(),
       status: "pending",
       dateRequested: new Date().toISOString().split("T")[0],
       fanName: newFan.trim(),
@@ -88,6 +133,10 @@ export default function Customs() {
     };
     setCustoms(prev => [...prev, custom]);
     setNewDesc("");
+    setNewDetailedDesc("");
+    setNewPrice("");
+    setNewDeadline("");
+    setNewFanOfUsername("");
     setNewFan("");
     setAddingTo(null);
   };
@@ -99,40 +148,88 @@ export default function Customs() {
   const startEdit = (custom: CustomOrder) => {
     setEditingId(custom.id);
     setEditDesc(custom.description);
+    setEditDetailedDesc(custom.detailedDescription || "");
+    setEditPrice(custom.price ? custom.price.toString() : "");
+    setEditDeadline(custom.deadline || "");
+    setEditFanOfUsername(custom.fanOfUsername || "");
     setEditFan(custom.fanName);
     setEditStatus(custom.status);
   };
 
   const saveEdit = (id: string) => {
-    setCustoms(prev => prev.map(c => c.id === id ? { ...c, description: editDesc, fanName: editFan, status: editStatus } : c));
+    setCustoms(prev => prev.map(c => c.id === id ? {
+      ...c,
+      description: editDesc,
+      detailedDescription: editDetailedDesc,
+      price: parseFloat(editPrice) || 0,
+      deadline: editDeadline,
+      fanOfUsername: editFanOfUsername,
+      fanName: editFan,
+      status: editStatus,
+    } : c));
     setEditingId(null);
   };
 
   const deleteCustom = (id: string) => {
-    setCustoms(prev => prev.filter(c => c.id !== id));
+    setCustoms(prev => {
+      const updated = prev.filter(c => c.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  const getModelCustoms = (model: string) => customs.filter(c => c.model === model);
+  const getModelCustoms = (model: string) => {
+    let filtered = customs.filter(c => c.model === model);
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(c => c.status === filterStatus);
+    }
+    return filtered;
+  };
+
+  const getAllModelCustoms = (model: string) => customs.filter(c => c.model === model);
 
   return (
     <div className="space-y-6 max-w-7xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Customs Board</h1>
-        <p className="text-muted-foreground text-sm mt-1">Track custom content orders by model</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Customs Board</h1>
+          <p className="text-muted-foreground text-sm mt-1">Track custom content orders by model</p>
+        </div>
+
+        {/* Filter Toggle */}
+        <div className="flex items-center gap-1 bg-secondary/30 rounded-lg p-1">
+          {(["all", "pending", "complete"] as FilterStatus[]).map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                filterStatus === status
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              }`}
+            >
+              {status === "all" ? "All" : status === "pending" ? "Pending" : "Completed"}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {MODELS.map(model => {
-          const modelCustoms = getModelCustoms(model);
+          const modelCustoms = getAllModelCustoms(model);
           const pending = modelCustoms.filter(c => c.status === "pending").length;
           const complete = modelCustoms.filter(c => c.status === "complete").length;
+          const totalRevenue = modelCustoms.reduce((sum, c) => sum + (c.price || 0), 0);
           const color = modelColorMap[model];
           return (
             <div key={model} className="glass-card p-4" style={{ borderColor: `hsl(${color} / 0.2)` }}>
               <p className="text-sm font-medium" style={{ color: `hsl(${color})` }}>{model}</p>
               <p className="text-2xl font-bold mt-1">{modelCustoms.length}</p>
               <p className="text-[10px] text-muted-foreground">{pending} pending · {complete} complete</p>
+              {totalRevenue > 0 && (
+                <p className="text-xs font-semibold mt-1 text-green-400">${totalRevenue.toLocaleString()}</p>
+              )}
             </div>
           );
         })}
@@ -141,6 +238,7 @@ export default function Customs() {
       {/* Model sections */}
       {MODELS.map(model => {
         const modelCustoms = getModelCustoms(model);
+        const allModelCustoms = getAllModelCustoms(model);
         const color = modelColorMap[model];
         const isCollapsed = collapsedModels[model];
 
@@ -160,7 +258,9 @@ export default function Customs() {
                 <h2 className="text-lg font-semibold" style={{ color: `hsl(${color})` }}>
                   {model}
                 </h2>
-                <p className="text-xs text-muted-foreground">{modelCustoms.length} customs</p>
+                <p className="text-xs text-muted-foreground">
+                  {modelCustoms.length} customs{filterStatus !== "all" ? ` (${filterStatus})` : ""} · {allModelCustoms.length} total
+                </p>
               </div>
               {isCollapsed ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronUp className="h-5 w-5 text-muted-foreground" />}
             </button>
@@ -168,7 +268,9 @@ export default function Customs() {
             {!isCollapsed && (
               <div className="space-y-2 pl-12">
                 {modelCustoms.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-3">No customs for {model}</p>
+                  <p className="text-sm text-muted-foreground py-3">
+                    {filterStatus !== "all" ? `No ${filterStatus} customs for ${model}` : `No customs for ${model}`}
+                  </p>
                 )}
 
                 {modelCustoms.map(custom => (
@@ -178,18 +280,45 @@ export default function Customs() {
                         <Input
                           value={editDesc}
                           onChange={e => setEditDesc(e.target.value)}
-                          placeholder="Description"
+                          placeholder="Short description"
                           className="h-8 text-sm"
                         />
-                        <div className="flex gap-2">
+                        <Textarea
+                          value={editDetailedDesc}
+                          onChange={e => setEditDetailedDesc(e.target.value)}
+                          placeholder="Detailed description — exactly what the fan wants..."
+                          className="text-sm min-h-[60px]"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
                           <Input
                             value={editFan}
                             onChange={e => setEditFan(e.target.value)}
                             placeholder="Fan name"
-                            className="h-8 text-sm flex-1"
+                            className="h-8 text-sm"
+                          />
+                          <Input
+                            value={editFanOfUsername}
+                            onChange={e => setEditFanOfUsername(e.target.value)}
+                            placeholder="OF @ username"
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Input
+                            type="number"
+                            value={editPrice}
+                            onChange={e => setEditPrice(e.target.value)}
+                            placeholder="Price ($)"
+                            className="h-8 text-sm"
+                          />
+                          <Input
+                            type="date"
+                            value={editDeadline}
+                            onChange={e => setEditDeadline(e.target.value)}
+                            className="h-8 text-sm"
                           />
                           <Select value={editStatus} onValueChange={(v: CustomOrder["status"]) => setEditStatus(v)}>
-                            <SelectTrigger className="h-8 text-xs w-36">
+                            <SelectTrigger className="h-8 text-xs">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -217,10 +346,35 @@ export default function Customs() {
                           {custom.status}
                         </button>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{custom.description}</p>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-medium">{custom.description}</p>
+                            {custom.price > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-sm font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20">
+                                <DollarSign className="h-3 w-3" />{custom.price}
+                              </span>
+                            )}
+                          </div>
+
+                          {custom.detailedDescription && (
+                            <p className="text-xs text-muted-foreground mt-1.5 bg-secondary/30 p-2 rounded">
+                              {custom.detailedDescription}
+                            </p>
+                          )}
+
+                          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
                             <span>Fan: <strong className="text-foreground">{custom.fanName}</strong></span>
+                            {custom.fanOfUsername && (
+                              <span className="font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded text-[10px]">
+                                {custom.fanOfUsername}
+                              </span>
+                            )}
                             <span>Requested: {custom.dateRequested}</span>
+                            {custom.deadline && (
+                              <span className={`inline-flex items-center gap-1 font-medium ${getDeadlineColor(custom.deadline)} ${getDeadlineBg(custom.deadline)} px-1.5 py-0.5 rounded border`}>
+                                <CalendarClock className="h-3 w-3" />
+                                Due: {custom.deadline}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -242,20 +396,48 @@ export default function Customs() {
                     <Input
                       value={newDesc}
                       onChange={e => setNewDesc(e.target.value)}
-                      placeholder="Custom description..."
+                      placeholder="Short description..."
                       className="h-8 text-sm"
                       autoFocus
                     />
-                    <div className="flex gap-2">
+                    <Textarea
+                      value={newDetailedDesc}
+                      onChange={e => setNewDetailedDesc(e.target.value)}
+                      placeholder="Detailed description — exactly what the fan wants..."
+                      className="text-sm min-h-[60px]"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
                       <Input
                         value={newFan}
                         onChange={e => setNewFan(e.target.value)}
                         placeholder="Fan name"
-                        className="h-8 text-sm flex-1"
-                        onKeyDown={e => e.key === "Enter" && addCustom(model)}
+                        className="h-8 text-sm"
                       />
+                      <Input
+                        value={newFanOfUsername}
+                        onChange={e => setNewFanOfUsername(e.target.value)}
+                        placeholder="OF @ username"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="number"
+                        value={newPrice}
+                        onChange={e => setNewPrice(e.target.value)}
+                        placeholder="Price ($)"
+                        className="h-8 text-sm"
+                      />
+                      <Input
+                        type="date"
+                        value={newDeadline}
+                        onChange={e => setNewDeadline(e.target.value)}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="flex gap-2">
                       <Button size="sm" onClick={() => addCustom(model)} className="h-8">Add</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setAddingTo(null); setNewDesc(""); setNewFan(""); }} className="h-8">Cancel</Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setAddingTo(null); setNewDesc(""); setNewDetailedDesc(""); setNewPrice(""); setNewDeadline(""); setNewFanOfUsername(""); setNewFan(""); }} className="h-8">Cancel</Button>
                     </div>
                   </div>
                 ) : (

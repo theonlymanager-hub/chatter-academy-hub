@@ -1,16 +1,19 @@
+import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { modelColors } from "@/lib/mock-data";
-import { DollarSign, Clock, Heart, User, Calendar, Briefcase, Moon, Star } from "lucide-react";
+import { DollarSign, Clock, Heart, User, Calendar, Briefcase, Moon, Star, Pencil, Copy, Check, MessageCircle, AlertTriangle } from "lucide-react";
 
 interface Fan {
   id: string;
   name: string;
   account: string;
-  ofUsername: string; // OnlyFans @ username
+  ofUsername: string;
   totalSpent: number;
   lastActive: string;
   tier: "whale" | "vip" | "regular";
-  // Deep profile info
   preferences: string[];
   personality: "submissive" | "dominant" | "switch";
   activeTime: string;
@@ -18,10 +21,13 @@ interface Fan {
   job?: string;
   interests: string;
   notes: string;
+  lastMessaged?: string; // ISO date string
 }
 
-// Organized by model
-const fansByModel: Record<string, Fan[]> = {
+const STORAGE_KEY = "fan-profiles-data";
+
+// Default data
+const defaultFansByModel: Record<string, Fan[]> = {
   "Izzie": [
     { 
       id: "1", name: "Nate", account: "Izzie", ofUsername: "@nate_real", totalSpent: 3498, lastActive: "Today", tier: "whale",
@@ -217,9 +223,9 @@ const fansByModel: Record<string, Fan[]> = {
 };
 
 const tierColors = {
-  whale: "45 93% 47%", // gold
-  vip: "270 60% 60%", // purple
-  regular: "217 91% 60%", // blue
+  whale: "45 93% 47%",
+  vip: "270 60% 60%",
+  regular: "217 91% 60%",
 };
 
 const personalityIcons = {
@@ -228,7 +234,108 @@ const personalityIcons = {
   switch: "🔄",
 };
 
+function needsContact(lastMessaged?: string): boolean {
+  if (!lastMessaged) return true;
+  const last = new Date(lastMessaged);
+  const now = new Date();
+  const diffMs = now.getTime() - last.getTime();
+  return diffMs > 24 * 60 * 60 * 1000;
+}
+
 export default function FanProfiles() {
+  const [fansByModel, setFansByModel] = useState<Record<string, Fan[]>>(defaultFansByModel);
+  const [editingFanId, setEditingFanId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Edit form state
+  const [editOfUsername, setEditOfUsername] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [editInterests, setEditInterests] = useState("");
+  const [editActiveTime, setEditActiveTime] = useState("");
+  const [editPayday, setEditPayday] = useState("");
+  const [editJob, setEditJob] = useState("");
+
+  // Load saved data
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Merge saved data over defaults (preserves structure, updates edited fields)
+        const merged: Record<string, Fan[]> = {};
+        for (const model of Object.keys(defaultFansByModel)) {
+          merged[model] = defaultFansByModel[model].map(defaultFan => {
+            const savedFan = parsed[model]?.find((f: Fan) => f.id === defaultFan.id);
+            return savedFan ? { ...defaultFan, ...savedFan } : defaultFan;
+          });
+          // Also include any fans that were added in saved but not in defaults
+          const savedOnly = (parsed[model] || []).filter((sf: Fan) => !defaultFansByModel[model].some(df => df.id === sf.id));
+          merged[model] = [...merged[model], ...savedOnly];
+        }
+        // Include models in saved that aren't in defaults
+        for (const model of Object.keys(parsed)) {
+          if (!merged[model]) {
+            merged[model] = parsed[model];
+          }
+        }
+        setFansByModel(merged);
+      } catch {
+        setFansByModel(defaultFansByModel);
+      }
+    }
+  }, []);
+
+  const saveToStorage = useCallback((data: Record<string, Fan[]>) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, []);
+
+  const copyUsername = (fanId: string, username: string) => {
+    navigator.clipboard.writeText(username);
+    setCopiedId(fanId);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
+  const startEdit = (fan: Fan) => {
+    setEditingFanId(fan.id);
+    setEditOfUsername(fan.ofUsername);
+    setEditNotes(fan.notes);
+    setEditInterests(fan.interests);
+    setEditActiveTime(fan.activeTime);
+    setEditPayday(fan.payday);
+    setEditJob(fan.job || "");
+  };
+
+  const saveEdit = (modelName: string, fanId: string) => {
+    const updated = { ...fansByModel };
+    updated[modelName] = updated[modelName].map(f =>
+      f.id === fanId
+        ? { ...f, ofUsername: editOfUsername, notes: editNotes, interests: editInterests, activeTime: editActiveTime, payday: editPayday, job: editJob || undefined }
+        : f
+    );
+    setFansByModel(updated);
+    saveToStorage(updated);
+    setEditingFanId(null);
+  };
+
+  const markMessaged = (modelName: string, fanId: string) => {
+    const today = new Date().toISOString().split("T")[0];
+    const updated = { ...fansByModel };
+    updated[modelName] = updated[modelName].map(f =>
+      f.id === fanId ? { ...f, lastMessaged: today } : f
+    );
+    setFansByModel(updated);
+    saveToStorage(updated);
+  };
+
+  const setLastMessagedDate = (modelName: string, fanId: string, date: string) => {
+    const updated = { ...fansByModel };
+    updated[modelName] = updated[modelName].map(f =>
+      f.id === fanId ? { ...f, lastMessaged: date } : f
+    );
+    setFansByModel(updated);
+    saveToStorage(updated);
+  };
+
   const modelColorOverrides: Record<string, string> = {
     "Izzie": modelColors["Izzy"] || "0 72% 55%",
     "Ashley": modelColors["Ashley Morris"] || "330 70% 60%",
@@ -248,6 +355,7 @@ export default function FanProfiles() {
         const fans = fansByModel[modelName];
         const modelColor = modelColorOverrides[modelName] || modelColors[modelName] || "217 91% 60%";
         const totalForModel = fans.reduce((sum, f) => sum + f.totalSpent, 0);
+        const needsContactCount = fans.filter(f => (f.tier === "whale" || f.tier === "vip") && needsContact(f.lastMessaged)).length;
         
         return (
           <div key={modelName} className="space-y-4">
@@ -259,85 +367,196 @@ export default function FanProfiles() {
               >
                 {modelName.slice(0, 2).toUpperCase()}
               </div>
-              <div>
+              <div className="flex-1">
                 <h2 className="text-lg font-semibold" style={{ color: `hsl(${modelColor})` }}>{modelName}</h2>
                 <p className="text-xs text-muted-foreground">Top {fans.length} fans • ${totalForModel.toLocaleString()} lifetime</p>
               </div>
+              {needsContactCount > 0 && (
+                <Badge variant="destructive" className="text-xs animate-pulse">
+                  ⚠️ {needsContactCount} need contact
+                </Badge>
+              )}
             </div>
 
             {/* Fans for this model */}
             <div className="space-y-3">
               {fans.map((fan, index) => {
                 const color = tierColors[fan.tier];
+                const isEditing = editingFanId === fan.id;
+                const showContactWarning = (fan.tier === "whale" || fan.tier === "vip") && needsContact(fan.lastMessaged);
+                
                 return (
-                  <div key={fan.id} className="glass-card p-4">
+                  <div key={fan.id} className={`glass-card p-4 ${showContactWarning ? "border-red-500/30 ring-1 ring-red-500/20" : ""}`}>
                     <div className="flex items-start gap-4">
                       {/* Rank & Avatar */}
                       <div className="flex items-center gap-3 shrink-0">
                         <span className="text-sm text-muted-foreground w-6">#{index + 1}</span>
                         <div
-                          className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold"
+                          className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold relative"
                           style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}
                         >
                           {fan.name.slice(0, 2).toUpperCase()}
+                          {showContactWarning && (
+                            <span className="absolute -top-1 -right-1 text-xs">🔴</span>
+                          )}
                         </div>
                       </div>
 
                       {/* Main Info */}
                       <div className="flex-1 min-w-0 space-y-3">
+                        {/* Name + OF Username (prominent) */}
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-lg">{fan.name}</p>
+                            <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${color} / 0.4)`, color: `hsl(${color})` }}>
+                              {fan.tier.toUpperCase()}
+                            </Badge>
+                            <span className="text-xs">{personalityIcons[fan.personality]} {fan.personality}</span>
+                            {showContactWarning && (
+                              <Badge variant="destructive" className="text-[10px] animate-pulse gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                NEEDS CONTACT
+                              </Badge>
+                            )}
+                          </div>
+                          {/* OF Username - prominent, clickable, copyable */}
+                          <button
+                            onClick={() => copyUsername(fan.id, fan.ofUsername)}
+                            className="mt-1 inline-flex items-center gap-1.5 text-sm font-mono font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-md transition-colors cursor-pointer border border-primary/20"
+                            title="Click to copy"
+                          >
+                            {fan.ofUsername}
+                            {copiedId === fan.id ? (
+                              <Check className="h-3.5 w-3.5 text-green-400" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5 opacity-50" />
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Last Messaged Tracking */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <div className="space-y-1">
-                            <p className="font-semibold">{fan.name}</p>
-                            <p className="text-sm text-primary font-mono bg-primary/10 px-2 py-0.5 rounded">{fan.ofUsername}</p>
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <MessageCircle className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-muted-foreground">Last messaged:</span>
+                            {fan.lastMessaged ? (
+                              <span className={`font-medium ${needsContact(fan.lastMessaged) ? "text-red-400" : "text-green-400"}`}>
+                                {fan.lastMessaged}
+                              </span>
+                            ) : (
+                              <span className="text-red-400 font-medium">Never</span>
+                            )}
                           </div>
-                          <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${color} / 0.4)`, color: `hsl(${color})` }}>
-                            {fan.tier.toUpperCase()}
-                          </Badge>
-                          <span className="text-xs">{personalityIcons[fan.personality]} {fan.personality}</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 text-[10px] px-2"
+                            onClick={() => markMessaged(modelName, fan.id)}
+                          >
+                            ✅ Today
+                          </Button>
+                          <Input
+                            type="date"
+                            className="h-6 text-[10px] w-32"
+                            value={fan.lastMessaged || ""}
+                            onChange={(e) => setLastMessagedDate(modelName, fan.id, e.target.value)}
+                          />
                         </div>
 
-                        {/* Profile Details Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Moon className="h-3 w-3" />
-                            <span>{fan.activeTime}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            <span>Payday: {fan.payday}</span>
-                          </div>
-                          {fan.job && (
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <Briefcase className="h-3 w-3" />
-                              <span>{fan.job}</span>
+                        {isEditing ? (
+                          /* Edit Form */
+                          <div className="space-y-2 p-3 bg-secondary/20 rounded-lg border border-border/50">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">OF Username</label>
+                                <Input value={editOfUsername} onChange={e => setEditOfUsername(e.target.value)} className="h-7 text-sm" />
+                              </div>
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">Job</label>
+                                <Input value={editJob} onChange={e => setEditJob(e.target.value)} className="h-7 text-sm" placeholder="Unknown" />
+                              </div>
                             </div>
-                          )}
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>{fan.lastActive}</span>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">Active Time</label>
+                                <Input value={editActiveTime} onChange={e => setEditActiveTime(e.target.value)} className="h-7 text-sm" />
+                              </div>
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">Payday</label>
+                                <Input value={editPayday} onChange={e => setEditPayday(e.target.value)} className="h-7 text-sm" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-muted-foreground uppercase">Interests</label>
+                              <Input value={editInterests} onChange={e => setEditInterests(e.target.value)} className="h-7 text-sm" />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-muted-foreground uppercase">Notes</label>
+                              <Textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} className="text-sm min-h-[50px]" />
+                            </div>
+                            <div className="flex gap-2 pt-1">
+                              <Button size="sm" onClick={() => saveEdit(modelName, fan.id)} className="h-7 text-xs">Save</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditingFanId(null)} className="h-7 text-xs">Cancel</Button>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <>
+                            {/* Profile Details Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Moon className="h-3 w-3" />
+                                <span>{fan.activeTime}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                <span>Payday: {fan.payday}</span>
+                              </div>
+                              {fan.job && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Briefcase className="h-3 w-3" />
+                                  <span>{fan.job}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                <span>{fan.lastActive}</span>
+                              </div>
+                            </div>
 
-                        {/* Interests */}
-                        <p className="text-sm text-muted-foreground">{fan.interests}</p>
+                            {/* Interests */}
+                            <p className="text-sm text-muted-foreground">{fan.interests}</p>
 
-                        {/* Preferences Tags */}
-                        <div className="flex flex-wrap gap-1">
-                          {fan.preferences.map((pref) => (
-                            <Badge key={pref} variant="secondary" className="text-[10px]">{pref}</Badge>
-                          ))}
-                        </div>
+                            {/* Preferences Tags */}
+                            <div className="flex flex-wrap gap-1">
+                              {fan.preferences.map((pref) => (
+                                <Badge key={pref} variant="secondary" className="text-[10px]">{pref}</Badge>
+                              ))}
+                            </div>
 
-                        {/* Notes */}
-                        <div className="p-2 rounded bg-secondary/30 text-xs text-muted-foreground">
-                          <strong>Notes:</strong> {fan.notes}
-                        </div>
+                            {/* Notes */}
+                            <div className="p-2 rounded bg-secondary/30 text-xs text-muted-foreground">
+                              <strong>Notes:</strong> {fan.notes}
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      {/* Total Spent */}
-                      <div className="text-right shrink-0">
-                        <p className="text-lg font-bold" style={{ color: `hsl(${color})` }}>${fan.totalSpent.toLocaleString()}</p>
-                        <p className="text-[10px] text-muted-foreground">lifetime</p>
+                      {/* Total Spent + Actions */}
+                      <div className="text-right shrink-0 space-y-2">
+                        <div>
+                          <p className="text-lg font-bold" style={{ color: `hsl(${color})` }}>${fan.totalSpent.toLocaleString()}</p>
+                          <p className="text-[10px] text-muted-foreground">lifetime</p>
+                        </div>
+                        {!isEditing && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => startEdit(fan)}
+                          >
+                            <Pencil className="h-3 w-3" /> Edit
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -347,8 +566,6 @@ export default function FanProfiles() {
           </div>
         );
       })}
-
-
     </div>
   );
 }
