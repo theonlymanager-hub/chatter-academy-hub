@@ -52,11 +52,13 @@ const Index = () => {
   const nowHour = new Date().getUTCHours(); // UK = UTC in GMT (close enough for BST)
   const currentShift = nowHour >= 6 && nowHour < 14 ? "morning" : nowHour >= 14 && nowHour < 22 ? "afternoon" : "night";
   const currentShiftChatters = todayShifts.filter(s => s.shift === currentShift);
-  const onlineChatters = currentShiftChatters.length || teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
-  const totalQuality = teamMembers.reduce((sum, m) => sum + m.qualityScore, 0);
-  const avgQuality = totalQuality > 0 ? (totalQuality / teamMembers.length).toFixed(1) : "—";
-  const totalTasks = teamMembers.reduce((sum, m) => sum + m.weeklyTasks, 0);
-  const completedTasks = teamMembers.reduce((sum, m) => sum + m.tasksCompleted, 0);
+  // Only count actual chatters (not supervisors, management, client comms)
+  const chattersOnly = teamMembers.filter(m => m.category === "chatter");
+  const onlineChatters = currentShiftChatters.length || chattersOnly.filter(m => m.status === "online" || m.status === "busy").length;
+  const totalQuality = chattersOnly.reduce((sum, m) => sum + m.qualityScore, 0);
+  const avgQuality = totalQuality > 0 ? (totalQuality / chattersOnly.filter(m => m.qualityScore > 0).length).toFixed(1) : "—";
+  const totalTasks = chattersOnly.reduce((sum, m) => sum + m.weeklyTasks, 0);
+  const completedTasks = chattersOnly.reduce((sum, m) => sum + m.tasksCompleted, 0);
 
   const formatRevenue = (amount: number) => {
     if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}k`;
@@ -75,10 +77,9 @@ const Index = () => {
         : "Set API key in settings";
 
       setKpis([
-        { title: "Chatters Online", value: `${onlineChatters}/${teamMembers.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
+        { title: "Chatters Online", value: `${onlineChatters}/${chattersOnly.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
         { title: "Avg Quality Score", value: totalQuality > 0 ? `${avgQuality}/10` : "No data", change: totalQuality > 0 ? "From quality checks" : "Run quality checks to populate", changeType: "neutral", icon: Star },
         { title: "Tasks Completed", value: totalTasks > 0 ? `${completedTasks}/${totalTasks}` : "No tasks", change: totalTasks > 0 ? `${Math.round(completedTasks/totalTasks*100)}% completion rate` : "Assign tasks to get started", changeType: "neutral", icon: TrendingUp },
-        { title: "Total Revenue", value: revenueValue, change: revenueChange, changeType: totalApiRevenue > 0 ? "positive" : "neutral", icon: DollarSign },
       ]);
       setKpisInitialized(true);
     }
@@ -107,7 +108,7 @@ const Index = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {revenueLoading ? (
           <div className="col-span-full text-center text-sm text-muted-foreground py-4">Loading revenue data...</div>
         ) : kpis.map((kpi, i) => {
@@ -220,31 +221,30 @@ const Index = () => {
         <div className="glass-card p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-accent" />
-            <h2 className="font-semibold">Current Shift</h2>
+            <h2 className="font-semibold">Clock-in Status</h2>
             <span className="text-xs px-2 py-0.5 rounded-full bg-success/20 text-success ml-auto capitalize">{currentShift} shift</span>
           </div>
-          {currentShiftChatters.length > 0 ? (
-            <div className="space-y-2">
-              {currentShiftChatters.map((s) => {
-                const color = chatterColors[s.memberName] || "217 91% 60%";
-                return (
-                  <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-success/30 bg-success/5">
-                    <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />
-                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                      {s.memberName.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{s.memberName}</p>
-                      <p className="text-[10px] text-muted-foreground">All models: Izzie, Lucinda, Willow, Ashley</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{s.startTime} – {s.endTime}</span>
+          <div className="space-y-2">
+            {chattersOnly.map((member) => {
+              const color = chatterColors[member.name] || "217 91% 60%";
+              const isOnShift = currentShiftChatters.some(s => s.memberName === member.name);
+              return (
+                <div key={member.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isOnShift ? "border-success/30 bg-success/5" : "border-border/30 bg-secondary/10"}`}>
+                  <div className={`h-2 w-2 rounded-full shrink-0 ${isOnShift ? "bg-success animate-pulse" : "bg-muted-foreground/30"}`} />
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
+                    {member.avatar}
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No chatters scheduled for current shift</p>
-          )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{member.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{member.role} · {member.shiftTimes}</p>
+                  </div>
+                  <span className={`text-xs ${isOnShift ? "text-success" : "text-muted-foreground"}`}>
+                    {isOnShift ? "● On shift" : "○ Off shift"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -321,54 +321,24 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Top Performers & Recent Tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="glass-card p-5 space-y-4">
-          <h2 className="font-semibold">Top Performers</h2>
-          <div className="space-y-3">
-            {[...teamMembers].sort((a, b) => b.revenueGenerated - a.revenueGenerated).slice(0, 4).map((member, i) => {
-              const color = chatterColors[member.name] || "217 91% 60%";
-              return (
-                <div key={member.id} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-4">#{i + 1}</span>
-                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                    {member.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{member.name}</p>
-                    <p className="text-xs text-muted-foreground">{member.role}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold">${member.revenueGenerated.toLocaleString()}</p>
-                    <div className="flex items-center gap-0.5 text-xs text-success">
-                      <ArrowUpRight className="h-3 w-3" />
-                      <span>{member.qualityScore}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="glass-card p-5 space-y-4">
-          <h2 className="font-semibold">Recent Tasks</h2>
-          <div className="space-y-3">
-            {tasks.length > 0 ? tasks.slice(0, 5).map((task) => (
-              <div key={task.id} className="flex items-center gap-3">
-                <div className={`h-2 w-2 rounded-full ${task.status === "completed" ? "bg-success" : task.status === "in-progress" ? "bg-warning" : "bg-muted-foreground"}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">{task.title}</p>
-                  <p className="text-xs text-muted-foreground">{task.assignee}</p>
-                </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${task.priority === "high" ? "bg-destructive/20 text-destructive" : task.priority === "medium" ? "bg-warning/20 text-warning" : "bg-muted text-muted-foreground"}`}>
-                  {task.priority}
-                </span>
+      {/* Recent Tasks */}
+      <div className="glass-card p-5 space-y-4">
+        <h2 className="font-semibold">Recent Tasks</h2>
+        <div className="space-y-3">
+          {tasks.length > 0 ? tasks.slice(0, 5).map((task) => (
+            <div key={task.id} className="flex items-center gap-3">
+              <div className={`h-2 w-2 rounded-full ${task.status === "completed" ? "bg-success" : task.status === "in-progress" ? "bg-warning" : "bg-muted-foreground"}`} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm truncate">{task.title}</p>
+                <p className="text-xs text-muted-foreground">{task.assignee}</p>
               </div>
-            )) : (
-              <p className="text-sm text-muted-foreground text-center py-4">No tasks assigned yet</p>
-            )}
-          </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${task.priority === "high" ? "bg-destructive/20 text-destructive" : task.priority === "medium" ? "bg-warning/20 text-warning" : "bg-muted text-muted-foreground"}`}>
+                {task.priority}
+              </span>
+            </div>
+          )) : (
+            <p className="text-sm text-muted-foreground text-center py-4">No tasks assigned yet</p>
+          )}
         </div>
       </div>
 

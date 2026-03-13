@@ -105,28 +105,28 @@ export const teamMembers: TeamMember[] = [
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", category: "chatter", shiftTimes: "6AM–2PM",
+    id: "2", name: "Jemimah", avatar: "JM", role: "Chatter", category: "chatter", shiftTimes: "2PM–10PM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "online", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "3", name: "Jane", avatar: "JA", role: "Chatter", category: "chatter", shiftTimes: "2PM–10PM",
+    id: "3", name: "Jane", avatar: "JA", role: "Chatter", category: "chatter", shiftTimes: "10PM–6AM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "4", name: "KC", avatar: "KC", role: "Chatter", category: "chatter", shiftTimes: "2PM–10PM",
+    id: "4", name: "KC", avatar: "KC", role: "Chatter", category: "chatter", shiftTimes: "10PM–6AM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 5, tasksCompleted: 0, clockedIn: false,
     analytics: { shiftsThisWeek: 0, avgRevenuePerShift: 0, monthlyTotalRevenue: 0 }
   },
   { 
-    id: "5", name: "Jaydee", avatar: "JD", role: "Chatter", category: "chatter", shiftTimes: "10PM–6AM",
+    id: "5", name: "Jaydee", avatar: "JD", role: "Chatter", category: "chatter", shiftTimes: "2PM–10PM",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 4, tasksCompleted: 0, clockedIn: false,
@@ -188,13 +188,16 @@ export const tasks: Task[] = [
 // Chatter shift schedule — all chatters handle all 4 models (Izzie, Lucinda, Willow, Ashley)
 // Shifts: Morning 6AM-2PM, Afternoon 2PM-10PM, Night 10PM-6AM (all UK time)
 // Generate for all 7 days (same schedule daily, no formal day-offs)
+// Shift schedule — confirmed with Zar 2026-03-11
+// 6AM PH = 10PM UK, 2PM PH = 6AM UK, 10PM PH = 2PM UK (but using UK labels)
+// KC + Jane: 10PM-6AM UK (night), Marc: 6AM-2PM UK (morning solo), JD + Jemimah: 2PM-10PM UK (afternoon)
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const shiftSchedule: ShiftEntry[] = days.flatMap((day, di) => [
-  { id: `m-${di}`, memberId: "6", memberName: "Marc", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: `a1-${di}`, memberId: "3", memberName: "JD", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: `a2-${di}`, memberId: "4", memberName: "Jemimah", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: `n1-${di}`, memberId: "5", memberName: "KC", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
-  { id: `n2-${di}`, memberId: "1", memberName: "Jane", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+  { id: `n1-${di}`, memberId: "4", memberName: "KC", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+  { id: `n2-${di}`, memberId: "3", memberName: "Jane", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+  { id: `m-${di}`, memberId: "1", memberName: "Marc", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
+  { id: `a1-${di}`, memberId: "5", memberName: "Jaydee", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
+  { id: `a2-${di}`, memberId: "2", memberName: "Jemimah", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
 ]);
 
 // Mass messages - Week of March 9-15, 2026
