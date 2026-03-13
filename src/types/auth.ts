@@ -90,6 +90,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'view_training',
     'view_quality',
     'view_calendar',
+    'view_shift_scheduler',
     'view_mass_messages',
     'view_analytics',
     'view_profiles',
@@ -98,6 +99,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'view_customs',
     'view_chatter_tasks',
     'view_knowledge_base',
+    'edit_schedules',
     'edit_data',
     'view_all_scores'
   ],
