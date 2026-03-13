@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { modelColors } from "@/lib/mock-data";
-import { DollarSign, Clock, Heart, User, Calendar, Briefcase, Moon, Star, Pencil, Copy, Check, MessageCircle, AlertTriangle } from "lucide-react";
+import { DollarSign, Clock, Heart, User, Calendar, Briefcase, Moon, Star, Pencil, Copy, Check, MessageCircle, AlertTriangle, MapPin } from "lucide-react";
 
 interface Fan {
   id: string;
@@ -19,12 +19,18 @@ interface Fan {
   activeTime: string;
   payday: string;
   job?: string;
+  dateOfBirth?: string;
+  location?: string;
+  relationshipStatus?: string;
+  hobbies?: string;
   interests: string;
   notes: string;
   lastMessaged?: string; // ISO date string
 }
 
 const STORAGE_KEY = "fan-profiles-data";
+const STORAGE_VERSION_KEY = "fan-profiles-version";
+const CURRENT_VERSION = 2;
 
 // Default data
 const defaultFansByModel: Record<string, Fan[]> = {
@@ -36,6 +42,11 @@ const defaultFansByModel: Record<string, Fan[]> = {
       activeTime: "Evenings 8-11pm",
       payday: "Fridays",
       job: "Unknown",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
+      lastMessaged: "2026-03-13",
       interests: "Military/discipline themes, loves being commanded",
       notes: "Top whale. Greedy daily. Opens ALL PPVs within hours. Full script completed."
     },
@@ -45,6 +56,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "submissive",
       activeTime: "Late nights",
       payday: "Bi-weekly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Military fetish, detailed roleplay scenarios",
       notes: "Responds well to commanding tone. Likes extended roleplay sessions."
     },
@@ -54,6 +69,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "switch",
       activeTime: "Mornings",
       payday: "Monthly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Solo content, athletic themes",
       notes: "Consistent buyer. Opens most PPVs. Quiet but reliable."
     },
@@ -63,6 +82,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "dominant",
       activeTime: "Evenings",
       payday: "Weekly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Extended conversations, custom requests",
       notes: "Loves long chats. Will order customs after rapport building."
     },
@@ -72,6 +95,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "submissive",
       activeTime: "Late nights",
       payday: "Bi-weekly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "General content, military theme",
       notes: "Steady spender. Building up — potential whale."
     },
@@ -84,6 +111,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       activeTime: "8-11pm weeknights",
       payday: "Monthly (1st)",
       job: "Office worker",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Shy/innocent angle, first-time narratives",
       notes: "Big tipper. Loves ordering customs. Night owl - most active 8-11pm."
     },
@@ -93,6 +124,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "switch",
       activeTime: "Weekends",
       payday: "Saturdays",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Variety content, likes surprises",
       notes: "Consistent weekly spender. Reliable Saturday purchases."
     },
@@ -102,6 +137,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "dominant",
       activeTime: "Daily",
       payday: "Daily spender",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Pure message buyer, no tips",
       notes: "New but spending fast (joined Feb 21). Daily engagement, pure PPV buyer."
     },
@@ -112,6 +151,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       activeTime: "Early mornings",
       payday: "Daily",
       job: "Drummer",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Custom content, very active daily",
       notes: "Custom buyer (100/500 tier noted). Very active daily engagement. Drummer."
     },
@@ -121,6 +164,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "switch",
       activeTime: "Weekends",
       payday: "Monthly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "College/party themes, candid style",
       notes: "Weekend warrior. Buys most PPVs on Saturday nights."
     },
@@ -133,6 +180,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       activeTime: "Afternoons",
       payday: "Weekly Fridays",
       job: "Works from home",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Feet content, finger play only (no toys), detailed custom requests",
       notes: "Very specific requests. NO TOYS - he hates them. Feet + fingers only. Red/French nails preferred."
     },
@@ -142,6 +193,11 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "submissive",
       activeTime: "Evenings",
       payday: "Bi-weekly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
+      lastMessaged: "2026-03-13",
       interests: "Cowgirl content, toy riding",
       notes: "Deleted old account, created new one. Previous big spender returning. Willing to pay again for customs."
     },
@@ -151,6 +207,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "dominant",
       activeTime: "Afternoons",
       payday: "Weekly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Feet and lingerie combos",
       notes: "Consistent tipper. Loves new lingerie reveals."
     },
@@ -160,6 +220,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "submissive",
       activeTime: "Mornings",
       payday: "Monthly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Solo playful content",
       notes: "Opens most PPVs. Quiet chatter but reliable buyer."
     },
@@ -169,6 +233,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "switch",
       activeTime: "Evenings",
       payday: "Bi-weekly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Conversation-heavy, likes getting to know her",
       notes: "Building rapport. Potential for customs once trust established."
     },
@@ -180,6 +248,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "submissive",
       activeTime: "Late nights",
       payday: "Unknown",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Dark/mysterious themes, candlelit content",
       notes: "Top spender for Lucinda. Responds well to dark aesthetic."
     },
@@ -189,6 +261,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "dominant",
       activeTime: "Evenings",
       payday: "Unknown",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Pure tipper - doesn't buy messages/PPV",
       notes: "$136 in tips only, $0 messages. Appreciation spender."
     },
@@ -198,6 +274,11 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "switch",
       activeTime: "Unknown",
       payday: "Unknown",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
+      lastMessaged: "2026-03-12",
       interests: "Goth aesthetic content",
       notes: "Regular buyer, building relationship."
     },
@@ -207,6 +288,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "submissive",
       activeTime: "Late nights",
       payday: "Monthly",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Dark/mysterious reveals, candlelit themes",
       notes: "New fan, spending steadily. Responds well to mysterious tone."
     },
@@ -216,6 +301,10 @@ const defaultFansByModel: Record<string, Fan[]> = {
       personality: "dominant",
       activeTime: "Evenings",
       payday: "Unknown",
+      dateOfBirth: "Unknown",
+      location: "Unknown",
+      relationshipStatus: "Unknown",
+      hobbies: "Unknown",
       interests: "Conversation first, content second",
       notes: "Tipper who likes chatting. Could become VIP with engagement."
     },
@@ -254,9 +343,21 @@ export default function FanProfiles() {
   const [editActiveTime, setEditActiveTime] = useState("");
   const [editPayday, setEditPayday] = useState("");
   const [editJob, setEditJob] = useState("");
+  const [editDateOfBirth, setEditDateOfBirth] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [editRelationshipStatus, setEditRelationshipStatus] = useState("");
+  const [editHobbies, setEditHobbies] = useState("");
 
-  // Load saved data
+  // Load saved data with version check
   useEffect(() => {
+    const savedVersion = parseInt(localStorage.getItem(STORAGE_VERSION_KEY) || "0", 10);
+    if (savedVersion < CURRENT_VERSION) {
+      // Clear old data and reload defaults when version is outdated
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(STORAGE_VERSION_KEY, String(CURRENT_VERSION));
+      setFansByModel(defaultFansByModel);
+      return;
+    }
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -287,6 +388,7 @@ export default function FanProfiles() {
 
   const saveToStorage = useCallback((data: Record<string, Fan[]>) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_VERSION_KEY, String(CURRENT_VERSION));
   }, []);
 
   const copyUsername = (fanId: string, username: string) => {
@@ -303,13 +405,17 @@ export default function FanProfiles() {
     setEditActiveTime(fan.activeTime);
     setEditPayday(fan.payday);
     setEditJob(fan.job || "");
+    setEditDateOfBirth(fan.dateOfBirth || "");
+    setEditLocation(fan.location || "");
+    setEditRelationshipStatus(fan.relationshipStatus || "");
+    setEditHobbies(fan.hobbies || "");
   };
 
   const saveEdit = (modelName: string, fanId: string) => {
     const updated = { ...fansByModel };
     updated[modelName] = updated[modelName].map(f =>
       f.id === fanId
-        ? { ...f, ofUsername: editOfUsername, notes: editNotes, interests: editInterests, activeTime: editActiveTime, payday: editPayday, job: editJob || undefined }
+        ? { ...f, ofUsername: editOfUsername, notes: editNotes, interests: editInterests, activeTime: editActiveTime, payday: editPayday, job: editJob || undefined, dateOfBirth: editDateOfBirth || undefined, location: editLocation || undefined, relationshipStatus: editRelationshipStatus || undefined, hobbies: editHobbies || undefined }
         : f
     );
     setFansByModel(updated);
@@ -322,6 +428,15 @@ export default function FanProfiles() {
     const updated = { ...fansByModel };
     updated[modelName] = updated[modelName].map(f =>
       f.id === fanId ? { ...f, lastMessaged: today } : f
+    );
+    setFansByModel(updated);
+    saveToStorage(updated);
+  };
+
+  const clearLastMessaged = (modelName: string, fanId: string) => {
+    const updated = { ...fansByModel };
+    updated[modelName] = updated[modelName].map(f =>
+      f.id === fanId ? { ...f, lastMessaged: undefined } : f
     );
     setFansByModel(updated);
     saveToStorage(updated);
@@ -455,6 +570,14 @@ export default function FanProfiles() {
                           >
                             ✅ Today
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 text-[10px] px-2 text-red-400 hover:text-red-300"
+                            onClick={() => clearLastMessaged(modelName, fan.id)}
+                          >
+                            ✖ Clear
+                          </Button>
                           <Input
                             type="date"
                             className="h-6 text-[10px] w-32"
@@ -484,6 +607,26 @@ export default function FanProfiles() {
                               <div>
                                 <label className="text-[10px] text-muted-foreground uppercase">Payday</label>
                                 <Input value={editPayday} onChange={e => setEditPayday(e.target.value)} className="h-7 text-sm" />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">🎂 Date of Birth</label>
+                                <Input value={editDateOfBirth} onChange={e => setEditDateOfBirth(e.target.value)} className="h-7 text-sm" placeholder="Unknown" />
+                              </div>
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">📍 Location</label>
+                                <Input value={editLocation} onChange={e => setEditLocation(e.target.value)} className="h-7 text-sm" placeholder="Unknown" />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">💍 Relationship Status</label>
+                                <Input value={editRelationshipStatus} onChange={e => setEditRelationshipStatus(e.target.value)} className="h-7 text-sm" placeholder="Unknown" />
+                              </div>
+                              <div>
+                                <label className="text-[10px] text-muted-foreground uppercase">🎮 Hobbies</label>
+                                <Input value={editHobbies} onChange={e => setEditHobbies(e.target.value)} className="h-7 text-sm" placeholder="Unknown" />
                               </div>
                             </div>
                             <div>
@@ -521,6 +664,30 @@ export default function FanProfiles() {
                                 <Clock className="h-3 w-3" />
                                 <span>{fan.lastActive}</span>
                               </div>
+                              {fan.dateOfBirth && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <span>🎂</span>
+                                  <span>DOB: {fan.dateOfBirth}</span>
+                                </div>
+                              )}
+                              {fan.location && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <MapPin className="h-3 w-3" />
+                                  <span>{fan.location}</span>
+                                </div>
+                              )}
+                              {fan.relationshipStatus && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <span>💍</span>
+                                  <span>{fan.relationshipStatus}</span>
+                                </div>
+                              )}
+                              {fan.hobbies && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <span>🎮</span>
+                                  <span>{fan.hobbies}</span>
+                                </div>
+                              )}
                             </div>
 
                             {/* Interests */}
