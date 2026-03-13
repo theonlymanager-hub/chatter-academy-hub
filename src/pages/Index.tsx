@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { DollarSign, Users, Star, TrendingUp, Clock, MessageSquare, Pencil, Check, Calendar } from "lucide-react";
-import { teamMembers, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
+import { teamMembers, shiftSchedule, massMessages, chatterColors, modelColors, chattersOnLeave } from "@/lib/mock-data";
 import { Input } from "@/components/ui/input";
 import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
 
@@ -50,7 +50,9 @@ const Index = () => {
   const todayShifts = shiftSchedule.filter((s) => s.day === today);
   const nowHour = new Date().getUTCHours(); // UK = UTC in GMT (close enough for BST)
   const currentShift = nowHour >= 6 && nowHour < 14 ? "morning" : nowHour >= 14 && nowHour < 22 ? "afternoon" : "night";
-  const currentShiftChatters = todayShifts.filter(s => s.shift === currentShift);
+  const allCurrentShiftChatters = todayShifts.filter(s => s.shift === currentShift);
+  const currentShiftChatters = allCurrentShiftChatters.filter(s => !chattersOnLeave.includes(s.memberName));
+  const onLeaveCurrentShift = allCurrentShiftChatters.filter(s => chattersOnLeave.includes(s.memberName));
   // Only count actual chatters (not supervisors, management, client comms)
   const chattersOnly = teamMembers.filter(m => m.category === "chatter");
   const onlineChatters = currentShiftChatters.length || chattersOnly.filter(m => m.status === "online" || m.status === "busy").length;
@@ -203,14 +205,15 @@ const Index = () => {
               {todayShifts.map((s) => {
                 const color = chatterColors[s.memberName] || "217 91% 60%";
                 const isCurrentShift = s.shift === currentShift;
+                const isOnLeave = chattersOnLeave.includes(s.memberName);
                 return (
-                  <div key={s.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isCurrentShift ? "border-success/50 bg-success/10 ring-1 ring-success/20" : ""}`} style={!isCurrentShift ? { borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.05)` } : {}}>
-                    {isCurrentShift && <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />}
+                  <div key={s.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isOnLeave ? "opacity-50 border-border/30 bg-secondary/10" : isCurrentShift ? "border-success/50 bg-success/10 ring-1 ring-success/20" : ""}`} style={!isCurrentShift && !isOnLeave ? { borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.05)` } : {}}>
+                    {isCurrentShift && !isOnLeave && <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />}
                     <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
                       {s.memberName.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{s.memberName} {isCurrentShift && <span className="text-[10px] text-success font-normal ml-1">● LIVE</span>}</p>
+                      <p className="text-sm font-medium">{s.memberName} {isOnLeave ? <span className="text-[10px] text-muted-foreground font-normal ml-1 bg-muted-foreground/20 px-1.5 py-0.5 rounded">ON LEAVE</span> : isCurrentShift ? <span className="text-[10px] text-success font-normal ml-1">● LIVE</span> : null}</p>
                       <p className="text-[10px] text-muted-foreground capitalize">{s.shift} shift · All models</p>
                     </div>
                     <span className="text-xs text-muted-foreground">{s.startTime} – {s.endTime}</span>
@@ -232,10 +235,11 @@ const Index = () => {
           <div className="space-y-2">
             {chattersOnly.map((member) => {
               const color = chatterColors[member.name] || "217 91% 60%";
-              const isOnShift = currentShiftChatters.some(s => s.memberName === member.name);
+              const isOnLeave = chattersOnLeave.includes(member.name);
+              const isOnShift = !isOnLeave && currentShiftChatters.some(s => s.memberName === member.name);
               return (
-                <div key={member.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isOnShift ? "border-success/30 bg-success/5" : "border-border/30 bg-secondary/10"}`}>
-                  <div className={`h-2 w-2 rounded-full shrink-0 ${isOnShift ? "bg-success animate-pulse" : "bg-muted-foreground/30"}`} />
+                <div key={member.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isOnLeave ? "opacity-50 border-border/30 bg-secondary/10" : isOnShift ? "border-success/30 bg-success/5" : "border-border/30 bg-secondary/10"}`}>
+                  <div className={`h-2 w-2 rounded-full shrink-0 ${isOnLeave ? "bg-muted-foreground/30" : isOnShift ? "bg-success animate-pulse" : "bg-muted-foreground/30"}`} />
                   <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
                     {member.avatar}
                   </div>
@@ -243,8 +247,8 @@ const Index = () => {
                     <p className="text-sm font-medium">{member.name}</p>
                     <p className="text-[10px] text-muted-foreground">{member.role} · {member.shiftTimes}</p>
                   </div>
-                  <span className={`text-xs ${isOnShift ? "text-success" : "text-muted-foreground"}`}>
-                    {isOnShift ? "● On shift" : "○ Off shift"}
+                  <span className={`text-xs ${isOnLeave ? "text-muted-foreground" : isOnShift ? "text-success" : "text-muted-foreground"}`}>
+                    {isOnLeave ? <span className="bg-muted-foreground/20 px-1.5 py-0.5 rounded">ON LEAVE</span> : isOnShift ? "● On shift" : "○ Off shift"}
                   </span>
                 </div>
               );

@@ -115,11 +115,35 @@ export default function TeamMembers() {
     management: teamMembers.filter(m => m.category === "management"),
   };
 
-  const jobDescriptions: Record<string, string> = {
-    "Luke": "Strategy, quality oversight, client relationships, team direction",
-    "Mark": "Quality checks, dashboard management, cron automation, chat monitoring",
-    "Zar": "Shift management, chatter oversight, scheduling, vault management, hiring",
-    "Elle": "Dashboard updates, customs tracking, client communication, mass message scheduling",
+  const jobDescriptions: Record<string, string[]> = {
+    "Luke": [
+      "Strategy & business direction",
+      "Quality oversight & chat reviewing",
+      "Client relationship management",
+      "Team hiring decisions",
+      "Setting targets & KPIs",
+    ],
+    "Mark": [
+      "Quality checks (2x daily minimum)",
+      "Dashboard management & updates",
+      "Automated monitoring & cron jobs",
+      "Chat analysis & feedback",
+      "Whale tracking & fan data",
+    ],
+    "Zar": [
+      "Shift management & scheduling",
+      "Chatter oversight & accountability",
+      "Vault management (content distribution)",
+      "Hiring pipeline & onboarding",
+      "Shift calendar updates",
+    ],
+    "Elle": [
+      "Dashboard data entry & updates",
+      "Customs board management",
+      "Client communication & content coordination",
+      "Mass message scheduling",
+      "Shift calendar maintenance",
+    ],
   };
 
   // Create leaderboard
@@ -194,9 +218,14 @@ export default function TeamMembers() {
 
         {/* Job Description */}
         {jobDescriptions[member.name] && (
-          <p className="text-xs text-muted-foreground italic border-l-2 pl-2" style={{ borderColor: `hsl(${color} / 0.5)` }}>
-            {jobDescriptions[member.name]}
-          </p>
+          <ul className="text-xs text-muted-foreground space-y-1 border-l-2 pl-3" style={{ borderColor: `hsl(${color} / 0.5)` }}>
+            {jobDescriptions[member.name].map((item, idx) => (
+              <li key={idx} className="flex items-start gap-1.5">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: `hsl(${color} / 0.6)` }} />
+                {item}
+              </li>
+            ))}
+          </ul>
         )}
 
         <div className={`grid ${gridCols} gap-3`}>
@@ -240,35 +269,37 @@ export default function TeamMembers() {
           <Progress value={member.trainingProgress} className="h-2" />
         </div>
 
-        {/* Quality Score Categories */}
-        <div className="border-t border-border/30 pt-3">
-          <button
-            onClick={() => toggleQuality(member.id)}
-            className="flex items-center justify-between w-full text-sm font-medium hover:text-primary transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              📊 Quality Breakdown
-            </span>
-            {isQualityExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
+        {/* Quality Score Categories — only for chatters */}
+        {isChatter && (
+          <div className="border-t border-border/30 pt-3">
+            <button
+              onClick={() => toggleQuality(member.id)}
+              className="flex items-center justify-between w-full text-sm font-medium hover:text-primary transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                📊 Quality Breakdown
+              </span>
+              {isQualityExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
 
-          {isQualityExpanded && (
-            <div className="mt-3 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                {qualityCategories.map(({ key, label }) => (
-                  <div key={key} className="bg-secondary/30 rounded-lg p-2">
-                    <p className="text-[10px] text-muted-foreground">{label}</p>
-                    <p className="text-sm font-bold">{member.qualityScores[key]}<span className="text-xs text-muted-foreground">/10</span></p>
+            {isQualityExpanded && (
+              <div className="mt-3 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {qualityCategories.map(({ key, label }) => (
+                    <div key={key} className="bg-secondary/30 rounded-lg p-2">
+                      <p className="text-[10px] text-muted-foreground">{label}</p>
+                      <p className="text-sm font-bold">{member.qualityScores[key]}<span className="text-xs text-muted-foreground">/10</span></p>
+                    </div>
+                  ))}
+                  <div className="bg-primary/10 rounded-lg p-2 col-span-2">
+                    <p className="text-[10px] text-muted-foreground">Overall Average</p>
+                    <p className="text-sm font-bold text-primary">{member.qualityScores.overall}<span className="text-xs text-muted-foreground">/10</span></p>
                   </div>
-                ))}
-                <div className="bg-primary/10 rounded-lg p-2 col-span-2">
-                  <p className="text-[10px] text-muted-foreground">Overall Average</p>
-                  <p className="text-sm font-bold text-primary">{member.qualityScores.overall}<span className="text-xs text-muted-foreground">/10</span></p>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Notes Section */}
         <div className="border-t border-border/30 pt-3">
@@ -304,28 +335,30 @@ export default function TeamMembers() {
                   </Button>
                 </div>
                 
-                {/* Quality Review Options */}
-                <div className="flex gap-2">
-                  <Select value={newNoteCategory[member.id] || ""} onValueChange={(value: keyof QualityScores) => setNewNoteCategory(prev => ({ ...prev, [member.id]: value }))}>
-                    <SelectTrigger className="h-8 text-xs flex-1">
-                      <SelectValue placeholder="Quality category (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {qualityCategories.map(({ key, label }) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    placeholder="Score"
-                    value={newNoteScore[member.id] || ""}
-                    onChange={(e) => setNewNoteScore(prev => ({ ...prev, [member.id]: parseInt(e.target.value) || undefined as any }))}
-                    className="h-8 text-sm w-20"
-                  />
-                </div>
+                {/* Quality Review Options — only for chatters */}
+                {isChatter && (
+                  <div className="flex gap-2">
+                    <Select value={newNoteCategory[member.id] || ""} onValueChange={(value: keyof QualityScores) => setNewNoteCategory(prev => ({ ...prev, [member.id]: value }))}>
+                      <SelectTrigger className="h-8 text-xs flex-1">
+                        <SelectValue placeholder="Quality category (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {qualityCategories.map(({ key, label }) => (
+                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="10"
+                      placeholder="Score"
+                      value={newNoteScore[member.id] || ""}
+                      onChange={(e) => setNewNoteScore(prev => ({ ...prev, [member.id]: parseInt(e.target.value) || undefined as any }))}
+                      className="h-8 text-sm w-20"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Notes List */}

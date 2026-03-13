@@ -91,6 +91,9 @@ export const modelColors: Record<string, string> = {
   "Ashley Morris": "330 70% 60%", // pink
 };
 
+// Chatters currently on leave — they still appear in schedule but greyed out
+export const chattersOnLeave: string[] = ["Jemimah"];
+
 // NOTE: Clock-in status should eventually pull from Discord ON DUTY voice channel
 // REAL team only — scores start at 0, only populated from actual quality reviews
 // KC REMOVED — not a real team member
