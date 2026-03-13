@@ -185,25 +185,17 @@ export const tasks: Task[] = [
   // Add real tasks here
 ];
 
-// Chatter shift schedule with specific times
-export const shiftSchedule: ShiftEntry[] = [
-  { id: "1", memberId: "1", memberName: "Jane", day: "Monday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: "2", memberId: "2", memberName: "KC", day: "Monday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: "3", memberId: "3", memberName: "Jaydee", day: "Monday", shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
-  { id: "4", memberId: "4", memberName: "Jemimah", day: "Tuesday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: "5", memberId: "1", memberName: "Jane", day: "Tuesday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: "6", memberId: "3", memberName: "Jaydee", day: "Tuesday", shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
-  { id: "7", memberId: "2", memberName: "KC", day: "Wednesday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: "8", memberId: "1", memberName: "Jane", day: "Wednesday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: "9", memberId: "4", memberName: "Jemimah", day: "Thursday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: "10", memberId: "3", memberName: "Jaydee", day: "Thursday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: "11", memberId: "2", memberName: "KC", day: "Friday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: "12", memberId: "4", memberName: "Jemimah", day: "Friday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: "13", memberId: "1", memberName: "Jane", day: "Saturday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: "14", memberId: "3", memberName: "Jaydee", day: "Saturday", shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
-  { id: "15", memberId: "2", memberName: "KC", day: "Sunday", shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: "16", memberId: "4", memberName: "Jemimah", day: "Sunday", shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-];
+// Chatter shift schedule — all chatters handle all 4 models (Izzie, Lucinda, Willow, Ashley)
+// Shifts: Morning 6AM-2PM, Afternoon 2PM-10PM, Night 10PM-6AM (all UK time)
+// Generate for all 7 days (same schedule daily, no formal day-offs)
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export const shiftSchedule: ShiftEntry[] = days.flatMap((day, di) => [
+  { id: `m-${di}`, memberId: "6", memberName: "Marc", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
+  { id: `a1-${di}`, memberId: "3", memberName: "JD", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
+  { id: `a2-${di}`, memberId: "4", memberName: "Jemimah", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
+  { id: `n1-${di}`, memberId: "5", memberName: "KC", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+  { id: `n2-${di}`, memberId: "1", memberName: "Jane", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+]);
 
 // Mass messages - Week of March 9-15, 2026
 // Types: mass (general), prompt (conversation starter), ppv (pay-per-view sale)

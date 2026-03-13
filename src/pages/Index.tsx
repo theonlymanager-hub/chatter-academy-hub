@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, FileSpreadsheet, Pencil, Check, LogIn, LogOut } from "lucide-react";
+import { DollarSign, Users, Star, TrendingUp, ArrowUpRight, Calendar, Clock, MessageSquare, FileSpreadsheet, Pencil, Check } from "lucide-react";
 import { teamMembers, tasks, shiftSchedule, massMessages, chatterColors, modelColors } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -16,38 +16,10 @@ interface EditableKPI {
   icon: any;
 }
 
-interface ClockInStatus {
-  [memberId: string]: {
-    clockedIn: boolean;
-    clockInTime: string | null;
-  };
-}
-
 const Index = () => {
-  // Clock-in state with localStorage
-  const [clockInStatus, setClockInStatus] = useState<ClockInStatus>({});
   // Revenue from API
   const [earningStats, setEarningStats] = useState<Record<string, EarningStats | null>>({});
   const [revenueLoading, setRevenueLoading] = useState(true);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("chatter-clock-in");
-    if (saved) {
-      setClockInStatus(JSON.parse(saved));
-    } else {
-      const initial: ClockInStatus = {};
-      teamMembers.forEach(m => {
-        initial[m.id] = { clockedIn: m.clockedIn || false, clockInTime: m.clockInTime || null };
-      });
-      setClockInStatus(initial);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (Object.keys(clockInStatus).length > 0) {
-      localStorage.setItem("chatter-clock-in", JSON.stringify(clockInStatus));
-    }
-  }, [clockInStatus]);
 
   // Fetch real earning stats from API
   useEffect(() => {
@@ -69,26 +41,18 @@ const Index = () => {
     fetchEarnings();
   }, []);
 
-  const toggleClockIn = (memberId: string) => {
-    setClockInStatus(prev => {
-      const current = prev[memberId] || { clockedIn: false, clockInTime: null };
-      if (current.clockedIn) {
-        return { ...prev, [memberId]: { clockedIn: false, clockInTime: null } };
-      } else {
-        const now = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-        return { ...prev, [memberId]: { clockedIn: true, clockInTime: now } };
-      }
-    });
-  };
-
   // Calculate totals from API earning stats
   const totalApiRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.total || 0), 0);
   const totalSubscriptionRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.subscriptions || 0), 0);
   const totalMessageRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.messages || 0), 0);
   const totalTipsRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.tips || 0), 0);
 
-  // Chatter stats
-  const onlineChatters = Object.values(clockInStatus).filter(s => s.clockedIn).length || teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
+  // Today's schedule and current shift
+  const todayShifts = shiftSchedule.filter((s) => s.day === today);
+  const nowHour = new Date().getUTCHours(); // UK = UTC in GMT (close enough for BST)
+  const currentShift = nowHour >= 6 && nowHour < 14 ? "morning" : nowHour >= 14 && nowHour < 22 ? "afternoon" : "night";
+  const currentShiftChatters = todayShifts.filter(s => s.shift === currentShift);
+  const onlineChatters = currentShiftChatters.length || teamMembers.filter(m => m.status === "online" || m.status === "busy").length;
   const totalQuality = teamMembers.reduce((sum, m) => sum + m.qualityScore, 0);
   const avgQuality = totalQuality > 0 ? (totalQuality / teamMembers.length).toFixed(1) : "—";
   const totalTasks = teamMembers.reduce((sum, m) => sum + m.weeklyTasks, 0);
@@ -133,7 +97,6 @@ const Index = () => {
     setEditingKpi(null);
   };
 
-  const todayShifts = shiftSchedule.filter((s) => s.day === today);
   const upcomingMessages = massMessages.slice(0, 5);
 
   return (
@@ -233,14 +196,16 @@ const Index = () => {
             <div className="space-y-2">
               {todayShifts.map((s) => {
                 const color = chatterColors[s.memberName] || "217 91% 60%";
+                const isCurrentShift = s.shift === currentShift;
                 return (
-                  <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-lg border" style={{ borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.05)` }}>
+                  <div key={s.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isCurrentShift ? "border-success/50 bg-success/10 ring-1 ring-success/20" : ""}`} style={!isCurrentShift ? { borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.05)` } : {}}>
+                    {isCurrentShift && <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />}
                     <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
                       {s.memberName.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{s.memberName}</p>
-                      <p className="text-[10px] text-muted-foreground capitalize">{s.shift} shift</p>
+                      <p className="text-sm font-medium">{s.memberName} {isCurrentShift && <span className="text-[10px] text-success font-normal ml-1">● LIVE</span>}</p>
+                      <p className="text-[10px] text-muted-foreground capitalize">{s.shift} shift · All models</p>
                     </div>
                     <span className="text-xs text-muted-foreground">{s.startTime} – {s.endTime}</span>
                   </div>
@@ -255,45 +220,31 @@ const Index = () => {
         <div className="glass-card p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-accent" />
-            <h2 className="font-semibold">Clock-in Status</h2>
+            <h2 className="font-semibold">Current Shift</h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-success/20 text-success ml-auto capitalize">{currentShift} shift</span>
           </div>
-          <div className="space-y-2">
-            {teamMembers.map((m) => {
-              const color = chatterColors[m.name] || "217 91% 60%";
-              const status = clockInStatus[m.id] || { clockedIn: m.clockedIn, clockInTime: m.clockInTime };
-              return (
-                <div key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
-                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                    {m.avatar}
+          {currentShiftChatters.length > 0 ? (
+            <div className="space-y-2">
+              {currentShiftChatters.map((s) => {
+                const color = chatterColors[s.memberName] || "217 91% 60%";
+                return (
+                  <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-success/30 bg-success/5">
+                    <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
+                      {s.memberName.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{s.memberName}</p>
+                      <p className="text-[10px] text-muted-foreground">All models: Izzie, Lucinda, Willow, Ashley</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{s.startTime} – {s.endTime}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{m.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{m.role}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {status.clockedIn ? (
-                      <>
-                        <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                        <span className="text-xs text-success">In since {status.clockInTime}</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="h-2 w-2 rounded-full bg-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Clocked out</span>
-                      </>
-                    )}
-                    <button
-                      onClick={() => toggleClockIn(m.id)}
-                      className={`ml-2 p-1.5 rounded-md transition-colors ${status.clockedIn ? "bg-destructive/20 hover:bg-destructive/30 text-destructive" : "bg-success/20 hover:bg-success/30 text-success"}`}
-                      title={status.clockedIn ? "Clock out" : "Clock in"}
-                    >
-                      {status.clockedIn ? <LogOut className="h-3.5 w-3.5" /> : <LogIn className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No chatters scheduled for current shift</p>
+          )}
         </div>
       </div>
 
