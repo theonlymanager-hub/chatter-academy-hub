@@ -48,18 +48,24 @@ const getAllSections = () => [
     ],
   },
   {
-    label: "Calendar",
+    label: "Operations",
     items: [
-      { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Mass Messages", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Quality Checks", url: "/quality", icon: BarChart3, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
-    label: "Operations",
+    label: "Profiles",
     items: [
-      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry'] },
+    ],
+  },
+  {
+    label: "Calendar",
+    items: [
+      { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
