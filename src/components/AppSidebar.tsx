@@ -3,7 +3,6 @@ import {
   Users,
   GraduationCap,
   ClipboardList,
-  Star,
   CalendarDays,
   MessageSquare,
   BarChart3,
@@ -14,6 +13,7 @@ import {
   Palette,
   Settings,
   LogOut,
+  Trophy,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -44,7 +44,6 @@ const getAllSections = () => [
     items: [
       { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Chatter Tasks", url: "/tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Weekly Tasks", url: "/weekly-tasks", icon: Star, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
@@ -72,6 +71,7 @@ const getAllSections = () => [
     label: "Training",
     items: [
       { title: "Training", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Training Results", url: "/training-results", icon: Trophy, roles: ['admin', 'supervisor'] },
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
@@ -105,7 +105,7 @@ export function AppSidebar() {
                   <span style={{ color: "#00BCD4" }}>O</span>
                   <span className="text-slate-300">M</span>
                 </span>
-                <h1 className="text-lg font-bold gradient-text">The Only Board</h1>
+                <h1 className="text-lg font-bold text-amber-400">The Only Board</h1>
               </div>
               <p className="text-sm text-muted-foreground mt-1">Welcome, {user?.displayName}</p>
             </div>

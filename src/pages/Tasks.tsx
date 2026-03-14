@@ -32,6 +32,7 @@ interface Task {
   status: "pending" | "in-progress" | "completed";
   priority: "low" | "medium" | "high";
   dueDate: string;
+  category: string;
   proof?: string;
 }
 
@@ -52,17 +53,36 @@ const chattersInfo: ChatterInfo[] = [
 ];
 
 const defaultTasks: Task[] = [
-  { id: "1", title: "Review morning shift conversations", assignee: "Jane", status: "pending", priority: "high", dueDate: "Today" },
-  { id: "2", title: "Send PPV follow-ups to inactive fans", assignee: "Marc", status: "in-progress", priority: "medium", dueDate: "Today" },
-  { id: "3", title: "Update fan profile notes", assignee: "Jemimah", status: "completed", priority: "low", dueDate: "Yesterday" },
-  { id: "4", title: "Check DM response times", assignee: "JD", status: "pending", priority: "high", dueDate: "Today" },
-  { id: "5", title: "Send welcome messages to new subs", assignee: "KC", status: "pending", priority: "medium", dueDate: "Today" },
+  { id: "1", title: "Review morning shift conversations", assignee: "Jane", status: "pending", priority: "high", dueDate: "Today", category: "Revenue" },
+  { id: "2", title: "Send PPV follow-ups to inactive fans", assignee: "Marc", status: "in-progress", priority: "medium", dueDate: "Today", category: "Technique" },
+  { id: "3", title: "Update fan profile notes", assignee: "Jemimah", status: "completed", priority: "low", dueDate: "Yesterday", category: "Script" },
+  { id: "4", title: "Check DM response times", assignee: "JD", status: "pending", priority: "high", dueDate: "Today", category: "Revenue" },
+  { id: "5", title: "Send welcome messages to new subs", assignee: "KC", status: "pending", priority: "medium", dueDate: "Today", category: "Technique" },
+  { id: "6", title: "Create a whale (subscriber spending $500+)", assignee: "Jane", status: "pending", priority: "high", dueDate: "This Week", category: "Revenue" },
+  { id: "7", title: "Hit $500 daily revenue target", assignee: "Jane", status: "pending", priority: "high", dueDate: "This Week", category: "Revenue" },
+  { id: "8", title: "Use 3 upsell techniques in one conversation", assignee: "Marc", status: "completed", priority: "medium", dueDate: "This Week", category: "Technique" },
+  { id: "9", title: "Complete the PPV script for Izzy", assignee: "Marc", status: "pending", priority: "medium", dueDate: "This Week", category: "Script" },
+  { id: "10", title: "Create a whale (subscriber spending $500+)", assignee: "JD", status: "pending", priority: "high", dueDate: "This Week", category: "Revenue" },
+  { id: "11", title: "Use the rapport-building technique 5 times", assignee: "JD", status: "pending", priority: "medium", dueDate: "This Week", category: "Technique" },
+  { id: "12", title: "Complete the opening message script", assignee: "JD", status: "completed", priority: "low", dueDate: "This Week", category: "Script" },
+  { id: "13", title: "Hit $300 daily revenue target", assignee: "Jemimah", status: "completed", priority: "high", dueDate: "This Week", category: "Revenue" },
+  { id: "14", title: "Use the VIP treatment technique on 3 subs", assignee: "Jemimah", status: "pending", priority: "medium", dueDate: "This Week", category: "Technique" },
+  { id: "15", title: "Complete the upsell script for Willow", assignee: "Jemimah", status: "pending", priority: "medium", dueDate: "This Week", category: "Script" },
+  { id: "16", title: "Complete Willow mass message script", assignee: "KC", status: "pending", priority: "medium", dueDate: "This Week", category: "Script" },
+  { id: "17", title: "Review and update whale profiles", assignee: "KC", status: "pending", priority: "low", dueDate: "This Week", category: "Script" },
+  { id: "18", title: "Hit $400 daily revenue target", assignee: "KC", status: "pending", priority: "high", dueDate: "This Week", category: "Revenue" },
 ];
 
 const priorityConfig = {
   high: { label: "High", className: "border-red-500/50 text-red-400 bg-red-500/10" },
   medium: { label: "Med", className: "border-amber-500/50 text-amber-400 bg-amber-500/10" },
   low: { label: "Low", className: "border-emerald-500/50 text-emerald-400 bg-emerald-500/10" },
+};
+
+const categoryColors: Record<string, string> = {
+  Revenue: "border-primary/50 text-primary bg-primary/10",
+  Technique: "border-violet-500/50 text-violet-400 bg-violet-500/10",
+  Script: "border-amber-500/50 text-amber-400 bg-amber-500/10",
 };
 
 export default function Tasks() {
@@ -76,22 +96,23 @@ export default function Tasks() {
     title: string;
     assignee: string;
     priority: "low" | "medium" | "high";
-  }>({ title: "", assignee: "", priority: "medium" });
+    category: string;
+  }>({ title: "", assignee: "", priority: "medium", category: "Revenue" });
 
   useEffect(() => {
-    const saved = localStorage.getItem("chatter-tasks");
+    const saved = localStorage.getItem("chatter-tasks-merged");
     if (saved) {
       setTasks(JSON.parse(saved));
     } else {
       setTasks(defaultTasks);
-      localStorage.setItem("chatter-tasks", JSON.stringify(defaultTasks));
+      localStorage.setItem("chatter-tasks-merged", JSON.stringify(defaultTasks));
     }
     requestAnimationFrame(() => setMounted(true));
   }, []);
 
   useEffect(() => {
     if (tasks.length > 0) {
-      localStorage.setItem("chatter-tasks", JSON.stringify(tasks));
+      localStorage.setItem("chatter-tasks-merged", JSON.stringify(tasks));
     }
   }, [tasks]);
 
@@ -99,10 +120,7 @@ export default function Tasks() {
     setTasks((prev) =>
       prev.map((t) => {
         if (t.id !== id) return t;
-        return {
-          ...t,
-          status: t.status === "completed" ? "pending" : "completed",
-        };
+        return { ...t, status: t.status === "completed" ? "pending" : "completed" };
       })
     );
   };
@@ -119,19 +137,18 @@ export default function Tasks() {
       assignee: newTask.assignee,
       status: "pending",
       priority: newTask.priority,
-      dueDate: "Today",
+      dueDate: "This Week",
+      category: newTask.category,
     };
     setTasks((prev) => [...prev, task]);
-    setNewTask({ title: "", assignee: "", priority: "medium" });
+    setNewTask({ title: "", assignee: "", priority: "medium", category: "Revenue" });
     setShowAddForm(false);
   };
 
   const saveProof = () => {
     if (!proofDialog) return;
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === proofDialog.taskId ? { ...t, proof: proofInput || undefined } : t
-      )
+      prev.map((t) => (t.id === proofDialog.taskId ? { ...t, proof: proofInput || undefined } : t))
     );
     setProofDialog(null);
     setProofInput("");
@@ -146,17 +163,12 @@ export default function Tasks() {
     });
   };
 
-  // Overall stats
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.status === "completed").length;
   const overallPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
-    <div
-      className={`space-y-6 max-w-7xl transition-all duration-500 ${
-        mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      }`}
-    >
+    <div className={`space-y-6 max-w-7xl transition-all duration-500 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -165,11 +177,7 @@ export default function Tasks() {
             {completedTasks}/{totalTasks} tasks completed · {overallPercent}% done
           </p>
         </div>
-        <Button
-          onClick={() => setShowAddForm(!showAddForm)}
-          size="sm"
-          className="gap-2 self-start"
-        >
+        <Button onClick={() => setShowAddForm(!showAddForm)} size="sm" className="gap-2 self-start">
           <Plus className="h-4 w-4" />
           Add Task
         </Button>
@@ -179,7 +187,7 @@ export default function Tasks() {
       <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">Overall Team Progress</span>
-          <span className="text-sm font-bold gradient-text">{overallPercent}%</span>
+          <span className="text-sm font-bold text-amber-400">{overallPercent}%</span>
         </div>
         <Progress value={overallPercent} className="h-2" />
       </div>
@@ -191,7 +199,7 @@ export default function Tasks() {
             <Plus className="h-4 w-4 text-primary" />
             New Task
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             <Input
               placeholder="Task description..."
               value={newTask.title}
@@ -201,51 +209,42 @@ export default function Tasks() {
             />
             <select
               value={newTask.assignee}
-              onChange={(e) =>
-                setNewTask({ ...newTask, assignee: e.target.value })
-              }
+              onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
               className="h-10 rounded-md border border-input bg-background px-3 text-sm"
             >
               <option value="">Assign to...</option>
               {chattersInfo.map((c) => (
-                <option key={c.name} value={c.name}>
-                  {c.name}
-                </option>
+                <option key={c.name} value={c.name}>{c.name}</option>
               ))}
             </select>
             <select
               value={newTask.priority}
-              onChange={(e) =>
-                setNewTask({
-                  ...newTask,
-                  priority: e.target.value as "low" | "medium" | "high",
-                })
-              }
+              onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as "low" | "medium" | "high" })}
               className="h-10 rounded-md border border-input bg-background px-3 text-sm"
             >
               <option value="low">Low Priority</option>
               <option value="medium">Medium Priority</option>
               <option value="high">High Priority</option>
             </select>
+            <select
+              value={newTask.category}
+              onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="Revenue">Revenue</option>
+              <option value="Technique">Technique</option>
+              <option value="Script">Script</option>
+            </select>
           </div>
           <div className="flex gap-2">
-            <Button onClick={addTask} size="sm" className="gap-1">
-              <Check className="h-3 w-3" /> Save
-            </Button>
-            <Button
-              onClick={() => setShowAddForm(false)}
-              variant="outline"
-              size="sm"
-              className="gap-1"
-            >
-              <X className="h-3 w-3" /> Cancel
-            </Button>
+            <Button onClick={addTask} size="sm" className="gap-1"><Check className="h-3 w-3" /> Save</Button>
+            <Button onClick={() => setShowAddForm(false)} variant="outline" size="sm" className="gap-1"><X className="h-3 w-3" /> Cancel</Button>
           </div>
         </div>
       )}
 
       {/* Chatter Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div className="space-y-5">
         {chattersInfo.map((chatter, idx) => {
           const chatterTasks = tasks.filter((t) => t.assignee === chatter.name);
           const done = chatterTasks.filter((t) => t.status === "completed").length;
@@ -262,15 +261,11 @@ export default function Tasks() {
                 animation: mounted ? `fadeSlideIn 0.4s ease-out ${idx * 80}ms both` : "none",
               }}
             >
-              {/* Card header with gradient */}
-              <div
-                className={`bg-gradient-to-r ${chatter.gradient} px-5 py-4 border-b border-border/30`}
-              >
+              {/* Card header */}
+              <div className={`bg-gradient-to-r ${chatter.gradient} px-5 py-4 border-b border-border/30`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div
-                      className={`h-10 w-10 rounded-full bg-background/60 border border-border/50 flex items-center justify-center`}
-                    >
+                    <div className="h-10 w-10 rounded-full bg-background/60 border border-border/50 flex items-center justify-center">
                       <User className={`h-5 w-5 ${chatter.accent}`} />
                     </div>
                     <div>
@@ -281,35 +276,21 @@ export default function Tasks() {
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => toggleCollapse(chatter.name)}
-                    className="p-1.5 hover:bg-background/40 rounded-lg transition-colors"
-                  >
-                    {isCollapsed ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                    )}
+                  <button onClick={() => toggleCollapse(chatter.name)} className="p-1.5 hover:bg-background/40 rounded-lg transition-colors">
+                    {isCollapsed ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronUp className="h-4 w-4 text-muted-foreground" />}
                   </button>
                 </div>
 
                 {/* Progress bar */}
                 <div className="mt-3">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs text-muted-foreground">
-                      {done}/{total} complete
-                    </span>
-                    <span className={`text-xs font-bold ${chatter.accent}`}>
-                      {percent}%
-                    </span>
+                    <span className="text-xs text-muted-foreground">{done}/{total} complete</span>
+                    <span className={`text-xs font-bold ${chatter.accent}`}>{percent}%</span>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-background/40 overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-700 ease-out"
-                      style={{
-                        width: `${percent}%`,
-                        background: `linear-gradient(90deg, hsl(217 91% 60%), hsl(160 84% 39%))`,
-                      }}
+                      style={{ width: `${percent}%`, background: `linear-gradient(90deg, hsl(217 91% 60%), hsl(160 84% 39%))` }}
                     />
                   </div>
                 </div>
@@ -319,16 +300,12 @@ export default function Tasks() {
               {!isCollapsed && (
                 <div className="px-4 py-3 space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
                   {chatterTasks.length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-6">
-                      No tasks assigned
-                    </p>
+                    <p className="text-xs text-muted-foreground text-center py-6">No tasks assigned</p>
                   ) : (
                     chatterTasks.map((task) => (
                       <div
                         key={task.id}
-                        className={`group flex items-start gap-3 py-2.5 px-2 rounded-lg transition-all duration-300 hover:bg-muted/30 ${
-                          task.status === "completed" ? "opacity-60" : ""
-                        }`}
+                        className={`group flex items-start gap-3 py-2.5 px-2 rounded-lg transition-all duration-300 hover:bg-muted/30 ${task.status === "completed" ? "opacity-60" : ""}`}
                       >
                         <Checkbox
                           checked={task.status === "completed"}
@@ -336,32 +313,20 @@ export default function Tasks() {
                           className="mt-0.5"
                         />
                         <div className="flex-1 min-w-0">
-                          <p
-                            className={`text-sm leading-snug transition-all duration-300 ${
-                              task.status === "completed"
-                                ? "line-through text-muted-foreground"
-                                : ""
-                            }`}
-                          >
+                          <p className={`text-sm leading-snug transition-all duration-300 ${task.status === "completed" ? "line-through text-muted-foreground" : ""}`}>
                             {task.title}
                           </p>
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] px-1.5 py-0 ${priorityConfig[task.priority].className}`}
-                            >
+                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityConfig[task.priority].className}`}>
                               {priorityConfig[task.priority].label}
                             </Badge>
-                            <span className="text-[10px] text-muted-foreground">
-                              Due: {task.dueDate}
-                            </span>
-                            {/* Proof indicator */}
+                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${categoryColors[task.category] || ""}`}>
+                              {task.category}
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground">Due: {task.dueDate}</span>
                             {task.proof ? (
                               <button
-                                onClick={() => {
-                                  setProofDialog({ taskId: task.id, current: task.proof || "" });
-                                  setProofInput(task.proof || "");
-                                }}
+                                onClick={() => { setProofDialog({ taskId: task.id, current: task.proof || "" }); setProofInput(task.proof || ""); }}
                                 className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors"
                               >
                                 <ImageIcon className="h-3 w-3" />
@@ -369,10 +334,7 @@ export default function Tasks() {
                               </button>
                             ) : (
                               <button
-                                onClick={() => {
-                                  setProofDialog({ taskId: task.id, current: "" });
-                                  setProofInput("");
-                                }}
+                                onClick={() => { setProofDialog({ taskId: task.id, current: "" }); setProofInput(""); }}
                                 className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
                               >
                                 <Link2 className="h-3 w-3" />
@@ -399,21 +361,11 @@ export default function Tasks() {
       </div>
 
       {/* Proof Dialog */}
-      <Dialog
-        open={!!proofDialog}
-        onOpenChange={(open) => {
-          if (!open) {
-            setProofDialog(null);
-            setProofInput("");
-          }
-        }}
-      >
+      <Dialog open={!!proofDialog} onOpenChange={(open) => { if (!open) { setProofDialog(null); setProofInput(""); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add Proof</DialogTitle>
-            <DialogDescription>
-              Paste a screenshot URL or add a note as proof of task completion.
-            </DialogDescription>
+            <DialogDescription>Paste a screenshot URL or add a note as proof of task completion.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Input
@@ -424,46 +376,21 @@ export default function Tasks() {
             />
             {proofInput && proofInput.startsWith("http") && (
               <div className="rounded-lg border border-border overflow-hidden">
-                <img
-                  src={proofInput}
-                  alt="Proof preview"
-                  className="w-full h-32 object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
+                <img src={proofInput} alt="Proof preview" className="w-full h-32 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setProofDialog(null);
-                setProofInput("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button size="sm" onClick={saveProof}>
-              Save Proof
-            </Button>
+            <Button variant="outline" size="sm" onClick={() => { setProofDialog(null); setProofInput(""); }}>Cancel</Button>
+            <Button size="sm" onClick={saveProof}>Save Proof</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Keyframes */}
       <style>{`
         @keyframes fadeSlideIn {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

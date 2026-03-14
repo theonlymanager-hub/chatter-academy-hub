@@ -16,7 +16,7 @@ import Tasks from "./pages/Tasks";
 import QualityChecks from "./pages/QualityChecks";
 import ShiftCalendar from "./pages/ShiftCalendar";
 import MassMessageCalendar from "./pages/MassMessageCalendar";
-import WeeklyTasks from "./pages/WeeklyTasks";
+// WeeklyTasks merged into Tasks
 import Analytics from "./pages/Analytics";
 import Shifts from "./pages/Shifts";
 import ClientProfiles from "./pages/ClientProfiles";
@@ -71,16 +71,7 @@ function AppContent() {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/weekly-tasks" 
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
-              <DashboardLayout>
-                <WeeklyTasks />
-              </DashboardLayout>
-            </ProtectedRoute>
-          } 
-        />
+        {/* Weekly tasks merged into /tasks */}
 
         {/* Training - All roles */}
         <Route 

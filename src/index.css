@@ -83,7 +83,7 @@
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[hsl(217,91%,60%)] to-[hsl(160,84%,39%)];
+    @apply text-amber-400;
   }
 }
 /* deploy trigger Sat Mar 14 17:04:28 GMT 2026 */
