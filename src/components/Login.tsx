@@ -21,14 +21,16 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    // Small delay to show loading state
-    setTimeout(() => {
-      const success = login(username, password);
+    try {
+      const success = await login(username, password);
       if (!success) {
         setError("Invalid username or password");
       }
+    } catch {
+      setError("Login failed. Please try again.");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   return (

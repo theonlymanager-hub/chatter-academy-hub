@@ -311,6 +311,11 @@ export default function FanProfiles() {
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-semibold text-lg">{fan.name}</p>
+                            {fan.totalSpent >= 1000 && (
+                              <Badge className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 hover:bg-yellow-500/30">
+                                ⭐ VIP
+                              </Badge>
+                            )}
                             <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${color} / 0.4)`, color: `hsl(${color})` }}>
                               {fan.tier.toUpperCase()}
                             </Badge>
