@@ -14,23 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
-      test_table: {
+      attendance: {
+        Row: {
+          chatter_name: string | null
+          created_at: string | null
+          date: string | null
+          discord_username: string | null
+          id: string
+          login_time: string | null
+          logout_time: string | null
+          shift: string | null
+        }
+        Insert: {
+          chatter_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          discord_username?: string | null
+          id?: string
+          login_time?: string | null
+          logout_time?: string | null
+          shift?: string | null
+        }
+        Update: {
+          chatter_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          discord_username?: string | null
+          id?: string
+          login_time?: string | null
+          logout_time?: string | null
+          shift?: string | null
+        }
+        Relationships: []
+      }
+      chat_feed: {
+        Row: {
+          author: string | null
+          channel_name: string | null
+          created_at: string | null
+          discord_message_id: string | null
+          id: string
+          message_text: string | null
+        }
+        Insert: {
+          author?: string | null
+          channel_name?: string | null
+          created_at?: string | null
+          discord_message_id?: string | null
+          id?: string
+          message_text?: string | null
+        }
+        Update: {
+          author?: string | null
+          channel_name?: string | null
+          created_at?: string | null
+          discord_message_id?: string | null
+          id?: string
+          message_text?: string | null
+        }
+        Relationships: []
+      }
+      customs: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          deadline: string | null
+          description: string | null
+          fan_username: string | null
+          id: string
+          model_name: string | null
+          price: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          description?: string | null
+          fan_username?: string | null
+          id?: string
+          model_name?: string | null
+          price?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          description?: string | null
+          fan_username?: string | null
+          id?: string
+          model_name?: string | null
+          price?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      fan_profiles: {
         Row: {
           created_at: string | null
+          dob: string | null
+          hobbies: string | null
           id: string
+          is_whale: boolean | null
+          last_messaged: string | null
+          location: string | null
+          model_name: string | null
           name: string | null
+          notes: string | null
+          of_username: string | null
+          payday: string | null
+          relationship_status: string | null
+          total_spent: number | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          dob?: string | null
+          hobbies?: string | null
           id?: string
+          is_whale?: boolean | null
+          last_messaged?: string | null
+          location?: string | null
+          model_name?: string | null
           name?: string | null
+          notes?: string | null
+          of_username?: string | null
+          payday?: string | null
+          relationship_status?: string | null
+          total_spent?: number | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          dob?: string | null
+          hobbies?: string | null
           id?: string
+          is_whale?: boolean | null
+          last_messaged?: string | null
+          location?: string | null
+          model_name?: string | null
           name?: string | null
+          notes?: string | null
+          of_username?: string | null
+          payday?: string | null
+          relationship_status?: string | null
+          total_spent?: number | null
+          updated_at?: string | null
         }
         Relationships: []
+      }
+      quality_scores: {
+        Row: {
+          chatter_name: string | null
+          conversation_flow_score: number | null
+          created_at: string | null
+          energy_tone_score: number | null
+          id: string
+          notes: string | null
+          overall_score: number | null
+          personalisation_score: number | null
+          ppv_timing_score: number | null
+          response_time_score: number | null
+          reviewed_by: string | null
+          shift_date: string | null
+        }
+        Insert: {
+          chatter_name?: string | null
+          conversation_flow_score?: number | null
+          created_at?: string | null
+          energy_tone_score?: number | null
+          id?: string
+          notes?: string | null
+          overall_score?: number | null
+          personalisation_score?: number | null
+          ppv_timing_score?: number | null
+          response_time_score?: number | null
+          reviewed_by?: string | null
+          shift_date?: string | null
+        }
+        Update: {
+          chatter_name?: string | null
+          conversation_flow_score?: number | null
+          created_at?: string | null
+          energy_tone_score?: number | null
+          id?: string
+          notes?: string | null
+          overall_score?: number | null
+          personalisation_score?: number | null
+          ppv_timing_score?: number | null
+          response_time_score?: number | null
+          reviewed_by?: string | null
+          shift_date?: string | null
+        }
+        Relationships: []
+      }
+      sales_screenshots: {
+        Row: {
+          amount: number | null
+          chatter_name: string | null
+          created_at: string | null
+          date: string | null
+          id: string
+          image_url: string | null
+          model_name: string | null
+        }
+        Insert: {
+          amount?: number | null
+          chatter_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          image_url?: string | null
+          model_name?: string | null
+        }
+        Update: {
+          amount?: number | null
+          chatter_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          image_url?: string | null
+          model_name?: string | null
+        }
+        Relationships: []
+      }
+      shifts: {
+        Row: {
+          chatter_name: string | null
+          created_at: string | null
+          date: string | null
+          id: string
+          is_active: boolean | null
+          models: string[] | null
+          shift_type: string | null
+        }
+        Insert: {
+          chatter_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          is_active?: boolean | null
+          models?: string[] | null
+          shift_type?: string | null
+        }
+        Update: {
+          chatter_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          is_active?: boolean | null
+          models?: string[] | null
+          shift_type?: string | null
+        }
+        Relationships: []
+      }
+      whale_tracking: {
+        Row: {
+          created_at: string | null
+          fan_profile_id: string | null
+          id: string
+          last_contact: string | null
+          model_name: string | null
+          notes: string | null
+          priority: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fan_profile_id?: string | null
+          id?: string
+          last_contact?: string | null
+          model_name?: string | null
+          notes?: string | null
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fan_profile_id?: string | null
+          id?: string
+          last_contact?: string | null
+          model_name?: string | null
+          notes?: string | null
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whale_tracking_fan_profile_id_fkey"
+            columns: ["fan_profile_id"]
+            isOneToOne: false
+            referencedRelation: "fan_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
