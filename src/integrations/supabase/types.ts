@@ -80,6 +80,8 @@ export type Database = {
           created_at: string | null
           deadline: string | null
           description: string | null
+          detailed_description: string | null
+          fan_name: string | null
           fan_username: string | null
           id: string
           model_name: string | null
@@ -92,6 +94,8 @@ export type Database = {
           created_at?: string | null
           deadline?: string | null
           description?: string | null
+          detailed_description?: string | null
+          fan_name?: string | null
           fan_username?: string | null
           id?: string
           model_name?: string | null
@@ -104,6 +108,8 @@ export type Database = {
           created_at?: string | null
           deadline?: string | null
           description?: string | null
+          detailed_description?: string | null
+          fan_name?: string | null
           fan_username?: string | null
           id?: string
           model_name?: string | null
@@ -115,11 +121,15 @@ export type Database = {
       }
       fan_profiles: {
         Row: {
+          active_time: string | null
           created_at: string | null
           dob: string | null
           hobbies: string | null
           id: string
+          interests: string | null
           is_whale: boolean | null
+          job: string | null
+          last_active: string | null
           last_messaged: string | null
           location: string | null
           model_name: string | null
@@ -127,16 +137,23 @@ export type Database = {
           notes: string | null
           of_username: string | null
           payday: string | null
+          personality: string | null
+          preferences: string[] | null
           relationship_status: string | null
+          tier: string | null
           total_spent: number | null
           updated_at: string | null
         }
         Insert: {
+          active_time?: string | null
           created_at?: string | null
           dob?: string | null
           hobbies?: string | null
           id?: string
+          interests?: string | null
           is_whale?: boolean | null
+          job?: string | null
+          last_active?: string | null
           last_messaged?: string | null
           location?: string | null
           model_name?: string | null
@@ -144,16 +161,23 @@ export type Database = {
           notes?: string | null
           of_username?: string | null
           payday?: string | null
+          personality?: string | null
+          preferences?: string[] | null
           relationship_status?: string | null
+          tier?: string | null
           total_spent?: number | null
           updated_at?: string | null
         }
         Update: {
+          active_time?: string | null
           created_at?: string | null
           dob?: string | null
           hobbies?: string | null
           id?: string
+          interests?: string | null
           is_whale?: boolean | null
+          job?: string | null
+          last_active?: string | null
           last_messaged?: string | null
           location?: string | null
           model_name?: string | null
@@ -161,7 +185,10 @@ export type Database = {
           notes?: string | null
           of_username?: string | null
           payday?: string | null
+          personality?: string | null
+          preferences?: string[] | null
           relationship_status?: string | null
+          tier?: string | null
           total_spent?: number | null
           updated_at?: string | null
         }
