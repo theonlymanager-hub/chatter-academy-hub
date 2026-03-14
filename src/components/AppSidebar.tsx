@@ -43,6 +43,8 @@ const getAllSections = () => [
     label: "Team",
     items: [
       { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Chatter Tasks", url: "/tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Weekly Tasks", url: "/weekly-tasks", icon: Star, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
