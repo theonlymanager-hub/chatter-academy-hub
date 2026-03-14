@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Users, Star, TrendingUp, Clock, MessageSquare, Pencil, Check, Calendar } from "lucide-react";
+import { DollarSign, Users, Star, TrendingUp, Clock, MessageSquare, Pencil, Check, Calendar, Target } from "lucide-react";
 import { teamMembers, shiftSchedule, massMessages, chatterColors, modelColors, chattersOnLeave } from "@/lib/mock-data";
 import { Input } from "@/components/ui/input";
 import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
@@ -158,6 +158,32 @@ const Index = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* Weekly Targets */}
+      <div className="glass-card p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Target className="h-5 w-5 text-primary" />
+          <h2 className="font-semibold">Weekly Targets</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
+            <p className="text-2xl font-bold text-primary">$400–$500</p>
+            <p className="text-xs text-muted-foreground mt-1">Net revenue per 100 free subs</p>
+          </div>
+          <div className="p-4 rounded-lg bg-emerald-400/5 border border-emerald-400/20 text-center">
+            <p className="text-2xl font-bold text-emerald-400">2 min</p>
+            <p className="text-xs text-muted-foreground mt-1">Max response time</p>
+          </div>
+          <div className="p-4 rounded-lg bg-amber-400/5 border border-amber-400/20 text-center">
+            <p className="text-2xl font-bold text-amber-400">10/10</p>
+            <p className="text-xs text-muted-foreground mt-1">Quality score goal</p>
+          </div>
+          <div className="p-4 rounded-lg bg-purple-400/5 border border-purple-400/20 text-center">
+            <p className="text-2xl font-bold text-purple-400">100%</p>
+            <p className="text-xs text-muted-foreground mt-1">Task completion rate</p>
+          </div>
+        </div>
       </div>
 
       {/* Per-Model Revenue Breakdown */}

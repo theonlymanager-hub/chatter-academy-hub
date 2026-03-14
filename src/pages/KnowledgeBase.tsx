@@ -903,6 +903,128 @@ export default function KnowledgeBase() {
             </div>
           </AccordionContent>
         </AccordionItem>
+        {/* ─── 8. CHATTING STRATEGY ─── */}
+        <AccordionItem value="chatting-strategy" className="glass-card border rounded-lg px-5">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                <Zap className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-bold">Chatting Strategy & Standards</h2>
+                <p className="text-xs text-muted-foreground font-normal">Upselling, whale creation, zero tolerance rules & response standards</p>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6">
+            {/* Upsell Techniques */}
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-green-400" />
+                Upsell Techniques
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { rule: "Push for customs naturally in conversation", detail: "Never force it — let it come up organically. If they mention a fantasy or preference, that's your opening." },
+                  { rule: "Sell top/premium content at the right moment", detail: "When the fan is engaged and warmed up, not cold. Timing is everything — pitching to a cold fan kills the mood." },
+                  { rule: "VIP tier for big spenders", detail: "Fans who spend $1,000+ get fast replies, free content drops, and exclusive access. Make them feel like royalty." },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-green-400/5 border border-green-400/10">
+                    <span className="text-green-400 font-bold text-sm mt-0.5">{i + 1}.</span>
+                    <div>
+                      <p className="text-sm font-semibold">{item.rule}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Whale Creation */}
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <Crown className="h-4 w-4 text-primary" />
+                Whale Creation
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { rule: "Long game — emotional investment to point of no return", detail: "They should feel so connected that leaving would feel like a real breakup. That's when they spend without thinking." },
+                  { rule: "High energy chatting ALWAYS", detail: "Zero bland replies. Every message should have personality, warmth, and intent. If you're bored, they're bored." },
+                  { rule: "Build genuine connection", detail: "The fan should think the model genuinely likes them. Not fake, not forced — make it feel real." },
+                  { rule: "Takes time, that's fine", detail: "Rushing kills whales. A whale built over 3 weeks will spend 10x more than a fan you pushed too hard on day 1." },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <span className="text-primary font-bold text-sm mt-0.5">{i + 1}.</span>
+                    <div>
+                      <p className="text-sm font-semibold">{item.rule}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Zero Tolerance Rules */}
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-400" />
+                Zero Tolerance Rules
+              </h3>
+              <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/20">
+                <div className="space-y-3">
+                  {[
+                    { offence: "\"I'm bored\" type messages", result: "Instant coaching — if the fan is bored, you failed" },
+                    { offence: "Low energy, copy-paste, bland conversation", result: "Strike — this kills revenue and fan retention" },
+                    { offence: "Anything that kills the mood or breaks immersion", result: "Immediate correction — the fantasy must stay intact" },
+                    { offence: "Generic openers like \"hey how are you\" with no personalisation", result: "Coaching required — every opener must reference something personal" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-red-500/5">
+                      <div className="flex items-start gap-2 flex-1">
+                        <span className="text-red-400 mt-0.5">🚫</span>
+                        <p className="text-sm font-semibold text-red-400">{item.offence}</p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground shrink-0 max-w-[200px] text-right">{item.result}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Response Standards */}
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
+                Response Standards
+              </h3>
+              <div className="glass-card p-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-4 rounded-lg bg-emerald-400/5 border border-emerald-400/20 text-center">
+                    <p className="text-3xl font-bold text-emerald-400">2 min</p>
+                    <p className="text-xs text-muted-foreground mt-1">Maximum response time</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
+                    <p className="text-3xl font-bold text-primary">$400–$500</p>
+                    <p className="text-xs text-muted-foreground mt-1">Weekly net target per 100 free subs</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    "Every reply moves the conversation forward — no dead-end messages",
+                    "Use fan's personal details (job, hobbies, location) naturally in conversation",
+                    "Reference past conversations to show you remember them",
+                    "Match the model's persona and energy in every single message",
+                  ].map((standard, i) => (
+                    <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-secondary/30">
+                      <span className="text-emerald-400 mt-0.5">✓</span>
+                      <p className="text-sm text-muted-foreground">{standard}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         {/* ─── TYPES OF FANS ─── */}
         <AccordionItem value="fan-types" className="glass-card border rounded-lg px-5">
           <AccordionTrigger className="hover:no-underline">

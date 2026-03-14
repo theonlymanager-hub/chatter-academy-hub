@@ -144,7 +144,7 @@ export default function ClientProfiles() {
                 </Badge>
               </div>
 
-              {/* Theme / Type badges */}
+              {/* Theme badge */}
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge
                   variant="secondary"
@@ -155,9 +155,6 @@ export default function ClientProfiles() {
                   }}
                 >
                   {client.theme}
-                </Badge>
-                <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                  {client.type}
                 </Badge>
               </div>
 

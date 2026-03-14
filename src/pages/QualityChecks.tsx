@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { teamMembers, chatterColors } from "@/lib/mock-data";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Info, ClipboardCheck, TrendingUp, Calendar, User } from "lucide-react";
+import { Info, ClipboardCheck, TrendingUp, Calendar, User, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const categories = [
@@ -39,6 +39,22 @@ export default function QualityChecks() {
   const avgScore = (Object.values(scores).reduce((a, b) => a + b, 0) / categories.length).toFixed(1);
   const selectedChatter = teamMembers.find(m => m.id === selectedMember);
   const selectedColor = selectedChatter ? chatterColors[selectedChatter.name] : null;
+
+  const [recentScores, setRecentScores] = useState<any[]>([]);
+  const [scoresLoading, setScoresLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentScores = async () => {
+      const { data, error } = await supabase
+        .from("quality_scores")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (!error && data) setRecentScores(data);
+      setScoresLoading(false);
+    };
+    fetchRecentScores();
+  }, [submitting]);
 
   const canViewAllScores = hasPermission('view_all_scores');
   const canOnlyViewOwnScores = hasPermission('view_own_scores_only');
@@ -287,6 +303,73 @@ export default function QualityChecks() {
         <Button onClick={handleSubmit} className="w-full" disabled={submitting}>
           {submitting ? "Submitting..." : "Submit Quality Check"}
         </Button>
+      </div>
+
+      {/* Recent Quality Scores with Category Breakdown */}
+      <div className="glass-card p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <h2 className="font-semibold">Recent Quality Scores</h2>
+        </div>
+        {scoresLoading ? (
+          <p className="text-sm text-muted-foreground">Loading scores...</p>
+        ) : recentScores.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No scores yet. Submit a quality check above.</p>
+        ) : (
+          <div className="space-y-4">
+            {recentScores.map((score) => {
+              const color = chatterColors[score.chatter_name] || "217 91% 60%";
+              const scoreCategories = [
+                { label: "Response Time", value: score.response_time_score },
+                { label: "Personalisation", value: score.personalisation_score },
+                { label: "Conversation Flow", value: score.conversation_flow_score },
+                { label: "PPV Timing", value: score.ppv_timing_score },
+                { label: "Energy & Tone", value: score.energy_tone_score },
+              ];
+              return (
+                <div key={score.id} className="p-4 rounded-lg border" style={{ borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.03)` }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
+                        {(score.chatter_name || "?").slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{score.chatter_name}</p>
+                        <p className="text-[10px] text-muted-foreground">{score.shift_date} · by {score.reviewed_by}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-xl font-bold ${(score.overall_score || 0) >= 8 ? "text-success" : (score.overall_score || 0) >= 5 ? "text-warning" : "text-destructive"}`}>
+                        {(score.overall_score || 0).toFixed(1)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">/10</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {scoreCategories.map((cat) => {
+                      const val = cat.value || 0;
+                      const barColor = val >= 8 ? "bg-success" : val >= 5 ? "bg-warning" : "bg-destructive";
+                      return (
+                        <div key={cat.label} className="space-y-0.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-muted-foreground">{cat.label}</span>
+                            <span className={`text-[11px] font-bold ${val >= 8 ? "text-success" : val >= 5 ? "text-warning" : "text-destructive"}`}>{val}/10</span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-secondary/50 overflow-hidden">
+                            <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${val * 10}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {score.notes && (
+                    <p className="text-xs text-muted-foreground mt-2 italic border-t border-border/30 pt-2">"{score.notes}"</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
