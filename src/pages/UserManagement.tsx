@@ -52,7 +52,7 @@ const NAVIGATION_ITEMS = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, category: "Main" },
   { id: "team", name: "Team Members", icon: Users, category: "Team" },
   { id: "quality", name: "Quality Checks", icon: Star, category: "Team" },
-  { id: "tasks", name: "Mark Tasks", icon: ClipboardList, category: "Team" },
+  { id: "tasks", name: "Task Assignments", icon: ClipboardList, category: "Team" },
   { id: "weekly-tasks", name: "Chatter Tasks", icon: ClipboardList, category: "Team" },
   { id: "training", name: "Training", icon: GraduationCap, category: "Training" },
   { id: "knowledge-base", name: "Knowledge Base", icon: BookOpen, category: "Training" },

@@ -110,26 +110,13 @@ export default function TeamMembers() {
 
   // Group team members by category
   const groupedMembers = {
-    chatters: teamMembers.filter(m => m.category === "chatter"),
     supervisors: teamMembers.filter(m => m.category === "supervisor"),
-    management: teamMembers.filter(m => m.category === "management"),
+    dashboardManagers: teamMembers.filter(m => m.category === "dashboard_manager"),
+    chatters: teamMembers.filter(m => m.category === "chatter"),
   };
 
   const jobDescriptions: Record<string, string[]> = {
-    "Luke": [
-      "Strategy & business direction",
-      "Quality oversight & chat reviewing",
-      "Client relationship management",
-      "Team hiring decisions",
-      "Setting targets & KPIs",
-    ],
-    "Mark": [
-      "Quality checks (2x daily minimum)",
-      "Dashboard management & updates",
-      "Automated monitoring & cron jobs",
-      "Chat analysis & feedback",
-      "Whale tracking & fan data",
-    ],
+
     "Zar": [
       "Shift management & scheduling",
       "Chatter oversight & accountability",
@@ -406,25 +393,6 @@ export default function TeamMembers() {
         <p className="text-muted-foreground text-sm mt-1">Manage your chatting team</p>
       </div>
 
-      {/* Chatters Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => toggleSection("chatters")}
-            className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
-          >
-            {collapsedSections["chatters"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-            💬 Chatters ({groupedMembers.chatters.length})
-          </button>
-        </div>
-        
-        {!collapsedSections["chatters"] && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-            {groupedMembers.chatters.map(renderMemberCard)}
-          </div>
-        )}
-      </div>
-
       {/* Supervisors Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -444,26 +412,45 @@ export default function TeamMembers() {
         )}
       </div>
 
-      {/* Management Section - only shown if any members still have management category */}
-      {groupedMembers.management.length > 0 && (
+      {/* Dashboard Manager Section */}
+      {groupedMembers.dashboardManagers.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => toggleSection("management")}
+              onClick={() => toggleSection("dashboardManagers")}
               className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
             >
-              {collapsedSections["management"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-              👑 Management ({groupedMembers.management.length})
+              {collapsedSections["dashboardManagers"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+              📊 Dashboard Manager ({groupedMembers.dashboardManagers.length})
             </button>
           </div>
           
-          {!collapsedSections["management"] && (
+          {!collapsedSections["dashboardManagers"] && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-              {groupedMembers.management.map(renderMemberCard)}
+              {groupedMembers.dashboardManagers.map(renderMemberCard)}
             </div>
           )}
         </div>
       )}
+
+      {/* Chatters Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => toggleSection("chatters")}
+            className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
+          >
+            {collapsedSections["chatters"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+            💬 Chatters ({groupedMembers.chatters.length})
+          </button>
+        </div>
+        
+        {!collapsedSections["chatters"] && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+            {groupedMembers.chatters.map(renderMemberCard)}
+          </div>
+        )}
+      </div>
 
       {/* Chat Leaderboard */}
       <div className="space-y-4">

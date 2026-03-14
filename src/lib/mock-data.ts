@@ -20,7 +20,7 @@ export interface TeamMember {
   name: string;
   avatar: string;
   role: string;
-  category: "chatter" | "supervisor" | "management";
+  category: "chatter" | "supervisor" | "management" | "dashboard_manager";
   shiftTimes?: string;
   trainingProgress: number;
   qualityScore: number;
@@ -143,25 +143,13 @@ export const teamMembers: TeamMember[] = [
     revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
   { 
-    id: "7", name: "Elle", avatar: "EL", role: "Data & Client Supervisor", category: "supervisor", shiftTimes: "Flexible",
+    id: "7", name: "Elle", avatar: "EL", role: "Dashboard Manager", category: "dashboard_manager", shiftTimes: "Flexible",
     trainingProgress: 0, qualityScore: 0, 
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
   
-  // Supervisors (continued)
-  { 
-    id: "8", name: "Luke", avatar: "LU", role: "Agency Owner", category: "supervisor", shiftTimes: "Always on",
-    trainingProgress: 100, qualityScore: 0, 
-    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
-    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
-  },
-  { 
-    id: "9", name: "Mark", avatar: "MK", role: "AI Supervisor", category: "supervisor", shiftTimes: "24/7",
-    trainingProgress: 0, qualityScore: 0, 
-    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
-    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
-  },
+
 ];
 
 export const trainingCurriculum: TrainingModule[] = [

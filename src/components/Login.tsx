@@ -35,12 +35,13 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="glass-card p-8 w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-            <Lock className="h-7 w-7 text-primary" />
+          <div className="text-4xl font-black tracking-tight">
+            <span style={{ color: "#00BCD4" }}>O</span>
+            <span className="text-slate-300">M</span>
           </div>
           <h1 className="text-xl font-semibold text-foreground">The Only Board</h1>
           <p className="text-sm text-muted-foreground text-center">
-            Sign in to access your dashboard
+            Chatting Operations — Sign in to access your dashboard
           </p>
         </div>
         

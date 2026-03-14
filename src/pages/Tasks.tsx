@@ -89,7 +89,7 @@ export default function Tasks() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Task Assignments</h1>
-          <p className="text-muted-foreground text-sm mt-1">Weekly tasks and goals</p>
+          <p className="text-muted-foreground text-sm mt-1">Team tasks and goals</p>
         </div>
         <Button onClick={() => setShowAddForm(!showAddForm)} size="sm" className="gap-2">
           <Plus className="h-4 w-4" />

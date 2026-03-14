@@ -43,24 +43,12 @@ const getAllSections = () => [
     label: "Team",
     items: [
       { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Quality Checks", url: "/quality", icon: Star, roles: ['admin', 'supervisor', 'data_entry'] },
-      { title: "Mark Tasks", url: "/tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry'] },
-      { title: "Chatter Tasks", url: "/weekly-tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-    ],
-  },
-  {
-    label: "Training",
-    items: [
-      { title: "Training", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Training Results", url: "/training-results", icon: Star, roles: ['admin', 'supervisor'] },
-      { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
     label: "Calendar",
     items: [
       { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Shift Scheduler", url: "/shifts", icon: Clock, roles: ['admin', 'supervisor', 'data_entry'] },
       { title: "Mass Messages", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
@@ -69,12 +57,14 @@ const getAllSections = () => [
     items: [
       { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry'] },
     ],
   },
   {
-    label: "Profiles",
+    label: "Training",
     items: [
-      { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Training", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
@@ -102,11 +92,20 @@ export function AppSidebar() {
         <div className={`px-4 py-5 ${collapsed ? "px-2" : ""}`}>
           {!collapsed ? (
             <div>
-              <h1 className="text-lg font-bold gradient-text">The Only Board</h1>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-black tracking-tight">
+                  <span style={{ color: "#00BCD4" }}>O</span>
+                  <span className="text-slate-300">M</span>
+                </span>
+                <h1 className="text-lg font-bold gradient-text">The Only Board</h1>
+              </div>
               <p className="text-sm text-muted-foreground mt-1">Welcome, {user?.displayName}</p>
             </div>
           ) : (
-            <span className="text-xl font-bold text-primary block text-center">OB</span>
+            <span className="text-xl font-black block text-center">
+              <span style={{ color: "#00BCD4" }}>O</span>
+              <span className="text-slate-300">M</span>
+            </span>
           )}
         </div>
         {sections.map((section) => (

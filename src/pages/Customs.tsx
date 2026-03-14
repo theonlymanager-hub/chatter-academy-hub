@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Plus, Check, Clock, Pencil, Trash2, DollarSign, CalendarClock, AlertTriangle } from "lucide-react";
 import { modelColors } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CustomOrder {
   id: string;
@@ -68,6 +69,8 @@ function getDeadlineBg(deadline: string): string {
 }
 
 export default function Customs() {
+  const { user } = useAuth();
+  const canEdit = user && ['admin', 'supervisor', 'data_entry'].includes(user.role);
   const [customs, setCustoms] = useState<CustomOrder[]>([]);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [collapsedModels, setCollapsedModels] = useState<Record<string, boolean>>(() => {
@@ -334,17 +337,24 @@ export default function Customs() {
                       </div>
                     ) : (
                       <div className="flex items-start gap-3">
-                        <button
-                          onClick={() => {
-                            const next = custom.status === "pending" ? "complete" : "pending";
-                            updateStatus(custom.id, next);
-                          }}
-                          className={`mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border ${statusColors[custom.status]} hover:opacity-80 transition-opacity`}
-                          title="Click to cycle status"
-                        >
-                          {statusIcons[custom.status]}
-                          {custom.status}
-                        </button>
+                        {canEdit ? (
+                          <button
+                            onClick={() => {
+                              const next = custom.status === "pending" ? "complete" : "pending";
+                              updateStatus(custom.id, next);
+                            }}
+                            className={`mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border ${statusColors[custom.status]} hover:opacity-80 transition-opacity`}
+                            title="Click to cycle status"
+                          >
+                            {statusIcons[custom.status]}
+                            {custom.status}
+                          </button>
+                        ) : (
+                          <span className={`mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border ${statusColors[custom.status]}`}>
+                            {statusIcons[custom.status]}
+                            {custom.status}
+                          </span>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-sm font-medium">{custom.description}</p>
@@ -377,21 +387,23 @@ export default function Customs() {
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => startEdit(custom)} className="p-1.5 rounded-md hover:bg-secondary transition-colors">
-                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                          </button>
-                          <button onClick={() => deleteCustom(custom.id)} className="p-1.5 rounded-md hover:bg-destructive/20 transition-colors">
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                          </button>
-                        </div>
+                        {canEdit && (
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => startEdit(custom)} className="p-1.5 rounded-md hover:bg-secondary transition-colors">
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
+                            <button onClick={() => deleteCustom(custom.id)} className="p-1.5 rounded-md hover:bg-destructive/20 transition-colors">
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 ))}
 
-                {/* Add new custom */}
-                {addingTo === model ? (
+                {/* Add new custom — only for admin/supervisor/data_entry */}
+                {canEdit && addingTo === model ? (
                   <div className="glass-card p-4 space-y-3">
                     <Input
                       value={newDesc}
@@ -440,7 +452,7 @@ export default function Customs() {
                       <Button size="sm" variant="ghost" onClick={() => { setAddingTo(null); setNewDesc(""); setNewDetailedDesc(""); setNewPrice(""); setNewDeadline(""); setNewFanOfUsername(""); setNewFan(""); }} className="h-8">Cancel</Button>
                     </div>
                   </div>
-                ) : (
+                ) : canEdit ? (
                   <Button
                     variant="outline"
                     size="sm"
@@ -449,7 +461,7 @@ export default function Customs() {
                   >
                     <Plus className="h-3.5 w-3.5 mr-1" /> Add Custom
                   </Button>
-                )}
+                ) : null}
               </div>
             )}
           </div>
