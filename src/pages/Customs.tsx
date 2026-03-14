@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronDown, ChevronUp, Plus, Check, Clock, Pencil, Trash2, DollarSign, CalendarClock, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Check, Clock, Pencil, Trash2, DollarSign, CalendarClock, AlertTriangle, Loader2 } from "lucide-react";
 import { modelColors } from "@/lib/mock-data";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface CustomOrder {
   id: string;
@@ -22,8 +24,6 @@ interface CustomOrder {
 }
 
 type FilterStatus = "all" | "pending" | "complete";
-
-const STORAGE_KEY = "the-only-board-customs";
 
 const MODELS = ["Ashley", "Willow", "Izzie", "Lucinda"];
 
@@ -68,10 +68,26 @@ function getDeadlineBg(deadline: string): string {
   return "bg-green-500/10 border-green-500/30";
 }
 
+function dbToCustom(row: any): CustomOrder {
+  return {
+    id: row.id,
+    description: row.description || "",
+    detailedDescription: row.detailed_description || "",
+    price: row.price || 0,
+    deadline: row.deadline || "",
+    fanOfUsername: row.fan_username || "",
+    status: row.status === "complete" ? "complete" : "pending",
+    dateRequested: row.created_at ? row.created_at.split("T")[0] : "",
+    fanName: row.fan_name || "",
+    model: row.model_name || "",
+  };
+}
+
 export default function Customs() {
   const { user } = useAuth();
   const canEdit = user && ['admin', 'supervisor', 'data_entry'].includes(user.role);
   const [customs, setCustoms] = useState<CustomOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [collapsedModels, setCollapsedModels] = useState<Record<string, boolean>>(() => {
     const saved = localStorage.getItem("customs-collapsed");
@@ -97,20 +113,24 @@ export default function Customs() {
   const [editFan, setEditFan] = useState("");
   const [editStatus, setEditStatus] = useState<CustomOrder["status"]>("pending");
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setCustoms(JSON.parse(saved));
+  // Fetch customs from DB
+  const fetchCustoms = async () => {
+    const { data, error } = await supabase
+      .from("customs")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Error fetching customs:", error);
+      toast.error("Failed to load customs");
     } else {
-      setCustoms([]);
+      setCustoms((data || []).map(dbToCustom));
     }
-  }, []);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    if (customs.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(customs));
-    }
-  }, [customs]);
+    fetchCustoms();
+  }, []);
 
   const toggleModel = (model: string) => {
     setCollapsedModels(prev => {
@@ -120,21 +140,25 @@ export default function Customs() {
     });
   };
 
-  const addCustom = (model: string) => {
+  const addCustom = async (model: string) => {
     if (!newDesc.trim() || !newFan.trim()) return;
-    const custom: CustomOrder = {
-      id: Date.now().toString(),
+    const { data, error } = await supabase.from("customs").insert({
       description: newDesc.trim(),
-      detailedDescription: newDetailedDesc.trim(),
+      detailed_description: newDetailedDesc.trim(),
       price: parseFloat(newPrice) || 0,
-      deadline: newDeadline,
-      fanOfUsername: newFanOfUsername.trim(),
+      deadline: newDeadline || null,
+      fan_username: newFanOfUsername.trim(),
+      fan_name: newFan.trim(),
+      model_name: model,
       status: "pending",
-      dateRequested: new Date().toISOString().split("T")[0],
-      fanName: newFan.trim(),
-      model,
-    };
-    setCustoms(prev => [...prev, custom]);
+    } as any).select().single();
+
+    if (error) {
+      console.error("Error adding custom:", error);
+      toast.error("Failed to add custom");
+      return;
+    }
+    setCustoms(prev => [dbToCustom(data), ...prev]);
     setNewDesc("");
     setNewDetailedDesc("");
     setNewPrice("");
@@ -142,9 +166,15 @@ export default function Customs() {
     setNewFanOfUsername("");
     setNewFan("");
     setAddingTo(null);
+    toast.success("Custom added");
   };
 
-  const updateStatus = (id: string, status: CustomOrder["status"]) => {
+  const updateStatus = async (id: string, status: CustomOrder["status"]) => {
+    const { error } = await supabase.from("customs").update({ status, updated_at: new Date().toISOString() } as any).eq("id", id);
+    if (error) {
+      toast.error("Failed to update status");
+      return;
+    }
     setCustoms(prev => prev.map(c => c.id === id ? { ...c, status } : c));
   };
 
@@ -159,7 +189,22 @@ export default function Customs() {
     setEditStatus(custom.status);
   };
 
-  const saveEdit = (id: string) => {
+  const saveEdit = async (id: string) => {
+    const { error } = await supabase.from("customs").update({
+      description: editDesc,
+      detailed_description: editDetailedDesc,
+      price: parseFloat(editPrice) || 0,
+      deadline: editDeadline || null,
+      fan_username: editFanOfUsername,
+      fan_name: editFan,
+      status: editStatus,
+      updated_at: new Date().toISOString(),
+    } as any).eq("id", id);
+
+    if (error) {
+      toast.error("Failed to save edit");
+      return;
+    }
     setCustoms(prev => prev.map(c => c.id === id ? {
       ...c,
       description: editDesc,
@@ -171,14 +216,17 @@ export default function Customs() {
       status: editStatus,
     } : c));
     setEditingId(null);
+    toast.success("Custom updated");
   };
 
-  const deleteCustom = (id: string) => {
-    setCustoms(prev => {
-      const updated = prev.filter(c => c.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
+  const deleteCustom = async (id: string) => {
+    const { error } = await supabase.from("customs").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete custom");
+      return;
+    }
+    setCustoms(prev => prev.filter(c => c.id !== id));
+    toast.success("Custom deleted");
   };
 
   const getModelCustoms = (model: string) => {
@@ -190,6 +238,14 @@ export default function Customs() {
   };
 
   const getAllModelCustoms = (model: string) => customs.filter(c => c.model === model);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">

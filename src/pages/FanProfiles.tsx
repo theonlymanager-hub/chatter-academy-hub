@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { modelColors } from "@/lib/mock-data";
-import { DollarSign, Clock, Heart, User, Calendar, Briefcase, Moon, Star, Pencil, Copy, Check, MessageCircle, AlertTriangle, MapPin } from "lucide-react";
+import { DollarSign, Clock, Heart, User, Calendar, Briefcase, Moon, Star, Pencil, Copy, Check, MessageCircle, AlertTriangle, MapPin, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Fan {
   id: string;
@@ -15,7 +17,7 @@ interface Fan {
   lastActive: string;
   tier: "whale" | "vip" | "regular";
   preferences: string[];
-  personality: "submissive" | "dominant" | "switch";
+  personality: string;
   activeTime: string;
   payday: string;
   job?: string;
@@ -25,291 +27,32 @@ interface Fan {
   hobbies?: string;
   interests: string;
   notes: string;
-  lastMessaged?: string; // ISO date string
+  lastMessaged?: string;
 }
 
-const STORAGE_KEY = "fan-profiles-data";
-const STORAGE_VERSION_KEY = "fan-profiles-version";
-const CURRENT_VERSION = 2;
-
-// Default data
-const defaultFansByModel: Record<string, Fan[]> = {
-  "Izzie": [
-    { 
-      id: "1", name: "Nate", account: "Izzie", ofUsername: "@nate_real", totalSpent: 3498, lastActive: "Today", tier: "whale",
-      preferences: ["solo content", "military roleplay", "PPV opener"],
-      personality: "submissive",
-      activeTime: "Evenings 8-11pm",
-      payday: "Fridays",
-      job: "Unknown",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      lastMessaged: "2026-03-13",
-      interests: "Military/discipline themes, loves being commanded",
-      notes: "Top whale. Greedy daily. Opens ALL PPVs within hours. Full script completed."
-    },
-    { 
-      id: "4", name: "DEVO", account: "Izzie", ofUsername: "@u567823", totalSpent: 2068, lastActive: "2 days ago", tier: "whale",
-      preferences: ["roleplay", "military", "customs"],
-      personality: "submissive",
-      activeTime: "Late nights",
-      payday: "Bi-weekly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Military fetish, detailed roleplay scenarios",
-      notes: "Responds well to commanding tone. Likes extended roleplay sessions."
-    },
-    {
-      id: "12", name: "RyanM", account: "Izzie", ofUsername: "@ryan_muscle", totalSpent: 890, lastActive: "Yesterday", tier: "vip",
-      preferences: ["PPV", "solo"],
-      personality: "switch",
-      activeTime: "Mornings",
-      payday: "Monthly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Solo content, athletic themes",
-      notes: "Consistent buyer. Opens most PPVs. Quiet but reliable."
-    },
-    {
-      id: "13", name: "ChrisB", account: "Izzie", ofUsername: "@chris_b_92", totalSpent: 620, lastActive: "3 days ago", tier: "vip",
-      preferences: ["customs", "chat"],
-      personality: "dominant",
-      activeTime: "Evenings",
-      payday: "Weekly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Extended conversations, custom requests",
-      notes: "Loves long chats. Will order customs after rapport building."
-    },
-    {
-      id: "14", name: "SteveK", account: "Izzie", ofUsername: "@u234567", totalSpent: 445, lastActive: "This week", tier: "regular",
-      preferences: ["PPV", "tips"],
-      personality: "submissive",
-      activeTime: "Late nights",
-      payday: "Bi-weekly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "General content, military theme",
-      notes: "Steady spender. Building up — potential whale."
-    },
-  ],
-  "Ashley": [
-    { 
-      id: "2", name: "Patrick", account: "Ashley", ofUsername: "@patrick_night", totalSpent: 2549, lastActive: "Today", tier: "whale",
-      preferences: ["customs", "tipping", "college theme"],
-      personality: "dominant",
-      activeTime: "8-11pm weeknights",
-      payday: "Monthly (1st)",
-      job: "Office worker",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Shy/innocent angle, first-time narratives",
-      notes: "Big tipper. Loves ordering customs. Night owl - most active 8-11pm."
-    },
-    { 
-      id: "3", name: "Derek", account: "Ashley", ofUsername: "@derek_weekends", totalSpent: 2364, lastActive: "Yesterday", tier: "whale",
-      preferences: ["weekly PPV", "consistent buyer"],
-      personality: "switch",
-      activeTime: "Weekends",
-      payday: "Saturdays",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Variety content, likes surprises",
-      notes: "Consistent weekly spender. Reliable Saturday purchases."
-    },
-    { 
-      id: "10", name: "adamo", account: "Ashley", ofUsername: "@u789456", totalSpent: 805, lastActive: "Today", tier: "vip",
-      preferences: ["PPV", "daily buyer"],
-      personality: "dominant",
-      activeTime: "Daily",
-      payday: "Daily spender",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Pure message buyer, no tips",
-      notes: "New but spending fast (joined Feb 21). Daily engagement, pure PPV buyer."
-    },
-    { 
-      id: "11", name: "Mikey", account: "Ashley", ofUsername: "@mikey_drums", totalSpent: 734, lastActive: "Today", tier: "vip",
-      preferences: ["customs", "100/500 tier"],
-      personality: "submissive",
-      activeTime: "Early mornings",
-      payday: "Daily",
-      job: "Drummer",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Custom content, very active daily",
-      notes: "Custom buyer (100/500 tier noted). Very active daily engagement. Drummer."
-    },
-    {
-      id: "15", name: "TommyJ", account: "Ashley", ofUsername: "@tommy_college", totalSpent: 520, lastActive: "Yesterday", tier: "regular",
-      preferences: ["PPV", "college theme"],
-      personality: "switch",
-      activeTime: "Weekends",
-      payday: "Monthly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "College/party themes, candid style",
-      notes: "Weekend warrior. Buys most PPVs on Saturday nights."
-    },
-  ],
-  "Willow": [
-    { 
-      id: "5", name: "Jay41", account: "Willow", ofUsername: "@jay41_feet", totalSpent: 1200, lastActive: "Today", tier: "vip",
-      preferences: ["feet", "customs", "no toys"],
-      personality: "dominant",
-      activeTime: "Afternoons",
-      payday: "Weekly Fridays",
-      job: "Works from home",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Feet content, finger play only (no toys), detailed custom requests",
-      notes: "Very specific requests. NO TOYS - he hates them. Feet + fingers only. Red/French nails preferred."
-    },
-    { 
-      id: "6", name: "James", account: "Willow", ofUsername: "@james_cowboy", totalSpent: 950, lastActive: "3 days ago", tier: "vip",
-      preferences: ["customs", "toy play"],
-      personality: "submissive",
-      activeTime: "Evenings",
-      payday: "Bi-weekly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      lastMessaged: "2026-03-13",
-      interests: "Cowgirl content, toy riding",
-      notes: "Deleted old account, created new one. Previous big spender returning. Willing to pay again for customs."
-    },
-    {
-      id: "16", name: "DaveW", account: "Willow", ofUsername: "@u345678", totalSpent: 680, lastActive: "Today", tier: "vip",
-      preferences: ["feet", "lingerie"],
-      personality: "dominant",
-      activeTime: "Afternoons",
-      payday: "Weekly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Feet and lingerie combos",
-      notes: "Consistent tipper. Loves new lingerie reveals."
-    },
-    {
-      id: "17", name: "AaronP", account: "Willow", ofUsername: "@aaron_quiet", totalSpent: 410, lastActive: "Yesterday", tier: "regular",
-      preferences: ["PPV", "solo"],
-      personality: "submissive",
-      activeTime: "Mornings",
-      payday: "Monthly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Solo playful content",
-      notes: "Opens most PPVs. Quiet chatter but reliable buyer."
-    },
-    {
-      id: "18", name: "MikeR", account: "Willow", ofUsername: "@mike_talker", totalSpent: 320, lastActive: "This week", tier: "regular",
-      preferences: ["customs", "chat"],
-      personality: "switch",
-      activeTime: "Evenings",
-      payday: "Bi-weekly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Conversation-heavy, likes getting to know her",
-      notes: "Building rapport. Potential for customs once trust established."
-    },
-  ],
-  "Lucinda Bleu": [
-    { 
-      id: "7", name: "Zaza", account: "Lucinda Bleu", ofUsername: "@zaza_dark", totalSpent: 183, lastActive: "This week", tier: "vip",
-      preferences: ["goth aesthetic", "mysterious content"],
-      personality: "submissive",
-      activeTime: "Late nights",
-      payday: "Unknown",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Dark/mysterious themes, candlelit content",
-      notes: "Top spender for Lucinda. Responds well to dark aesthetic."
-    },
-    { 
-      id: "8", name: "Todd Whiting", account: "Lucinda Bleu", ofUsername: "@todd_appreciation", totalSpent: 136, lastActive: "This week", tier: "regular",
-      preferences: ["tips only", "no PPV"],
-      personality: "dominant",
-      activeTime: "Evenings",
-      payday: "Unknown",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Pure tipper - doesn't buy messages/PPV",
-      notes: "$136 in tips only, $0 messages. Appreciation spender."
-    },
-    { 
-      id: "9", name: "Brandon", account: "Lucinda Bleu", ofUsername: "@brandon_goth", totalSpent: 112, lastActive: "This week", tier: "regular",
-      preferences: ["goth content"],
-      personality: "switch",
-      activeTime: "Unknown",
-      payday: "Unknown",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      lastMessaged: "2026-03-12",
-      interests: "Goth aesthetic content",
-      notes: "Regular buyer, building relationship."
-    },
-    {
-      id: "19", name: "EthanV", account: "Lucinda Bleu", ofUsername: "@u456789", totalSpent: 95, lastActive: "Yesterday", tier: "regular",
-      preferences: ["PPV", "dark aesthetic"],
-      personality: "submissive",
-      activeTime: "Late nights",
-      payday: "Monthly",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Dark/mysterious reveals, candlelit themes",
-      notes: "New fan, spending steadily. Responds well to mysterious tone."
-    },
-    {
-      id: "20", name: "NoahC", account: "Lucinda Bleu", ofUsername: "@noah_chatter", totalSpent: 78, lastActive: "This week", tier: "regular",
-      preferences: ["tips", "chat"],
-      personality: "dominant",
-      activeTime: "Evenings",
-      payday: "Unknown",
-      dateOfBirth: "Unknown",
-      location: "Unknown",
-      relationshipStatus: "Unknown",
-      hobbies: "Unknown",
-      interests: "Conversation first, content second",
-      notes: "Tipper who likes chatting. Could become VIP with engagement."
-    },
-  ],
-};
+function dbToFan(row: any): Fan {
+  return {
+    id: row.id,
+    name: row.name || "",
+    account: row.model_name || "",
+    ofUsername: row.of_username || "",
+    totalSpent: row.total_spent || 0,
+    lastActive: row.last_active || "Unknown",
+    tier: (row.tier === "whale" || row.tier === "vip") ? row.tier : "regular",
+    preferences: row.preferences || [],
+    personality: row.personality || "switch",
+    activeTime: row.active_time || "Unknown",
+    payday: row.payday || "Unknown",
+    job: row.job || undefined,
+    dateOfBirth: row.dob ? String(row.dob) : undefined,
+    location: row.location || undefined,
+    relationshipStatus: row.relationship_status || undefined,
+    hobbies: row.hobbies || undefined,
+    interests: row.interests || "",
+    notes: row.notes || "",
+    lastMessaged: row.last_messaged ? row.last_messaged.split("T")[0] : undefined,
+  };
+}
 
 const tierColors = {
   whale: "45 93% 47%",
@@ -317,9 +60,9 @@ const tierColors = {
   regular: "217 91% 60%",
 };
 
-const personalityIcons = {
+const personalityIcons: Record<string, string> = {
   submissive: "😇",
-  dominant: "😈", 
+  dominant: "😈",
   switch: "🔄",
 };
 
@@ -332,7 +75,8 @@ function needsContact(lastMessaged?: string): boolean {
 }
 
 export default function FanProfiles() {
-  const [fansByModel, setFansByModel] = useState<Record<string, Fan[]>>(defaultFansByModel);
+  const [fansByModel, setFansByModel] = useState<Record<string, Fan[]>>({});
+  const [loading, setLoading] = useState(true);
   const [editingFanId, setEditingFanId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -348,47 +92,30 @@ export default function FanProfiles() {
   const [editRelationshipStatus, setEditRelationshipStatus] = useState("");
   const [editHobbies, setEditHobbies] = useState("");
 
-  // Load saved data with version check
-  useEffect(() => {
-    const savedVersion = parseInt(localStorage.getItem(STORAGE_VERSION_KEY) || "0", 10);
-    if (savedVersion < CURRENT_VERSION) {
-      // Clear old data and reload defaults when version is outdated
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.setItem(STORAGE_VERSION_KEY, String(CURRENT_VERSION));
-      setFansByModel(defaultFansByModel);
+  const fetchFans = async () => {
+    const { data, error } = await supabase
+      .from("fan_profiles")
+      .select("*")
+      .order("total_spent", { ascending: false });
+    if (error) {
+      console.error("Error fetching fan profiles:", error);
+      toast.error("Failed to load fan profiles");
+      setLoading(false);
       return;
     }
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Merge saved data over defaults (preserves structure, updates edited fields)
-        const merged: Record<string, Fan[]> = {};
-        for (const model of Object.keys(defaultFansByModel)) {
-          merged[model] = defaultFansByModel[model].map(defaultFan => {
-            const savedFan = parsed[model]?.find((f: Fan) => f.id === defaultFan.id);
-            return savedFan ? { ...defaultFan, ...savedFan } : defaultFan;
-          });
-          // Also include any fans that were added in saved but not in defaults
-          const savedOnly = (parsed[model] || []).filter((sf: Fan) => !defaultFansByModel[model].some(df => df.id === sf.id));
-          merged[model] = [...merged[model], ...savedOnly];
-        }
-        // Include models in saved that aren't in defaults
-        for (const model of Object.keys(parsed)) {
-          if (!merged[model]) {
-            merged[model] = parsed[model];
-          }
-        }
-        setFansByModel(merged);
-      } catch {
-        setFansByModel(defaultFansByModel);
-      }
+    const grouped: Record<string, Fan[]> = {};
+    for (const row of data || []) {
+      const fan = dbToFan(row);
+      const model = fan.account || "Unknown";
+      if (!grouped[model]) grouped[model] = [];
+      grouped[model].push(fan);
     }
-  }, []);
+    setFansByModel(grouped);
+    setLoading(false);
+  };
 
-  const saveToStorage = useCallback((data: Record<string, Fan[]>) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    localStorage.setItem(STORAGE_VERSION_KEY, String(CURRENT_VERSION));
+  useEffect(() => {
+    fetchFans();
   }, []);
 
   const copyUsername = (fanId: string, username: string) => {
@@ -411,44 +138,86 @@ export default function FanProfiles() {
     setEditHobbies(fan.hobbies || "");
   };
 
-  const saveEdit = (modelName: string, fanId: string) => {
-    const updated = { ...fansByModel };
-    updated[modelName] = updated[modelName].map(f =>
-      f.id === fanId
-        ? { ...f, ofUsername: editOfUsername, notes: editNotes, interests: editInterests, activeTime: editActiveTime, payday: editPayday, job: editJob || undefined, dateOfBirth: editDateOfBirth || undefined, location: editLocation || undefined, relationshipStatus: editRelationshipStatus || undefined, hobbies: editHobbies || undefined }
-        : f
-    );
-    setFansByModel(updated);
-    saveToStorage(updated);
+  const saveEdit = async (modelName: string, fanId: string) => {
+    const { error } = await supabase.from("fan_profiles").update({
+      of_username: editOfUsername,
+      notes: editNotes,
+      interests: editInterests,
+      active_time: editActiveTime,
+      payday: editPayday,
+      job: editJob || null,
+      dob: editDateOfBirth || null,
+      location: editLocation || null,
+      relationship_status: editRelationshipStatus || null,
+      hobbies: editHobbies || null,
+      updated_at: new Date().toISOString(),
+    } as any).eq("id", fanId);
+
+    if (error) {
+      toast.error("Failed to save changes");
+      return;
+    }
+
+    // Update local state
+    setFansByModel(prev => {
+      const updated = { ...prev };
+      updated[modelName] = updated[modelName].map(f =>
+        f.id === fanId
+          ? { ...f, ofUsername: editOfUsername, notes: editNotes, interests: editInterests, activeTime: editActiveTime, payday: editPayday, job: editJob || undefined, dateOfBirth: editDateOfBirth || undefined, location: editLocation || undefined, relationshipStatus: editRelationshipStatus || undefined, hobbies: editHobbies || undefined }
+          : f
+      );
+      return updated;
+    });
     setEditingFanId(null);
+    toast.success("Fan profile updated");
   };
 
-  const markMessaged = (modelName: string, fanId: string) => {
-    const today = new Date().toISOString().split("T")[0];
-    const updated = { ...fansByModel };
-    updated[modelName] = updated[modelName].map(f =>
-      f.id === fanId ? { ...f, lastMessaged: today } : f
-    );
-    setFansByModel(updated);
-    saveToStorage(updated);
+  const markMessaged = async (modelName: string, fanId: string) => {
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("fan_profiles").update({ last_messaged: now, updated_at: now } as any).eq("id", fanId);
+    if (error) {
+      toast.error("Failed to update");
+      return;
+    }
+    const today = now.split("T")[0];
+    setFansByModel(prev => {
+      const updated = { ...prev };
+      updated[modelName] = updated[modelName].map(f =>
+        f.id === fanId ? { ...f, lastMessaged: today } : f
+      );
+      return updated;
+    });
   };
 
-  const clearLastMessaged = (modelName: string, fanId: string) => {
-    const updated = { ...fansByModel };
-    updated[modelName] = updated[modelName].map(f =>
-      f.id === fanId ? { ...f, lastMessaged: undefined } : f
-    );
-    setFansByModel(updated);
-    saveToStorage(updated);
+  const clearLastMessaged = async (modelName: string, fanId: string) => {
+    const { error } = await supabase.from("fan_profiles").update({ last_messaged: null, updated_at: new Date().toISOString() } as any).eq("id", fanId);
+    if (error) {
+      toast.error("Failed to update");
+      return;
+    }
+    setFansByModel(prev => {
+      const updated = { ...prev };
+      updated[modelName] = updated[modelName].map(f =>
+        f.id === fanId ? { ...f, lastMessaged: undefined } : f
+      );
+      return updated;
+    });
   };
 
-  const setLastMessagedDate = (modelName: string, fanId: string, date: string) => {
-    const updated = { ...fansByModel };
-    updated[modelName] = updated[modelName].map(f =>
-      f.id === fanId ? { ...f, lastMessaged: date } : f
-    );
-    setFansByModel(updated);
-    saveToStorage(updated);
+  const setLastMessagedDate = async (modelName: string, fanId: string, date: string) => {
+    const isoDate = date ? new Date(date).toISOString() : null;
+    const { error } = await supabase.from("fan_profiles").update({ last_messaged: isoDate, updated_at: new Date().toISOString() } as any).eq("id", fanId);
+    if (error) {
+      toast.error("Failed to update");
+      return;
+    }
+    setFansByModel(prev => {
+      const updated = { ...prev };
+      updated[modelName] = updated[modelName].map(f =>
+        f.id === fanId ? { ...f, lastMessaged: date } : f
+      );
+      return updated;
+    });
   };
 
   const modelColorOverrides: Record<string, string> = {
@@ -458,12 +227,31 @@ export default function FanProfiles() {
     "Lucinda Bleu": modelColors["Lucinda Bleu"] || "270 60% 60%",
   };
   const models = Object.keys(fansByModel).filter(m => fansByModel[m].length > 0);
-  
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (models.length === 0) {
+    return (
+      <div className="space-y-8 max-w-7xl">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Fan Profiles</h1>
+          <p className="text-muted-foreground text-sm mt-1">No fan profiles found. Add fans to the database to get started.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-7xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Fan Profiles</h1>
-        <p className="text-muted-foreground text-sm mt-1">Top 5 fans by spend per model — deep profiles for whale management</p>
+        <p className="text-muted-foreground text-sm mt-1">Top fans by spend per model — deep profiles for whale management</p>
       </div>
 
       {models.map((modelName) => {
@@ -471,12 +259,12 @@ export default function FanProfiles() {
         const modelColor = modelColorOverrides[modelName] || modelColors[modelName] || "217 91% 60%";
         const totalForModel = fans.reduce((sum, f) => sum + f.totalSpent, 0);
         const needsContactCount = fans.filter(f => (f.tier === "whale" || f.tier === "vip") && needsContact(f.lastMessaged)).length;
-        
+
         return (
           <div key={modelName} className="space-y-4">
             {/* Model Header */}
             <div className="flex items-center gap-3 pb-2 border-b border-border/50">
-              <div 
+              <div
                 className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold"
                 style={{ backgroundColor: `hsl(${modelColor} / 0.2)`, color: `hsl(${modelColor})` }}
               >
@@ -499,7 +287,7 @@ export default function FanProfiles() {
                 const color = tierColors[fan.tier];
                 const isEditing = editingFanId === fan.id;
                 const showContactWarning = (fan.tier === "whale" || fan.tier === "vip") && needsContact(fan.lastMessaged);
-                
+
                 return (
                   <div key={fan.id} className={`glass-card p-4 ${showContactWarning ? "border-red-500/30 ring-1 ring-red-500/20" : ""}`}>
                     <div className="flex items-start gap-4">
@@ -519,14 +307,14 @@ export default function FanProfiles() {
 
                       {/* Main Info */}
                       <div className="flex-1 min-w-0 space-y-3">
-                        {/* Name + OF Username (prominent) */}
+                        {/* Name + OF Username */}
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-semibold text-lg">{fan.name}</p>
                             <Badge variant="outline" className="text-[10px]" style={{ borderColor: `hsl(${color} / 0.4)`, color: `hsl(${color})` }}>
                               {fan.tier.toUpperCase()}
                             </Badge>
-                            <span className="text-xs">{personalityIcons[fan.personality]} {fan.personality}</span>
+                            <span className="text-xs">{personalityIcons[fan.personality] || "🔄"} {fan.personality}</span>
                             {showContactWarning && (
                               <Badge variant="destructive" className="text-[10px] animate-pulse gap-1">
                                 <AlertTriangle className="h-3 w-3" />
@@ -534,7 +322,6 @@ export default function FanProfiles() {
                               </Badge>
                             )}
                           </div>
-                          {/* OF Username - prominent, clickable, copyable */}
                           <button
                             onClick={() => copyUsername(fan.id, fan.ofUsername)}
                             className="mt-1 inline-flex items-center gap-1.5 text-sm font-mono font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-md transition-colors cursor-pointer border border-primary/20"
@@ -587,7 +374,6 @@ export default function FanProfiles() {
                         </div>
 
                         {isEditing ? (
-                          /* Edit Form */
                           <div className="space-y-2 p-3 bg-secondary/20 rounded-lg border border-border/50">
                             <div className="grid grid-cols-2 gap-2">
                               <div>
@@ -691,19 +477,23 @@ export default function FanProfiles() {
                             </div>
 
                             {/* Interests */}
-                            <p className="text-sm text-muted-foreground">{fan.interests}</p>
+                            {fan.interests && <p className="text-sm text-muted-foreground">{fan.interests}</p>}
 
                             {/* Preferences Tags */}
-                            <div className="flex flex-wrap gap-1">
-                              {fan.preferences.map((pref) => (
-                                <Badge key={pref} variant="secondary" className="text-[10px]">{pref}</Badge>
-                              ))}
-                            </div>
+                            {fan.preferences && fan.preferences.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {fan.preferences.map((pref) => (
+                                  <Badge key={pref} variant="secondary" className="text-[10px]">{pref}</Badge>
+                                ))}
+                              </div>
+                            )}
 
                             {/* Notes */}
-                            <div className="p-2 rounded bg-secondary/30 text-xs text-muted-foreground">
-                              <strong>Notes:</strong> {fan.notes}
-                            </div>
+                            {fan.notes && (
+                              <div className="p-2 rounded bg-secondary/30 text-xs text-muted-foreground">
+                                <strong>Notes:</strong> {fan.notes}
+                              </div>
+                            )}
                           </>
                         )}
                       </div>

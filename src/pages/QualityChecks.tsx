@@ -8,51 +8,82 @@ import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Info, ClipboardCheck, TrendingUp, Calendar, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const categories = ["Personalisation", "Sales Technique", "Rapport Building", "Response Quality", "Revenue Maximisation", "Mistake Avoidance", "Grammar", "Aftercare"];
+const categories = [
+  { label: "Response Time", dbKey: "response_time_score" },
+  { label: "Personalisation", dbKey: "personalisation_score" },
+  { label: "Conversation Flow", dbKey: "conversation_flow_score" },
+  { label: "PPV Timing", dbKey: "ppv_timing_score" },
+  { label: "Energy & Tone", dbKey: "energy_tone_score" },
+];
 
 const categoryDescriptions: Record<string, string> = {
+  "Response Time": "Speed and consistency of replies. Are fans waiting too long? Is the chatter responsive during peak hours?",
   "Personalisation": "Using the fan's name, remembering details, referencing past conversations. Making them feel like they're the only one.",
-  "Sales Technique": "Smooth upsells, natural transitions to paid content, handling objections, offering alternatives when they say no.",
-  "Rapport Building": "Creating genuine connection, mirroring energy, building trust before pitching. Quality of the relationship foundation.",
-  "Response Quality": "Message length, engagement level, creativity, tone matching. Are responses thoughtful or generic?",
-  "Revenue Maximisation": "Making the most of every interaction. Tips, PPV, customs, renewals — leaving no money on the table.",
-  "Mistake Avoidance": "No broken character, no rushed pitches, no ignored messages, no off-brand replies. Clean, error-free chatting.",
+  "Conversation Flow": "Natural transitions, keeping engagement high, knowing when to pitch vs chat. Smooth, not robotic.",
+  "PPV Timing": "Sending PPV at the right moment — after rapport, during peak engagement, matching fan mood and spending patterns.",
+  "Energy & Tone": "Matching the model's brand voice, enthusiasm level, emotional intelligence. Does it feel authentic?",
 };
 
 export default function QualityChecks() {
   const { user, hasPermission } = useAuth();
   const [selectedMember, setSelectedMember] = useState("");
-  const [scores, setScores] = useState<Record<string, number>>(Object.fromEntries(categories.map((c) => [c, 5])));
+  const [scores, setScores] = useState<Record<string, number>>(
+    Object.fromEntries(categories.map((c) => [c.label, 5]))
+  );
   const [notes, setNotes] = useState("");
+  const [shiftDate, setShiftDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [submitting, setSubmitting] = useState(false);
 
   const avgScore = (Object.values(scores).reduce((a, b) => a + b, 0) / categories.length).toFixed(1);
   const selectedChatter = teamMembers.find(m => m.id === selectedMember);
   const selectedColor = selectedChatter ? chatterColors[selectedChatter.name] : null;
-  
+
   const canViewAllScores = hasPermission('view_all_scores');
   const canOnlyViewOwnScores = hasPermission('view_own_scores_only');
-  
-  // Find the current user's team member data (match by username)
-  const currentUserTeamMember = user ? teamMembers.find(member => 
+
+  const currentUserTeamMember = user ? teamMembers.find(member =>
     member.name.toLowerCase() === user.displayName.toLowerCase()
   ) : null;
 
-  const handleSubmit = () => {
-    if (!selectedMember) {
+  const handleSubmit = async () => {
+    if (!selectedMember || !selectedChatter) {
       toast.error("Please select a team member");
       return;
     }
-    toast.success(`Quality check submitted for ${selectedChatter?.name}`);
+    setSubmitting(true);
+
+    const row: Record<string, any> = {
+      chatter_name: selectedChatter.name,
+      shift_date: shiftDate,
+      overall_score: parseFloat(avgScore),
+      notes: notes || null,
+      reviewed_by: user?.displayName || "Unknown",
+    };
+    for (const cat of categories) {
+      row[cat.dbKey] = scores[cat.label];
+    }
+
+    const { error } = await supabase.from("quality_scores").insert(row as any);
+    setSubmitting(false);
+
+    if (error) {
+      console.error("Error submitting quality check:", error);
+      toast.error("Failed to submit quality check");
+      return;
+    }
+
+    toast.success(`Quality check submitted for ${selectedChatter.name}`);
     setSelectedMember("");
-    setScores(Object.fromEntries(categories.map((c) => [c, 5])));
+    setScores(Object.fromEntries(categories.map((c) => [c.label, 5])));
     setNotes("");
   };
 
   // If user is a chatter, show their own scores view
   if (canOnlyViewOwnScores && currentUserTeamMember) {
     const userColor = chatterColors[currentUserTeamMember.name];
-    
+
     return (
       <div className="space-y-6 max-w-4xl">
         <div>
@@ -60,7 +91,6 @@ export default function QualityChecks() {
           <p className="text-muted-foreground text-sm mt-1">Track your performance and feedback</p>
         </div>
 
-        {/* User's Current Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -69,12 +99,10 @@ export default function QualityChecks() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{currentUserTeamMember.qualityScore}/10</div>
-              <p className="text-xs text-muted-foreground">
-                Overall performance rating
-              </p>
+              <p className="text-xs text-muted-foreground">Overall performance rating</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Checks This Week</CardTitle>
@@ -82,9 +110,7 @@ export default function QualityChecks() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">6</div>
-              <p className="text-xs text-muted-foreground">
-                Per shift reviews completed
-              </p>
+              <p className="text-xs text-muted-foreground">Per shift reviews completed</p>
             </CardContent>
           </Card>
 
@@ -95,14 +121,11 @@ export default function QualityChecks() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">+0.3</div>
-              <p className="text-xs text-muted-foreground">
-                Improvement this week
-              </p>
+              <p className="text-xs text-muted-foreground">Improvement this week</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* User Profile Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -111,7 +134,7 @@ export default function QualityChecks() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div 
+            <div
               className="flex items-center gap-3 p-4 rounded-lg border"
               style={{ borderColor: `hsl(${userColor} / 0.3)`, backgroundColor: `hsl(${userColor} / 0.05)` }}
             >
@@ -128,38 +151,6 @@ export default function QualityChecks() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Recent Feedback */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Feedback</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 rounded-lg bg-secondary/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Latest Quality Check</span>
-                <span className="text-sm text-muted-foreground">2 hours ago</span>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                "Excellent personalisation and rapport building. Great use of fan's name throughout the conversation. 
-                Consider being slightly more direct with upsells - you have good rapport, so fans will respond well to confident suggestions."
-              </p>
-              <div className="text-sm font-medium text-green-600">Score: 8.2/10</div>
-            </div>
-            
-            <div className="p-4 rounded-lg bg-secondary/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Previous Check</span>
-                <span className="text-sm text-muted-foreground">6 hours ago</span>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                "Strong revenue maximisation and good aftercare. Watch grammar in longer messages - double-check before sending. 
-                Overall solid performance with room for growth in response creativity."
-              </p>
-              <div className="text-sm font-medium text-yellow-600">Score: 7.8/10</div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     );
   }
@@ -169,7 +160,7 @@ export default function QualityChecks() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Quality Checks</h1>
-        <p className="text-muted-foreground text-sm mt-1">Score chatter performance</p>
+        <p className="text-muted-foreground text-sm mt-1">Score chatter performance — saved to database</p>
       </div>
 
       {/* Quality Check Methodology */}
@@ -198,36 +189,47 @@ export default function QualityChecks() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {categories.map((cat) => (
-            <div key={cat} className="p-3 rounded-lg bg-secondary/30">
-              <p className="text-sm font-medium">{cat}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{categoryDescriptions[cat]}</p>
+            <div key={cat.label} className="p-3 rounded-lg bg-secondary/30">
+              <p className="text-sm font-medium">{cat.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{categoryDescriptions[cat.label]}</p>
             </div>
           ))}
         </div>
       </div>
 
       <div className="glass-card p-6 space-y-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Team Member</label>
-          <Select value={selectedMember} onValueChange={setSelectedMember}>
-            <SelectTrigger className="bg-secondary/50">
-              <SelectValue placeholder="Select a team member" />
-            </SelectTrigger>
-            <SelectContent>
-              {teamMembers.map((m) => {
-                const color = chatterColors[m.name];
-                return (
-                  <SelectItem key={m.id} value={m.id}>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />
-                      <span>{m.name}</span>
-                      <span className="text-muted-foreground">— {m.role}</span>
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Team Member</label>
+            <Select value={selectedMember} onValueChange={setSelectedMember}>
+              <SelectTrigger className="bg-secondary/50">
+                <SelectValue placeholder="Select a team member" />
+              </SelectTrigger>
+              <SelectContent>
+                {teamMembers.map((m) => {
+                  const color = chatterColors[m.name];
+                  return (
+                    <SelectItem key={m.id} value={m.id}>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `hsl(${color})` }} />
+                        <span>{m.name}</span>
+                        <span className="text-muted-foreground">— {m.role}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Shift Date</label>
+            <input
+              type="date"
+              value={shiftDate}
+              onChange={(e) => setShiftDate(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm"
+            />
+          </div>
         </div>
 
         {selectedChatter && (
@@ -250,16 +252,16 @@ export default function QualityChecks() {
 
         <div className="space-y-5">
           {categories.map((category) => (
-            <div key={category} className="space-y-2">
+            <div key={category.label} className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm">{category}</label>
-                <span className={`text-sm font-bold ${scores[category] >= 8 ? "text-success" : scores[category] >= 5 ? "text-warning" : "text-destructive"}`}>
-                  {scores[category]}/10
+                <label className="text-sm">{category.label}</label>
+                <span className={`text-sm font-bold ${scores[category.label] >= 8 ? "text-success" : scores[category.label] >= 5 ? "text-warning" : "text-destructive"}`}>
+                  {scores[category.label]}/10
                 </span>
               </div>
               <Slider
-                value={[scores[category]]}
-                onValueChange={([v]) => setScores((s) => ({ ...s, [category]: v }))}
+                value={[scores[category.label]]}
+                onValueChange={([v]) => setScores((s) => ({ ...s, [category.label]: v }))}
                 min={1}
                 max={10}
                 step={1}
@@ -282,7 +284,9 @@ export default function QualityChecks() {
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add coaching notes, areas for improvement, positive highlights..." className="bg-secondary/50 min-h-[100px]" />
         </div>
 
-        <Button onClick={handleSubmit} className="w-full">Submit Quality Check</Button>
+        <Button onClick={handleSubmit} className="w-full" disabled={submitting}>
+          {submitting ? "Submitting..." : "Submit Quality Check"}
+        </Button>
       </div>
     </div>
   );
