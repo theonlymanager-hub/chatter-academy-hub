@@ -164,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Try Supabase first
     try {
       const passwordHash = await hashPasswordAsync(password);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('app_users')
         .select('id, username, display_name, role')
         .eq('username', lowerUser)
