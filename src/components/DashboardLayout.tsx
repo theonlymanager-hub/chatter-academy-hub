@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span className="text-sm font-medium text-muted-foreground">The Only Board</span>
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-auto relative z-[1]">
+          <main className="flex-1 p-6 overflow-auto relative z-[1] animate-in fade-in duration-300">
             {children}
           </main>
         </div>
