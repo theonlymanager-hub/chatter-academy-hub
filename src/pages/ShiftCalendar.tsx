@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { shiftSchedule, chatterColors } from "@/lib/mock-data";
+import { shiftSchedule, chatterColors, modelColors } from "@/lib/mock-data";
 import { Clock, ChevronLeft, ChevronRight, CalendarDays, Repeat, Sun, Moon, Check, X, Lock, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,29 @@ const shiftTypes = ["morning", "afternoon", "night"] as const;
 const shiftLabels = { morning: "6AM–2PM", afternoon: "2PM–10PM", night: "10PM–6AM" };
 const shiftIcons = { morning: Sun, afternoon: Clock, night: Moon };
 const chatters = ["Jane", "KC", "Jaydee", "Jemimah"];
+
+// Model account badges — all chatters work on all 4 accounts
+const modelAccounts = [
+  { code: "AS", name: "Ashley Morris", color: modelColors["Ashley Morris"] || "330 70% 60%" },
+  { code: "WI", name: "Willow", color: modelColors["Willow"] || "160 84% 39%" },
+  { code: "IZ", name: "Izzy", color: modelColors["Izzy"] || "0 72% 55%" },
+  { code: "LU", name: "Lucinda Bleu", color: modelColors["Lucinda Bleu"] || "270 60% 60%" },
+];
+
+const ModelBadges = () => (
+  <div className="flex gap-0.5 mt-0.5">
+    {modelAccounts.map((m) => (
+      <span
+        key={m.code}
+        className="text-[8px] font-bold px-1 py-0 rounded"
+        style={{ backgroundColor: `hsl(${m.color} / 0.2)`, color: `hsl(${m.color})` }}
+        title={m.name}
+      >
+        {m.code}
+      </span>
+    ))}
+  </div>
+);
 
 function getWeekDates(offset: number) {
   const now = new Date();
@@ -182,6 +205,7 @@ export default function ShiftCalendar() {
                 <span className="text-xs text-muted-foreground">/ week</span>
               </div>
               <p className="text-[10px] text-muted-foreground">{getChatterShifts(name).length} shifts</p>
+              <ModelBadges />
             </div>
           );
         })}
@@ -254,6 +278,7 @@ export default function ShiftCalendar() {
                                   <div key={e.id} className="text-xs px-2 py-1.5 rounded-md border" style={{ backgroundColor: `hsl(${color} / 0.15)`, borderColor: `hsl(${color} / 0.3)`, color: `hsl(${color})` }}>
                                     <div className="font-medium">{e.memberName}</div>
                                     <div className="text-[10px] opacity-70">{e.startTime}–{e.endTime}</div>
+                                    <ModelBadges />
                                   </div>
                                 );
                               })}

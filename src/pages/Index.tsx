@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Users, Star, Clock, MessageSquare, Pencil, Check, Calendar } from "lucide-react";
-import { teamMembers, shiftSchedule, massMessages, chatterColors, modelColors, chattersOnLeave } from "@/lib/mock-data";
+import { DollarSign, Users, Star, Clock, MessageSquare, Pencil, Check, Calendar, ArrowRight } from "lucide-react";
+import { teamMembers, shiftSchedule, chatterColors, modelColors, chattersOnLeave } from "@/lib/mock-data";
 import { Input } from "@/components/ui/input";
 import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
+import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const today = weekDays[new Date().getDay()];
@@ -15,10 +17,25 @@ interface EditableKPI {
   icon: any;
 }
 
+interface QualityScore {
+  chatter_name: string;
+  overall_score: number;
+  response_time_score: number | null;
+  personalisation_score: number | null;
+  conversation_flow_score: number | null;
+  ppv_timing_score: number | null;
+  energy_tone_score: number | null;
+  created_at: string;
+}
+
 const Index = () => {
   // Revenue from API
   const [earningStats, setEarningStats] = useState<Record<string, EarningStats | null>>({});
   const [revenueLoading, setRevenueLoading] = useState(true);
+
+  // Leaderboard from Supabase
+  const [leaderboardData, setLeaderboardData] = useState<QualityScore[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
 
   // Fetch real earning stats from API
   useEffect(() => {
@@ -40,6 +57,56 @@ const Index = () => {
     fetchEarnings();
   }, []);
 
+  // Fetch quality scores from Supabase
+  useEffect(() => {
+    const fetchQualityScores = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('quality_scores')
+          .select('chatter_name, overall_score, response_time_score, personalisation_score, conversation_flow_score, ppv_timing_score, energy_tone_score, created_at')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Failed to fetch quality scores:', error);
+          setLeaderboardLoading(false);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          setLeaderboardLoading(false);
+          return;
+        }
+
+        // Get latest score per chatter
+        const latestByChatter = new Map<string, QualityScore>();
+        for (const row of data) {
+          if (!row.chatter_name || row.overall_score == null) continue;
+          if (!latestByChatter.has(row.chatter_name)) {
+            latestByChatter.set(row.chatter_name, {
+              chatter_name: row.chatter_name,
+              overall_score: row.overall_score,
+              response_time_score: row.response_time_score,
+              personalisation_score: row.personalisation_score,
+              conversation_flow_score: row.conversation_flow_score,
+              ppv_timing_score: row.ppv_timing_score,
+              energy_tone_score: row.energy_tone_score,
+              created_at: row.created_at || '',
+            });
+          }
+        }
+
+        // Sort by overall_score descending
+        const sorted = Array.from(latestByChatter.values()).sort((a, b) => b.overall_score - a.overall_score);
+        setLeaderboardData(sorted);
+      } catch (e) {
+        console.error('Failed to fetch quality scores:', e);
+      } finally {
+        setLeaderboardLoading(false);
+      }
+    };
+    fetchQualityScores();
+  }, []);
+
   // Calculate totals from API earning stats
   const totalApiRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.total || 0), 0);
   const totalSubscriptionRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.subscriptions || 0), 0);
@@ -48,18 +115,17 @@ const Index = () => {
 
   // Today's schedule and current shift
   const todayShifts = shiftSchedule.filter((s) => s.day === today);
-  const nowHour = new Date().getUTCHours(); // UK = UTC in GMT (close enough for BST)
+  const nowHour = new Date().getUTCHours();
   const currentShift = nowHour >= 6 && nowHour < 14 ? "morning" : nowHour >= 14 && nowHour < 22 ? "afternoon" : "night";
   const allCurrentShiftChatters = todayShifts.filter(s => s.shift === currentShift);
   const currentShiftChatters = allCurrentShiftChatters.filter(s => !chattersOnLeave.includes(s.memberName));
-  const onLeaveCurrentShift = allCurrentShiftChatters.filter(s => chattersOnLeave.includes(s.memberName));
-  // Only count actual chatters (not supervisors, management, client comms)
   const chattersOnly = teamMembers.filter(m => m.category === "chatter");
   const onlineChatters = currentShiftChatters.length || chattersOnly.filter(m => m.status === "online" || m.status === "busy").length;
-  const totalQuality = chattersOnly.reduce((sum, m) => sum + m.qualityScore, 0);
-  const avgQuality = totalQuality > 0 ? (totalQuality / chattersOnly.filter(m => m.qualityScore > 0).length).toFixed(1) : "—";
-  const totalTasks = chattersOnly.reduce((sum, m) => sum + m.weeklyTasks, 0);
-  const completedTasks = chattersOnly.reduce((sum, m) => sum + m.tasksCompleted, 0);
+
+  // Avg quality from Supabase leaderboard data
+  const avgQuality = leaderboardData.length > 0
+    ? (leaderboardData.reduce((sum, d) => sum + d.overall_score, 0) / leaderboardData.length).toFixed(1)
+    : "—";
 
   const formatRevenue = (amount: number) => {
     if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}k`;
@@ -69,22 +135,16 @@ const Index = () => {
   const [kpis, setKpis] = useState<EditableKPI[]>([]);
   const [kpisInitialized, setKpisInitialized] = useState(false);
 
-  // Update KPIs when revenue data loads
+  // Update KPIs when data loads
   useEffect(() => {
-    if (!revenueLoading && !kpisInitialized) {
-      const revenueValue = totalApiRevenue > 0 ? formatRevenue(totalApiRevenue) : "No API key";
-      const revenueChange = totalApiRevenue > 0
-        ? `Subs: ${formatRevenue(totalSubscriptionRevenue)} | Msgs: ${formatRevenue(totalMessageRevenue)} | Tips: ${formatRevenue(totalTipsRevenue)}`
-        : "Set API key in settings";
-
+    if (!revenueLoading && !leaderboardLoading && !kpisInitialized) {
       setKpis([
         { title: "Chatters Online", value: `${onlineChatters}/${chattersOnly.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
-        { title: "Avg Quality Score", value: totalQuality > 0 ? `${avgQuality}/10` : "No data", change: totalQuality > 0 ? "From quality checks" : "Run quality checks to populate", changeType: "neutral", icon: Star },
-
+        { title: "Avg Quality Score", value: leaderboardData.length > 0 ? `${avgQuality}/10` : "No data", change: leaderboardData.length > 0 ? "From quality checks" : "Run quality checks to populate", changeType: "neutral", icon: Star },
       ]);
       setKpisInitialized(true);
     }
-  }, [revenueLoading, kpisInitialized, totalApiRevenue]);
+  }, [revenueLoading, leaderboardLoading, kpisInitialized]);
 
   const [editingKpi, setEditingKpi] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -99,14 +159,6 @@ const Index = () => {
     setEditingKpi(null);
   };
 
-  // Today's mass messages only
-  const todayDate = new Date().toISOString().split("T")[0];
-  const todayDayName = weekDays[new Date().getDay()];
-  const todayMessages = massMessages.filter(m => m.dayOfWeek === todayDayName);
-
-  // Leaderboard: chatters sorted by quality score
-  const leaderboard = [...chattersOnly].filter(m => m.qualityScore > 0).sort((a, b) => b.qualityScore - a.qualityScore);
-
   return (
     <div className="space-y-6 max-w-7xl">
       <div>
@@ -117,7 +169,7 @@ const Index = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {revenueLoading ? (
-          <div className="col-span-full text-center text-sm text-muted-foreground py-4">Loading revenue data...</div>
+          <div className="col-span-full text-center text-sm text-muted-foreground py-4">Loading data...</div>
         ) : kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
@@ -160,8 +212,6 @@ const Index = () => {
         })}
       </div>
 
-
-
       {/* Per-Model Revenue Breakdown */}
       {totalApiRevenue > 0 && (
         <div className="glass-card p-5 space-y-4">
@@ -194,31 +244,35 @@ const Index = () => {
         </div>
       )}
 
-      {/* Today's Schedule & Clock-in Status */}
+      {/* Today's Schedule & Mass Messages Link */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="glass-card p-5 space-y-4">
+        <div className="glass-card p-5 space-y-3">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
             <h2 className="font-semibold">Today's Schedule</h2>
             <span className="text-xs text-muted-foreground ml-auto">{today}</span>
           </div>
           {todayShifts.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {todayShifts.map((s) => {
                 const color = chatterColors[s.memberName] || "217 91% 60%";
                 const isCurrentShift = s.shift === currentShift;
                 const isOnLeave = chattersOnLeave.includes(s.memberName);
                 return (
-                  <div key={s.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isOnLeave ? "opacity-50 border-border/30 bg-secondary/10" : isCurrentShift ? "border-success/50 bg-success/10 ring-1 ring-success/20" : ""}`} style={!isCurrentShift && !isOnLeave ? { borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.05)` } : {}}>
-                    {isCurrentShift && !isOnLeave && <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />}
-                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
+                  <div key={s.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isOnLeave ? "opacity-40" : isCurrentShift ? "bg-success/10" : "bg-secondary/20"}`}>
+                    {isCurrentShift && !isOnLeave && <div className="h-1.5 w-1.5 rounded-full bg-success animate-pulse shrink-0" />}
+                    <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
                       {s.memberName.slice(0, 2).toUpperCase()}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{s.memberName} {isOnLeave ? <span className="text-[10px] text-muted-foreground font-normal ml-1 bg-muted-foreground/20 px-1.5 py-0.5 rounded">ON LEAVE</span> : isCurrentShift ? <span className="text-[10px] text-success font-normal ml-1">● LIVE</span> : null}</p>
-                      <p className="text-[10px] text-muted-foreground capitalize">{s.shift} shift · All models</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{s.startTime} – {s.endTime}</span>
+                    <span className="text-sm font-medium flex-1">{s.memberName}</span>
+                    <span className="text-xs text-muted-foreground">{s.startTime}–{s.endTime}</span>
+                    {isOnLeave ? (
+                      <span className="text-[10px] text-muted-foreground bg-muted-foreground/20 px-1.5 py-0.5 rounded">LEAVE</span>
+                    ) : isCurrentShift ? (
+                      <span className="text-[10px] text-success font-medium">LIVE</span>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">off shift</span>
+                    )}
                   </div>
                 );
               })}
@@ -228,116 +282,44 @@ const Index = () => {
           )}
         </div>
 
-        <div className="glass-card p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-accent" />
-            <h2 className="font-semibold">Clock-in Status</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-success/20 text-success ml-auto capitalize">{currentShift} shift</span>
+        {/* Mass Messages Link Card */}
+        <Link to="/messages" className="glass-card p-5 flex items-center gap-4 hover:border-primary/30 transition-colors group">
+          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Calendar className="h-6 w-6 text-primary" />
           </div>
-          <div className="space-y-2">
-            {chattersOnly.map((member) => {
-              const color = chatterColors[member.name] || "217 91% 60%";
-              const isOnLeave = chattersOnLeave.includes(member.name);
-              const isOnShift = !isOnLeave && currentShiftChatters.some(s => s.memberName === member.name);
-              return (
-                <div key={member.id} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isOnLeave ? "opacity-50 border-border/30 bg-secondary/10" : isOnShift ? "border-success/30 bg-success/5" : "border-border/30 bg-secondary/10"}`}>
-                  <div className={`h-2 w-2 rounded-full shrink-0 ${isOnLeave ? "bg-muted-foreground/30" : isOnShift ? "bg-success animate-pulse" : "bg-muted-foreground/30"}`} />
-                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                    {member.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{member.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{member.role} · {member.shiftTimes}</p>
-                  </div>
-                  <span className={`text-xs ${isOnLeave ? "text-muted-foreground" : isOnShift ? "text-success" : "text-muted-foreground"}`}>
-                    {isOnLeave ? <span className="bg-muted-foreground/20 px-1.5 py-0.5 rounded">ON LEAVE</span> : isOnShift ? "● On shift" : "○ Off shift"}
-                  </span>
-                </div>
-              );
-            })}
+          <div className="flex-1">
+            <h2 className="font-semibold">📅 Mass Messages</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">View & Schedule</p>
           </div>
-        </div>
+          <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+        </Link>
       </div>
 
-      {/* Today's Mass Messages */}
-      <div className="glass-card p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Today's Mass Messages</h2>
-          <span className="text-xs text-muted-foreground ml-auto">{todayDayName}</span>
-        </div>
-        {todayMessages.length > 0 ? (
-          <div className="space-y-3">
-            {todayMessages.map((m) => {
-              const color = modelColors[m.modelName] || "217 91% 60%";
-              // Determine message type from content
-              const isPPV = m.ppvPrice > 0;
-              const isPrompt = m.messagePreview.includes("?") || m.theme.toLowerCase().includes("prompt");
-              const msgType = isPPV ? "PPV" : isPrompt ? "Prompt" : "Mass";
-              const typeColor = isPPV ? "bg-amber-500/20 text-amber-400" : isPrompt ? "bg-blue-500/20 text-blue-400" : "bg-emerald-500/20 text-emerald-400";
-              return (
-                <div key={m.id} className="flex items-stretch gap-0 rounded-lg overflow-hidden bg-secondary/20 border border-border/30">
-                  {/* Model-colored left border */}
-                  <div className="w-1 shrink-0" style={{ backgroundColor: `hsl(${color})` }} />
-                  <div className="flex items-center gap-3 p-3 flex-1 min-w-0">
-                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                      {m.modelName.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-sm font-semibold" style={{ color: `hsl(${color})` }}>{m.modelName}</span>
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${typeColor}`}>{msgType}</span>
-                      </div>
-                      <p className="text-xs font-medium text-foreground/80">{m.ppvTitle}</p>
-                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">{m.messagePreview}</p>
-                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">Theme: {m.theme}</p>
-                    </div>
-                    {isPPV && (
-                      <div className="flex items-center gap-1 shrink-0">
-                        <div className="flex items-center gap-0.5 bg-amber-500/20 text-amber-400 font-bold text-sm px-2.5 py-1 rounded-lg">
-                          <DollarSign className="h-3.5 w-3.5" />
-                          {m.ppvPrice}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <Calendar className="h-10 w-10 mb-3 opacity-40" />
-            <p className="text-sm font-medium">No messages scheduled for today</p>
-            <p className="text-xs mt-1 opacity-60">Check the Mass Message Calendar to plan ahead</p>
-          </div>
-        )}
-      </div>
-
-      {/* Leaderboard */}
+      {/* Leaderboard — from Supabase quality_scores */}
       <div className="glass-card p-5 space-y-4">
         <div className="flex items-center gap-2">
           <Star className="h-5 w-5 text-primary" />
           <h2 className="font-semibold">Leaderboard</h2>
           <span className="text-xs text-muted-foreground ml-auto">Quality Score</span>
         </div>
-        {leaderboard.length > 0 ? (
+        {leaderboardLoading ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">Loading quality scores...</p>
+        ) : leaderboardData.length > 0 ? (
           <div className="space-y-2">
-            {leaderboard.map((member, i) => {
-              const color = chatterColors[member.name] || "217 91% 60%";
+            {leaderboardData.map((entry, i) => {
+              const color = chatterColors[entry.chatter_name] || "217 91% 60%";
               const medals = ["🥇", "🥈", "🥉"];
               return (
-                <div key={member.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
+                <div key={entry.chatter_name} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30">
                   <span className="text-lg w-8 text-center">{medals[i] || `#${i + 1}`}</span>
                   <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `hsl(${color} / 0.2)`, color: `hsl(${color})` }}>
-                    {member.avatar}
+                    {entry.chatter_name.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{member.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{member.shiftTimes}</p>
+                    <p className="text-sm font-medium">{entry.chatter_name}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold" style={{ color: `hsl(${color})` }}>{member.qualityScore.toFixed(1)}</p>
+                    <p className="text-lg font-bold" style={{ color: `hsl(${color})` }}>{entry.overall_score.toFixed(1)}</p>
                     <p className="text-[10px] text-muted-foreground">/10</p>
                   </div>
                 </div>

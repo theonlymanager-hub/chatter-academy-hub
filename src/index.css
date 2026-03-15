@@ -83,7 +83,7 @@
   }
 
   .gradient-text {
-    @apply text-amber-400;
+    @apply text-primary;
   }
 }
 /* deploy trigger Sat Mar 14 17:04:28 GMT 2026 */

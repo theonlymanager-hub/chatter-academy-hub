@@ -105,7 +105,7 @@ export function AppSidebar() {
                   <span style={{ color: "#00BCD4" }}>O</span>
                   <span className="text-slate-300">M</span>
                 </span>
-                <h1 className="text-lg font-bold text-amber-400">The Only Board</h1>
+                <h1 className="text-lg font-bold text-primary">The Only Board</h1>
               </div>
               <p className="text-sm text-muted-foreground mt-1">Welcome, {user?.displayName}</p>
             </div>
