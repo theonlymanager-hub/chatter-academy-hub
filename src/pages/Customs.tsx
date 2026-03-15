@@ -118,6 +118,7 @@ export default function Customs() {
     const { data, error } = await supabase
       .from("customs")
       .select("*")
+      .neq("status", "deleted")
       .order("created_at", { ascending: false });
     if (error) {
       console.error("Error fetching customs:", error);
@@ -220,7 +221,8 @@ export default function Customs() {
   };
 
   const deleteCustom = async (id: string) => {
-    const { error } = await supabase.from("customs").delete().eq("id", id);
+    // RLS doesn't have DELETE policy, so mark as deleted via status update
+    const { error } = await supabase.from("customs").update({ status: "deleted" }).eq("id", id);
     if (error) {
       toast.error("Failed to delete custom");
       return;
