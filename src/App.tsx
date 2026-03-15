@@ -26,6 +26,7 @@ import Customs from "./pages/Customs";
 import ChatFeedback from "./pages/ChatFeedback";
 import StrikeTracker from "./pages/StrikeTracker";
 import ContentIdeas from "./pages/ContentIdeas";
+import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
@@ -195,6 +196,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
               <DashboardLayout>
                 <ContentIdeas />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Chatter Scorecards - Admin, Supervisor */}
+        <Route 
+          path="/scorecards" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+              <DashboardLayout>
+                <ChatterScorecard />
               </DashboardLayout>
             </ProtectedRoute>
           } 

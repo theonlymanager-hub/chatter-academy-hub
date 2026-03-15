@@ -59,6 +59,7 @@ const getAllSections = () => [
       { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Content Ideas", url: "/content-ideas", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry'] },
       { title: "Strike Tracker", url: "/strikes", icon: ShieldAlert, roles: ['admin', 'supervisor'] },
+      { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor'] },
     ],
   },
   {
