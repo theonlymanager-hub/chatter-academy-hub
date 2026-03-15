@@ -42,6 +42,9 @@ const Index = () => {
   const [topSale, setTopSale] = useState<{amount: number; model: string} | null>(null);
   const [bestModel, setBestModel] = useState<{name: string; revenue: number} | null>(null);
 
+  // Real-time attendance from Supabase
+  const [liveAttendance, setLiveAttendance] = useState<string[]>([]);
+
   // Fetch real earning stats from API
   useEffect(() => {
     const fetchEarnings = async () => {
@@ -121,6 +124,25 @@ const Index = () => {
     fetchPendingCustoms();
   }, []);
 
+  // Fetch real-time attendance — who's ACTUALLY on duty right now
+  useEffect(() => {
+    const fetchLiveAttendance = async () => {
+      const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+      const { data } = await supabase
+        .from('attendance')
+        .select('chatter_name')
+        .eq('date', todayStr)
+        .is('logout_time', null);
+      if (data) {
+        setLiveAttendance(data.map(r => r.chatter_name));
+      }
+    };
+    fetchLiveAttendance();
+    // Refresh every 2 minutes
+    const interval = setInterval(fetchLiveAttendance, 120000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Fetch top sale and best model from sales_screenshots
   useEffect(() => {
     const fetchTopSale = async () => {
@@ -169,7 +191,8 @@ const Index = () => {
   const allCurrentShiftChatters = todayShifts.filter(s => s.shift === currentShift);
   const currentShiftChatters = allCurrentShiftChatters.filter(s => !chattersOnLeave.includes(s.memberName));
   const chattersOnly = teamMembers.filter(m => m.category === "chatter");
-  const onlineChatters = currentShiftChatters.length || chattersOnly.filter(m => m.status === "online" || m.status === "busy").length;
+  // Use REAL attendance data — who's actually in voice, not just scheduled
+  const onlineChatters = liveAttendance.length > 0 ? liveAttendance.length : 0;
 
   // Avg quality from Supabase leaderboard data
   const avgQuality = leaderboardData.length > 0
@@ -359,8 +382,10 @@ const Index = () => {
                     <span className="text-xs text-muted-foreground">{s.startTime}–{s.endTime}</span>
                     {isOnLeave ? (
                       <span className="text-[10px] text-muted-foreground bg-muted-foreground/20 px-1.5 py-0.5 rounded">LEAVE</span>
+                    ) : isCurrentShift && liveAttendance.includes(s.memberName) ? (
+                      <span className="text-[10px] text-success font-medium">🟢 LIVE</span>
                     ) : isCurrentShift ? (
-                      <span className="text-[10px] text-success font-medium">LIVE</span>
+                      <span className="text-[10px] text-red-400 font-medium">⚠️ SCHEDULED (not in voice)</span>
                     ) : (
                       <span className="text-[10px] text-muted-foreground">off shift</span>
                     )}
