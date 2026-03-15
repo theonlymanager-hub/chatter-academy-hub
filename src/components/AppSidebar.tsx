@@ -8,6 +8,7 @@ import {
   BarChart3,
   Clock,
   UserCircle,
+  Star,
   Heart,
   BookOpen,
   Palette,
