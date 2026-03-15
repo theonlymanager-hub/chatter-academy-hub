@@ -15,6 +15,8 @@ import {
   Settings,
   LogOut,
   Trophy,
+  ShieldAlert,
+  Lightbulb,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -55,6 +57,8 @@ const getAllSections = () => [
       { title: "Mass Messages", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Quality Checks", url: "/quality", icon: BarChart3, roles: ['admin', 'supervisor', 'data_entry'] },
       { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Content Ideas", url: "/content-ideas", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Strike Tracker", url: "/strikes", icon: ShieldAlert, roles: ['admin', 'supervisor'] },
     ],
   },
   {

@@ -24,6 +24,8 @@ import FanProfiles from "./pages/FanProfiles";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import Customs from "./pages/Customs";
 import ChatFeedback from "./pages/ChatFeedback";
+import StrikeTracker from "./pages/StrikeTracker";
+import ContentIdeas from "./pages/ContentIdeas";
 import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
@@ -169,6 +171,30 @@ function AppContent() {
             <ProtectedRoute>
               <DashboardLayout>
                 <ChatFeedback />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Strike Tracker - Admin, Supervisor */}
+        <Route 
+          path="/strikes" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+              <DashboardLayout>
+                <StrikeTracker />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Content Ideas - Admin, Supervisor, Data Entry */}
+        <Route 
+          path="/content-ideas" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+              <DashboardLayout>
+                <ContentIdeas />
               </DashboardLayout>
             </ProtectedRoute>
           } 
