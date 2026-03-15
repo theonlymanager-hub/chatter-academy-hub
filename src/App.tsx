@@ -23,6 +23,7 @@ import ClientProfiles from "./pages/ClientProfiles";
 import FanProfiles from "./pages/FanProfiles";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import Customs from "./pages/Customs";
+import ChatFeedback from "./pages/ChatFeedback";
 import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
@@ -156,6 +157,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
               <DashboardLayout>
                 <Analytics />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Chat Feedback - All roles */}
+        <Route 
+          path="/chat-feedback" 
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ChatFeedback />
               </DashboardLayout>
             </ProtectedRoute>
           } 
