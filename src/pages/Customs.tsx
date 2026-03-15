@@ -444,11 +444,11 @@ export default function Customs() {
                           </div>
                         </div>
                         {canEdit && (
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => startEdit(custom)} className="p-1.5 rounded-md hover:bg-secondary transition-colors">
+                          <div className="flex gap-1">
+                            <button onClick={() => startEdit(custom)} className="p-1.5 rounded-md hover:bg-secondary transition-colors" title="Edit">
                               <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                             </button>
-                            <button onClick={() => deleteCustom(custom.id)} className="p-1.5 rounded-md hover:bg-destructive/20 transition-colors">
+                            <button onClick={() => { if (confirm('Delete this custom?')) deleteCustom(custom.id); }} className="p-1.5 rounded-md hover:bg-destructive/20 transition-colors" title="Delete">
                               <Trash2 className="h-3.5 w-3.5 text-destructive" />
                             </button>
                           </div>
