@@ -101,6 +101,36 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_feedback: {
+        Row: {
+          chatter_name: string
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string
+          model: string
+          tab: string
+        }
+        Insert: {
+          chatter_name: string
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url: string
+          model: string
+          tab: string
+        }
+        Update: {
+          chatter_name?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string
+          model?: string
+          tab?: string
+        }
+        Relationships: []
+      }
       customs: {
         Row: {
           assigned_to: string | null
