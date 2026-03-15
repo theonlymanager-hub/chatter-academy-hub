@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import {
   MessageCircle, Clock, Calendar, Briefcase, MapPin, Loader2,
   Pencil, Save, X, Plus, ExternalLink, AlertTriangle, ChevronDown,
-  ChevronUp, Crown, Heart, User, Star, DollarSign, Tag
+  ChevronUp, Crown, Heart, User, Star, DollarSign, Tag, ShoppingBag,
+  Flame, Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,8 @@ const MODEL_COLORS: Record<string, string> = {
   Lucinda: "hsl(270, 60%, 60%)",
 };
 
+const FAN_TYPES = ["Unknown", "Submissive", "Dominant", "Switch", "Vanilla", "Roleplay", "Voyeur", "Generous Tipper", "Whale Potential"];
+
 function needsContact(lastMessaged: string): boolean {
   if (!lastMessaged) return true;
   const diff = Date.now() - new Date(lastMessaged).getTime();
@@ -78,6 +81,17 @@ function formatDate(d: string): string {
   const date = new Date(d);
   if (isNaN(date.getTime())) return d;
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function timeSince(d: string): string {
+  if (!d) return "Never";
+  const diff = Date.now() - new Date(d).getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  return `${days} days ago`;
 }
 
 function getFanTypeLabel(tier: string): { label: string; color: string } {
@@ -103,13 +117,25 @@ function EditModal({
   const [data, setData] = useState<Fan>({ ...fan });
   const set = (key: keyof Fan, value: any) => setData((p) => ({ ...p, [key]: value }));
 
+  // Parse interests for fan type & content preference
+  const parts = (data.interests || "").split("|").map(s => s.trim());
+  const fanType = parts[0] || "";
+  const contentPref = parts[1] || "";
+  const spentOn = parts[2] || "";
+
+  const setInterestPart = (index: number, value: string) => {
+    const p = [...parts];
+    while (p.length <= index) p.push("");
+    p[index] = value;
+    set("interests", p.join(" | "));
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
       <div
         className="bg-[#1a1a2e] border border-border/40 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border/30 sticky top-0 bg-[#1a1a2e] z-10">
           <h3 className="text-lg font-bold">Edit Fan — {fan.name || "New Fan"}</h3>
           <div className="flex gap-2">
@@ -146,6 +172,26 @@ function EditModal({
             </div>
           </div>
 
+          {/* Fan Type & Content */}
+          <div>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Fan Type & Content Preferences</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Fan Type</label>
+                <select
+                  className="w-full mt-1 bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
+                  value={fanType}
+                  onChange={(e) => setInterestPart(0, e.target.value)}
+                >
+                  <option value="">Select type...</option>
+                  {FAN_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <Field label="Fav Content Type" value={contentPref} onChange={(v) => setInterestPart(1, v)} placeholder="e.g. Solo, B/G, Feet, Roleplay" />
+              <Field label="Spent Money On" value={spentOn} onChange={(v) => setInterestPart(2, v)} placeholder="e.g. PPVs, Customs, Tips, Sexting" />
+            </div>
+          </div>
+
           {/* Personal Info */}
           <div>
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Personal Info</h4>
@@ -155,7 +201,7 @@ function EditModal({
               <Field label="Job" value={data.job} onChange={(v) => set("job", v)} placeholder="e.g. Electrician" />
               <Field label="Payday" value={data.payday} onChange={(v) => set("payday", v)} placeholder="e.g. Last Friday of month" />
               <Field label="Relationship Status" value={data.relationshipStatus} onChange={(v) => set("relationshipStatus", v)} placeholder="e.g. Single, Married" />
-              <Field label="Hobbies" value={data.hobbies} onChange={(v) => set("hobbies", v)} placeholder="e.g. Gym, Gaming" />
+              <Field label="Hobbies" value={data.hobbies} onChange={(v) => set("hobbies", v)} placeholder="e.g. Gym, Gaming, Football" />
             </div>
           </div>
 
@@ -169,28 +215,27 @@ function EditModal({
             </div>
           </div>
 
-          {/* Personality & Preferences */}
+          {/* Personality & Notes */}
           <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Personality & Preferences</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Personality & Notes</h4>
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Personality Notes</label>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Personality / How to Talk to Them</label>
                 <Textarea
                   value={data.personality}
                   onChange={(e) => set("personality", e.target.value)}
                   rows={2}
-                  placeholder="How to talk to this fan, what they respond to..."
+                  placeholder="How does this fan communicate? What tone works? Are they shy, direct, flirty?"
                   className="mt-1"
                 />
               </div>
-              <Field label="Interests" value={data.interests} onChange={(v) => set("interests", v)} placeholder="e.g. submissive, military roleplay" />
               <div>
-                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Preferences (what they buy / respond to)</label>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">What They Buy / Respond To (tags)</label>
                 <Textarea
                   value={(data.preferences || []).join(", ")}
                   onChange={(e) => set("preferences", e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean))}
                   rows={2}
-                  placeholder="e.g. solo content, PPV openers, sexting sessions"
+                  placeholder="e.g. solo PPVs, sexting, custom videos, feet content, tipping for attention"
                   className="mt-1"
                 />
               </div>
@@ -200,7 +245,7 @@ function EditModal({
                   value={data.notes}
                   onChange={(e) => set("notes", e.target.value)}
                   rows={2}
-                  placeholder="Any other notes about this fan..."
+                  placeholder="Anything else important about this fan..."
                   className="mt-1"
                 />
               </div>
@@ -242,40 +287,44 @@ function Field({
 /* ─── Fan Card ─── */
 function FanCard({
   fan,
-  index,
   modelColor,
   onEdit,
   onMarkMessaged,
 }: {
   fan: Fan;
-  index: number;
   modelColor: string;
   onEdit: (fan: Fan) => void;
   onMarkMessaged: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const contact = needsContact(fan.lastMessaged);
-  const isVip = fan.totalSpent >= 1000;
   const typeInfo = getFanTypeLabel(fan.tier);
+
+  // Parse interests for fan type, content preference, spent on
+  const interestParts = (fan.interests || "").split("|").map(s => s.trim());
+  const fanType = interestParts[0] || "";
+  const contentPref = interestParts[1] || "";
+  const spentOn = interestParts[2] || "";
 
   return (
     <div className="glass-card border border-border/20 hover:border-border/40 transition-all duration-200 rounded-lg overflow-hidden">
-      {/* ── Collapsed View ── */}
+      {/* ── Collapsed View — shows key info at a glance ── */}
       <div
         className="p-4 cursor-pointer select-none"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           {/* Avatar */}
           <div
-            className="h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+            className="h-11 w-11 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5"
             style={{ backgroundColor: modelColor }}
           >
             {fan.name ? fan.name.slice(0, 2).toUpperCase() : "??"}
           </div>
 
-          {/* Name + Username */}
+          {/* Main Info */}
           <div className="min-w-0 flex-1">
+            {/* Row 1: Name + Username + Badges */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-base">{fan.name || "Unknown"}</span>
               {fan.ofUsername && (
@@ -289,31 +338,51 @@ function FanCard({
                   @{fan.ofUsername} <ExternalLink className="h-3 w-3" />
                 </a>
               )}
-            </div>
-            {/* Badges row */}
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              {isVip && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
-                  <Crown className="h-3 w-3" /> VIP
-                </span>
-              )}
               <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${typeInfo.color}`}>
                 {typeInfo.label}
               </span>
+              {fanType && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/25">
+                  {fanType}
+                </span>
+              )}
               {contact && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/25 text-red-400 border border-red-500/40 flex items-center gap-1 animate-pulse">
-                  <AlertTriangle className="h-3 w-3" /> NEEDS CONTACT
+                  <AlertTriangle className="h-3 w-3" /> CONTACT
                 </span>
+              )}
+            </div>
+
+            {/* Row 2: Key stats at a glance */}
+            <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1">
+                <DollarSign className="h-3 w-3 text-green-400" />
+                <span className="text-green-400 font-bold">${fan.totalSpent.toLocaleString()}</span> lifetime
+              </span>
+              <span className="text-border/60">|</span>
+              <span className="flex items-center gap-1">
+                <MessageCircle className="h-3 w-3" />
+                Last contact: <span className={contact ? "text-red-400 font-semibold" : "text-foreground"}>{timeSince(fan.lastMessaged)}</span>
+              </span>
+              {fan.hobbies && (
+                <>
+                  <span className="text-border/60">|</span>
+                  <span className="truncate max-w-[180px]">🎮 {fan.hobbies}</span>
+                </>
+              )}
+              {contentPref && (
+                <>
+                  <span className="text-border/60">|</span>
+                  <span className="flex items-center gap-1">
+                    <Heart className="h-3 w-3 text-pink-400" /> {contentPref}
+                  </span>
+                </>
               )}
             </div>
           </div>
 
-          {/* Right side: spend + actions */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right">
-              <span className="text-xl font-bold text-green-400">${fan.totalSpent.toLocaleString()}</span>
-              <p className="text-[10px] text-muted-foreground">lifetime</p>
-            </div>
+          {/* Right: Edit + Expand */}
+          <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="ghost"
               size="sm"
@@ -331,36 +400,55 @@ function FanCard({
         </div>
       </div>
 
-      {/* ── Expanded View ── */}
+      {/* ── Expanded View — ALL fields visible ── */}
       {expanded && (
         <div className="px-4 pb-4 pt-0 border-t border-border/20 space-y-4">
-          {/* Activity Row */}
-          <div className="flex items-center gap-4 flex-wrap text-xs pt-3">
-            <div className="flex items-center gap-1.5">
-              <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-muted-foreground">Last messaged:</span>
-              <span className={contact ? "text-red-400 font-semibold" : "text-foreground"}>
-                {formatDate(fan.lastMessaged)}
-              </span>
-              <button
-                onClick={() => onMarkMessaged(fan.id)}
-                className="text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors ml-1"
-              >
-                Mark Today
-              </button>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-muted-foreground">Last active:</span>
-              <span className="text-foreground">{formatDate(fan.lastActive)}</span>
-            </div>
-            {fan.activeTime && (
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-muted-foreground">Online:</span>
-                <span className="text-foreground">{fan.activeTime}</span>
-              </div>
-            )}
+          {/* Quick Actions */}
+          <div className="flex gap-2 pt-3">
+            <button
+              onClick={() => onMarkMessaged(fan.id)}
+              className="text-xs px-3 py-1.5 rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors border border-green-500/30"
+            >
+              ✅ Mark Messaged Today
+            </button>
+          </div>
+
+          {/* Spending & Content */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <InfoBox
+              icon={<DollarSign className="h-4 w-4 text-green-400" />}
+              label="Total Lifetime Spend"
+              value={`$${fan.totalSpent.toLocaleString()}`}
+              valueClass="text-green-400 text-lg font-bold"
+            />
+            <InfoBox
+              icon={<ShoppingBag className="h-4 w-4 text-amber-400" />}
+              label="Spent Money On"
+              value={spentOn || "Not recorded"}
+              valueClass={spentOn ? "text-foreground" : "text-muted-foreground/40 italic"}
+            />
+            <InfoBox
+              icon={<Heart className="h-4 w-4 text-pink-400" />}
+              label="Favourite Content"
+              value={contentPref || "Not recorded"}
+              valueClass={contentPref ? "text-foreground" : "text-muted-foreground/40 italic"}
+            />
+          </div>
+
+          {/* Fan Type & Personality */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <InfoBox
+              icon={<Flame className="h-4 w-4 text-orange-400" />}
+              label="Fan Type"
+              value={fanType || "Not set"}
+              valueClass={fanType ? "text-foreground" : "text-muted-foreground/40 italic"}
+            />
+            <InfoBox
+              icon={<Eye className="h-4 w-4 text-blue-400" />}
+              label="Personality / How to Talk"
+              value={fan.personality || "Not recorded"}
+              valueClass={fan.personality ? "text-foreground text-xs leading-relaxed" : "text-muted-foreground/40 italic"}
+            />
           </div>
 
           {/* Personal Info Grid */}
@@ -368,67 +456,90 @@ function FanCard({
             <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
               <User className="h-3 w-3" /> Personal Info
             </h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1.5 text-xs">
-              {fan.dob && <InfoItem icon="🎂" label="DOB" value={fan.dob} />}
-              {fan.location && <InfoItem icon={<MapPin className="h-3 w-3" />} label="Location" value={fan.location} />}
-              {fan.job && <InfoItem icon={<Briefcase className="h-3 w-3" />} label="Job" value={fan.job} />}
-              {fan.payday && <InfoItem icon={<Calendar className="h-3 w-3" />} label="Payday" value={fan.payday} />}
-              {fan.relationshipStatus && <InfoItem icon={<Heart className="h-3 w-3" />} label="Status" value={fan.relationshipStatus} />}
-              {fan.hobbies && <InfoItem icon="🎮" label="Hobbies" value={fan.hobbies} />}
-              {fan.interests && <InfoItem icon={<Star className="h-3 w-3" />} label="Interests" value={fan.interests} />}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <MiniInfo label="🎂 DOB" value={fan.dob} />
+              <MiniInfo label="📍 Location" value={fan.location} />
+              <MiniInfo label="💼 Job" value={fan.job} />
+              <MiniInfo label="💰 Payday" value={fan.payday} />
+              <MiniInfo label="💑 Relationship" value={fan.relationshipStatus} />
+              <MiniInfo label="🎮 Hobbies" value={fan.hobbies} />
             </div>
-            {!fan.dob && !fan.location && !fan.job && !fan.payday && !fan.relationshipStatus && !fan.hobbies && !fan.interests && (
-              <p className="text-xs text-muted-foreground/50 italic">No personal info recorded yet</p>
-            )}
           </div>
 
-          {/* Personality */}
-          {fan.personality && (
-            <div>
-              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                🧠 Personality Notes
-              </h4>
-              <p className="text-xs text-foreground/80 bg-secondary/50 rounded-md p-2.5 leading-relaxed">{fan.personality}</p>
+          {/* Activity */}
+          <div>
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+              <Clock className="h-3 w-3" /> Activity
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <MiniInfo label="💬 Last Messaged" value={fan.lastMessaged ? formatDate(fan.lastMessaged) : undefined} alert={contact} />
+              <MiniInfo label="🟢 Last Active" value={fan.lastActive ? formatDate(fan.lastActive) : undefined} />
+              <MiniInfo label="⏰ Online Usually" value={fan.activeTime} />
             </div>
-          )}
+          </div>
 
-          {/* Preferences */}
-          {fan.preferences && fan.preferences.length > 0 && (
-            <div>
-              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <Tag className="h-3 w-3" /> Preferences
-              </h4>
+          {/* Preferences Tags */}
+          <div>
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+              <Tag className="h-3 w-3" /> What They Buy / Respond To
+            </h4>
+            {fan.preferences && fan.preferences.length > 0 ? (
               <div className="flex gap-1.5 flex-wrap">
                 {fan.preferences.map((pref, i) => (
-                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/25">
+                  <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/25">
                     {pref}
                   </span>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-xs text-muted-foreground/40 italic">No tags yet — edit to add</p>
+            )}
+          </div>
 
           {/* Notes */}
-          {fan.notes && (
-            <div>
-              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                📝 Notes
-              </h4>
-              <p className="text-xs text-amber-300/80 bg-amber-500/10 rounded-md p-2.5 leading-relaxed">{fan.notes}</p>
-            </div>
-          )}
+          <div>
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">📝 Notes</h4>
+            {fan.notes ? (
+              <p className="text-xs text-amber-300/80 bg-amber-500/10 rounded-md p-3 leading-relaxed">{fan.notes}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground/40 italic">No notes yet</p>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function InfoBox({
+  icon,
+  label,
+  value,
+  valueClass = "text-foreground",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  valueClass?: string;
+}) {
   return (
-    <div className="flex items-center gap-1.5 py-0.5">
-      <span className="text-muted-foreground shrink-0">{icon}</span>
-      <span className="text-muted-foreground">{label}:</span>
-      <span className="text-foreground truncate">{value}</span>
+    <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
+      <div className="flex items-center gap-1.5 mb-1">
+        {icon}
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span>
+      </div>
+      <p className={`text-sm ${valueClass}`}>{value}</p>
+    </div>
+  );
+}
+
+function MiniInfo({ label, value, alert }: { label: string; value?: string; alert?: boolean }) {
+  return (
+    <div className="p-2 rounded-md bg-secondary/20 border border-border/20">
+      <span className="text-[10px] text-muted-foreground block">{label}</span>
+      <span className={`text-xs ${alert ? "text-red-400 font-semibold" : value ? "text-foreground" : "text-muted-foreground/40 italic"}`}>
+        {value || "Not set"}
+      </span>
     </div>
   );
 }
@@ -442,6 +553,9 @@ export default function FanProfiles() {
   const [editingFan, setEditingFan] = useState<Fan | null>(null);
   const [addingModel, setAddingModel] = useState<string | null>(null);
   const [newFan, setNewFan] = useState({ name: "", ofUsername: "" });
+  const [filterModel, setFilterModel] = useState<string>("all");
+  const [filterTier, setFilterTier] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchFans = async () => {
     setLoading(true);
@@ -544,6 +658,13 @@ export default function FanProfiles() {
     }
   };
 
+  // Compute totals
+  const totalFans = Object.values(countsByModel).reduce((a, b) => a + b, 0);
+  const totalSpend = Object.values(totalsByModel).reduce((a, b) => a + b, 0);
+  const totalNeedsContact = Object.values(fansByModel).flat().filter(f => needsContact(f.lastMessaged)).length;
+
+  const modelsToShow = filterModel === "all" ? MODELS : [filterModel];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -553,24 +674,88 @@ export default function FanProfiles() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-6 max-w-6xl">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Fan Profiles</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Tracked fans per model — click any card to expand full details
+          Every fan's info in one place — hobbies, spend history, preferences, contact status
         </p>
       </div>
 
-      {MODELS.map((model) => {
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase">Total Fans</p>
+          <p className="text-2xl font-bold">{totalFans}</p>
+        </div>
+        <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase">Lifetime Spend</p>
+          <p className="text-2xl font-bold text-green-400">${totalSpend.toLocaleString()}</p>
+        </div>
+        <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase">Avg per Fan</p>
+          <p className="text-2xl font-bold">${totalFans ? Math.round(totalSpend / totalFans).toLocaleString() : 0}</p>
+        </div>
+        <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase">Need Contact</p>
+          <p className={`text-2xl font-bold ${totalNeedsContact > 0 ? "text-red-400" : "text-green-400"}`}>{totalNeedsContact}</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-3 flex-wrap items-center">
+        <select
+          className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
+          value={filterModel}
+          onChange={(e) => setFilterModel(e.target.value)}
+        >
+          <option value="all">All Models</option>
+          {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <select
+          className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
+          value={filterTier}
+          onChange={(e) => setFilterTier(e.target.value)}
+        >
+          <option value="all">All Tiers</option>
+          <option value="whale">🐋 Whales</option>
+          <option value="vip">⭐ VIP</option>
+          <option value="regular">Regular</option>
+          <option value="new">🆕 New</option>
+        </select>
+        <Input
+          placeholder="Search fans..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-[250px]"
+        />
+      </div>
+
+      {/* Fan Lists by Model */}
+      {modelsToShow.map((model) => {
         const color = MODEL_COLORS[model];
-        const fans = fansByModel[model] || [];
+        let fans = fansByModel[model] || [];
+        
+        if (filterTier !== "all") {
+          fans = fans.filter(f => f.tier === filterTier);
+        }
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          fans = fans.filter(f => 
+            f.name.toLowerCase().includes(q) ||
+            f.ofUsername.toLowerCase().includes(q) ||
+            f.hobbies.toLowerCase().includes(q) ||
+            f.notes.toLowerCase().includes(q)
+          );
+        }
+
         const totalLifetime = totalsByModel[model] || 0;
         const count = countsByModel[model] || 0;
-        const needsContactCount = fans.filter((f) => needsContact(f.lastMessaged)).length;
+        const needsContactCount = (fansByModel[model] || []).filter((f) => needsContact(f.lastMessaged)).length;
 
         return (
           <div key={model} className="space-y-3">
-            {/* Model Header */}
             <div className="flex items-center justify-between border-b border-border/30 pb-2">
               <div className="flex items-center gap-3">
                 <div
@@ -599,7 +784,6 @@ export default function FanProfiles() {
               </Button>
             </div>
 
-            {/* Add Fan Form */}
             {addingModel === model && (
               <div className="glass-card p-4 flex gap-3 items-end border border-border/30 rounded-lg">
                 <div className="flex-1">
@@ -615,18 +799,16 @@ export default function FanProfiles() {
               </div>
             )}
 
-            {/* Fan Cards */}
             {fans.length === 0 ? (
               <div className="glass-card p-6 text-center text-muted-foreground text-sm rounded-lg border border-border/20">
-                No fans tracked yet for {model}. Click "Add Fan" to start.
+                {searchQuery || filterTier !== "all" ? "No fans match the current filters" : `No fans tracked yet for ${model}. Click "Add Fan" to start.`}
               </div>
             ) : (
               <div className="space-y-2">
-                {fans.map((fan, i) => (
+                {fans.map((fan) => (
                   <FanCard
                     key={fan.id}
                     fan={fan}
-                    index={i}
                     modelColor={color}
                     onEdit={setEditingFan}
                     onMarkMessaged={markMessaged}
@@ -638,7 +820,6 @@ export default function FanProfiles() {
         );
       })}
 
-      {/* Edit Modal */}
       {editingFan && (
         <EditModal
           fan={editingFan}
