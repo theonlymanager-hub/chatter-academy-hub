@@ -1,24 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { modelColors } from "@/lib/mock-data";
-import { Plus, Trash2, Upload, X, Eye, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plus, Trash2, Upload, X, Eye, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface FeedbackEntry {
   id: string;
   tab: "bad" | "good";
-  imageData: string; // base64 data URL
+  image_url: string;
   description: string;
-  chatterName: string;
+  chatter_name: string;
   model: string;
-  date: string;
+  created_at: string;
 }
-
-const STORAGE_KEY = "chat-feedback-data";
 
 const MODEL_OPTIONS = ["Izzy", "Willow", "Lucinda Bleu", "Ashley Morris"];
 const CHATTER_OPTIONS = ["Marc", "JD", "Jemimah", "KC", "Jane"];
@@ -29,32 +28,56 @@ export default function ChatFeedback() {
   const canAdd = user?.role === "admin" || user?.role === "supervisor";
 
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formTab, setFormTab] = useState<"bad" | "good">("bad");
   const [formImage, setFormImage] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formChatter, setFormChatter] = useState("");
   const [formModel, setFormModel] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setEntries(JSON.parse(saved));
-      } catch {
-        setEntries([]);
+  const fetchEntries = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await (supabase as any)
+      .from("chat_feedback")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching chat feedback:", error);
+      // Fall back to localStorage
+      const saved = localStorage.getItem("chat-feedback-data");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setEntries(parsed.map((p: any) => ({
+            id: p.id,
+            tab: p.tab,
+            image_url: p.imageData || p.image_url,
+            description: p.description,
+            chatter_name: p.chatterName || p.chatter_name,
+            model: p.model,
+            created_at: p.date || p.created_at,
+          })));
+        } catch { setEntries([]); }
       }
+    } else {
+      setEntries(data || []);
     }
+    setLoading(false);
   }, []);
 
-  const saveEntries = useCallback((data: FeedbackEntry[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    setEntries(data);
-  }, []);
+  useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Limit size to 500KB for Supabase text column
+    if (file.size > 500000) {
+      toast.error("Image too large. Please use a smaller screenshot (under 500KB).");
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
       setFormImage(reader.result as string);
@@ -62,32 +85,73 @@ export default function ChatFeedback() {
     reader.readAsDataURL(file);
   };
 
-  const addEntry = () => {
+  const addEntry = async () => {
     if (!formImage || !formDescription || !formChatter || !formModel) return;
-    const newEntry: FeedbackEntry = {
-      id: Date.now().toString(),
-      tab: formTab,
-      imageData: formImage,
-      description: formDescription,
-      chatterName: formChatter,
-      model: formModel,
-      date: new Date().toISOString().split("T")[0],
-    };
-    const updated = [newEntry, ...entries];
-    saveEntries(updated);
+    setSubmitting(true);
+
+    const { error } = await (supabase as any)
+      .from("chat_feedback")
+      .insert({
+        tab: formTab,
+        image_url: formImage,
+        description: formDescription,
+        chatter_name: formChatter,
+        model: formModel,
+      });
+
+    if (error) {
+      console.error("Insert error:", error);
+      toast.error("Failed to save. Using local backup.");
+      // Fallback to localStorage
+      const saved = localStorage.getItem("chat-feedback-data");
+      const existing = saved ? JSON.parse(saved) : [];
+      existing.unshift({
+        id: Date.now().toString(),
+        tab: formTab,
+        imageData: formImage,
+        description: formDescription,
+        chatterName: formChatter,
+        model: formModel,
+        date: new Date().toISOString().split("T")[0],
+      });
+      localStorage.setItem("chat-feedback-data", JSON.stringify(existing));
+    } else {
+      toast.success("Feedback entry added!");
+    }
+
     setFormImage("");
     setFormDescription("");
     setFormChatter("");
     setFormModel("");
     setShowForm(false);
+    setSubmitting(false);
+    fetchEntries();
   };
 
-  const deleteEntry = (id: string) => {
-    saveEntries(entries.filter(e => e.id !== id));
+  const deleteEntry = async (id: string) => {
+    const { error } = await (supabase as any)
+      .from("chat_feedback")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete");
+    } else {
+      toast.success("Entry deleted");
+      fetchEntries();
+    }
   };
 
   const renderEntries = (tab: "bad" | "good") => {
     const filtered = entries.filter(e => e.tab === tab);
+    if (loading) {
+      return (
+        <div className="text-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+        </div>
+      );
+    }
     if (filtered.length === 0) {
       return (
         <div className="text-center py-12 text-muted-foreground">
@@ -104,16 +168,13 @@ export default function ChatFeedback() {
           return (
             <div key={entry.id} className="glass-card p-4">
               <div className="flex flex-col md:flex-row gap-4">
-                {/* Screenshot */}
                 <div className="shrink-0 md:w-[320px]">
                   <img
-                    src={entry.imageData}
+                    src={entry.image_url}
                     alt="Chat screenshot"
                     className="rounded-lg border border-border/50 w-full object-contain max-h-[400px]"
                   />
                 </div>
-
-                {/* Description */}
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge
@@ -124,9 +185,11 @@ export default function ChatFeedback() {
                       {entry.model}
                     </Badge>
                     <Badge variant="secondary" className="text-xs">
-                      {entry.chatterName}
+                      {entry.chatter_name}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">{entry.date}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(entry.created_at).toLocaleDateString("en-GB")}
+                    </span>
                     {tab === "bad" ? (
                       <Badge variant="destructive" className="text-[10px] gap-1">
                         <AlertTriangle className="h-3 w-3" /> BAD EXAMPLE
@@ -137,11 +200,9 @@ export default function ChatFeedback() {
                       </Badge>
                     )}
                   </div>
-
                   <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
                     <p className="text-sm whitespace-pre-wrap">{entry.description}</p>
                   </div>
-
                   {isAdmin && (
                     <Button
                       size="sm"
@@ -182,114 +243,80 @@ export default function ChatFeedback() {
         )}
       </div>
 
-      {/* Add Form */}
       {showForm && canAdd && (
         <div className="glass-card p-5 space-y-4 border-primary/30">
           <h3 className="font-semibold text-sm">Add Chat Feedback</h3>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label className="text-[10px] text-muted-foreground uppercase block mb-1">Type</label>
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant={formTab === "bad" ? "destructive" : "outline"}
-                  onClick={() => setFormTab("bad")}
-                  className="flex-1 text-xs"
-                >
+                <Button size="sm" variant={formTab === "bad" ? "destructive" : "outline"}
+                  onClick={() => setFormTab("bad")} className="flex-1 text-xs">
                   ❌ Bad Example
                 </Button>
-                <Button
-                  size="sm"
-                  variant={formTab === "good" ? "default" : "outline"}
+                <Button size="sm" variant={formTab === "good" ? "default" : "outline"}
                   onClick={() => setFormTab("good")}
-                  className={`flex-1 text-xs ${formTab === "good" ? "bg-green-600 hover:bg-green-700" : ""}`}
-                >
+                  className={`flex-1 text-xs ${formTab === "good" ? "bg-green-600 hover:bg-green-700" : ""}`}>
                   ✅ Good Example
                 </Button>
               </div>
             </div>
-
             <div>
               <label className="text-[10px] text-muted-foreground uppercase block mb-1">Chatter</label>
-              <select
-                value={formChatter}
-                onChange={e => setFormChatter(e.target.value)}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
+              <select value={formChatter} onChange={e => setFormChatter(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
                 <option value="">Select chatter...</option>
-                {CHATTER_OPTIONS.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+                {CHATTER_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-
             <div>
               <label className="text-[10px] text-muted-foreground uppercase block mb-1">Model Account</label>
-              <select
-                value={formModel}
-                onChange={e => setFormModel(e.target.value)}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
+              <select value={formModel} onChange={e => setFormModel(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
                 <option value="">Select model...</option>
-                {MODEL_OPTIONS.map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
+                {MODEL_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
           </div>
 
-          {/* Screenshot Upload */}
           <div>
             <label className="text-[10px] text-muted-foreground uppercase block mb-1">Screenshot</label>
             {formImage ? (
               <div className="relative inline-block">
                 <img src={formImage} alt="Preview" className="rounded-lg border border-border/50 max-h-[200px]" />
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="absolute top-2 right-2 h-6 w-6 p-0"
-                  onClick={() => setFormImage("")}
-                >
+                <Button size="sm" variant="destructive" className="absolute top-2 right-2 h-6 w-6 p-0"
+                  onClick={() => setFormImage("")}>
                   <X className="h-3 w-3" />
                 </Button>
               </div>
             ) : (
               <label className="flex items-center justify-center gap-2 h-24 rounded-lg border-2 border-dashed border-border/50 cursor-pointer hover:border-primary/50 hover:bg-secondary/20 transition-colors">
                 <Upload className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Click to upload screenshot</span>
+                <span className="text-sm text-muted-foreground">Click to upload screenshot (max 500KB)</span>
                 <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
               </label>
             )}
           </div>
 
-          {/* Description */}
           <div>
             <label className="text-[10px] text-muted-foreground uppercase block mb-1">
               What went {formTab === "bad" ? "wrong" : "right"}? (Be specific)
             </label>
-            <Textarea
-              value={formDescription}
-              onChange={e => setFormDescription(e.target.value)}
+            <Textarea value={formDescription} onChange={e => setFormDescription(e.target.value)}
               placeholder={formTab === "bad"
-                ? "e.g., Fan was clearly engaged and asking questions but chatter let them go to sleep without sending a PPV or teaser. Zero monetization attempt..."
+                ? "e.g., Fan was clearly engaged and asking questions but chatter let them go to sleep without sending a PPV or teaser..."
                 : "e.g., Great use of personalization — referenced the fan's football team, built rapport, then naturally transitioned to a PPV tease..."
-              }
-              className="min-h-[120px]"
-            />
+              } className="min-h-[120px]" />
           </div>
 
-          <Button
-            onClick={addEntry}
-            disabled={!formImage || !formDescription || !formChatter || !formModel}
-            className="w-full"
-          >
+          <Button onClick={addEntry} disabled={!formImage || !formDescription || !formChatter || !formModel || submitting}
+            className="w-full">
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Add to {formTab === "bad" ? "Bad Examples" : "Good Examples"}
           </Button>
         </div>
       )}
 
-      {/* Tabs */}
       <Tabs defaultValue="bad" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="bad" className="gap-2">
@@ -305,14 +332,8 @@ export default function ChatFeedback() {
             </Badge>
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="bad" className="mt-4">
-          {renderEntries("bad")}
-        </TabsContent>
-
-        <TabsContent value="good" className="mt-4">
-          {renderEntries("good")}
-        </TabsContent>
+        <TabsContent value="bad" className="mt-4">{renderEntries("bad")}</TabsContent>
+        <TabsContent value="good" className="mt-4">{renderEntries("good")}</TabsContent>
       </Tabs>
     </div>
   );
