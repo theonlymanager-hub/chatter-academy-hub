@@ -393,24 +393,10 @@ export default function Customs() {
                       </div>
                     ) : (
                       <div className="flex items-start gap-3">
-                        {canEdit ? (
-                          <button
-                            onClick={() => {
-                              const next = custom.status === "pending" ? "complete" : "pending";
-                              updateStatus(custom.id, next);
-                            }}
-                            className={`mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border ${statusColors[custom.status]} hover:opacity-80 transition-opacity`}
-                            title="Click to cycle status"
-                          >
-                            {statusIcons[custom.status]}
-                            {custom.status}
-                          </button>
-                        ) : (
-                          <span className={`mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border ${statusColors[custom.status]}`}>
-                            {statusIcons[custom.status]}
-                            {custom.status}
-                          </span>
-                        )}
+                        <span className={`mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 border ${statusColors[custom.status]}`}>
+                          {statusIcons[custom.status]}
+                          {custom.status}
+                        </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-sm font-medium">{custom.description}</p>
@@ -444,12 +430,21 @@ export default function Customs() {
                           </div>
                         </div>
                         {canEdit && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 shrink-0">
+                            {custom.status === "pending" ? (
+                              <button onClick={() => updateStatus(custom.id, "complete")} className="px-2 py-1 rounded-md bg-green-500/20 hover:bg-green-500/40 transition-colors text-green-400 text-xs font-medium flex items-center gap-1">
+                                <Check className="h-3.5 w-3.5" /> Complete
+                              </button>
+                            ) : (
+                              <button onClick={() => updateStatus(custom.id, "pending")} className="px-2 py-1 rounded-md bg-yellow-500/20 hover:bg-yellow-500/40 transition-colors text-yellow-400 text-xs font-medium flex items-center gap-1">
+                                <Clock className="h-3.5 w-3.5" /> Reopen
+                              </button>
+                            )}
                             <button onClick={() => startEdit(custom)} className="p-1.5 rounded-md hover:bg-secondary transition-colors" title="Edit">
                               <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                             </button>
-                            <button onClick={() => { if (confirm('Delete this custom?')) deleteCustom(custom.id); }} className="p-1.5 rounded-md hover:bg-destructive/20 transition-colors" title="Delete">
-                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            <button onClick={() => deleteCustom(custom.id)} className="px-2 py-1 rounded-md bg-destructive/20 hover:bg-destructive/40 transition-colors text-destructive text-xs font-medium flex items-center gap-1" title="Delete">
+                              <Trash2 className="h-3.5 w-3.5" /> Delete
                             </button>
                           </div>
                         )}
