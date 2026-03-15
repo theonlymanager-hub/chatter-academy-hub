@@ -37,6 +37,11 @@ const Index = () => {
   const [leaderboardData, setLeaderboardData] = useState<QualityScore[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
 
+  // Exciting metrics
+  const [pendingCustoms, setPendingCustoms] = useState(0);
+  const [topSale, setTopSale] = useState<{amount: number; model: string} | null>(null);
+  const [bestModel, setBestModel] = useState<{name: string; revenue: number} | null>(null);
+
   // Fetch real earning stats from API
   useEffect(() => {
     const fetchEarnings = async () => {
@@ -107,6 +112,50 @@ const Index = () => {
     fetchQualityScores();
   }, []);
 
+  // Fetch pending customs count
+  useEffect(() => {
+    const fetchPendingCustoms = async () => {
+      const { data } = await supabase.from('customs').select('id').eq('status', 'pending');
+      setPendingCustoms(data?.length || 0);
+    };
+    fetchPendingCustoms();
+  }, []);
+
+  // Fetch top sale and best model from sales_screenshots
+  useEffect(() => {
+    const fetchTopSale = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('sales_screenshots')
+        .select('amount, model_name')
+        .gte('created_at', today + 'T00:00:00')
+        .order('amount', { ascending: false })
+        .limit(1);
+      if (data && data.length > 0 && data[0].amount) {
+        setTopSale({ amount: data[0].amount, model: data[0].model_name || 'Unknown' });
+      }
+
+      // Best model = highest total from earning stats
+      const modelRevenues: {name: string; revenue: number}[] = [];
+      const modelMap: Record<string, string> = {
+        [ACCOUNT_IDS.ashley]: 'Ashley',
+        [ACCOUNT_IDS.willow]: 'Willow',
+        [ACCOUNT_IDS.izzie]: 'Izzie',
+        [ACCOUNT_IDS.lucinda]: 'Lucinda',
+      };
+      for (const [acctId, stats] of Object.entries(earningStats)) {
+        if (stats?.total) {
+          modelRevenues.push({ name: modelMap[acctId] || acctId, revenue: stats.total });
+        }
+      }
+      if (modelRevenues.length > 0) {
+        modelRevenues.sort((a, b) => b.revenue - a.revenue);
+        setBestModel(modelRevenues[0]);
+      }
+    };
+    fetchTopSale();
+  }, [earningStats]);
+
   // Calculate totals from API earning stats
   const totalApiRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.total || 0), 0);
   const totalSubscriptionRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.subscriptions || 0), 0);
@@ -141,6 +190,7 @@ const Index = () => {
       setKpis([
         { title: "Chatters Online", value: `${onlineChatters}/${chattersOnly.length}`, change: `${onlineChatters} active now`, changeType: "neutral", icon: Users },
         { title: "Avg Quality Score", value: leaderboardData.length > 0 ? `${avgQuality}/10` : "No data", change: leaderboardData.length > 0 ? "From quality checks" : "Run quality checks to populate", changeType: "neutral", icon: Star },
+        { title: "Pending Customs", value: `${pendingCustoms}`, change: pendingCustoms > 0 ? "Need attention" : "All clear ✅", changeType: pendingCustoms > 0 ? "negative" : "positive", icon: Clock },
       ]);
       setKpisInitialized(true);
     }
@@ -243,6 +293,47 @@ const Index = () => {
           </div>
         </div>
       )}
+
+      {/* Exciting Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Top Sale of the Day */}
+        <div className="glass-card p-5 border-l-4 border-green-500">
+          <div className="flex items-center gap-2 mb-2">
+            <DollarSign className="h-5 w-5 text-green-400" />
+            <span className="text-sm font-medium text-muted-foreground">Top Sale Today</span>
+          </div>
+          {topSale ? (
+            <div>
+              <p className="text-3xl font-bold text-green-400">${topSale.amount.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">{topSale.model}</p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-2xl font-bold text-muted-foreground/50">—</p>
+              <p className="text-xs text-muted-foreground mt-1">Sales will show here from screenshots</p>
+            </div>
+          )}
+        </div>
+
+        {/* Best Performing Model */}
+        <div className="glass-card p-5 border-l-4 border-primary">
+          <div className="flex items-center gap-2 mb-2">
+            <Star className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium text-muted-foreground">Best Model Today</span>
+          </div>
+          {bestModel ? (
+            <div>
+              <p className="text-3xl font-bold text-primary">{bestModel.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">${bestModel.revenue.toLocaleString()} revenue</p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-2xl font-bold text-muted-foreground/50">—</p>
+              <p className="text-xs text-muted-foreground mt-1">Revenue data will populate from OF API</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Today's Schedule & Mass Messages Link */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
