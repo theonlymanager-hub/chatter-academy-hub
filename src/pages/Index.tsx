@@ -39,7 +39,7 @@ const Index = () => {
 
   // Exciting metrics
   const [pendingCustoms, setPendingCustoms] = useState(0);
-  const [topSale, setTopSale] = useState<{amount: number; model: string} | null>(null);
+  const [topSale, setTopSale] = useState<{amount: number; model: string; chatter: string} | null>(null);
   const [bestModel, setBestModel] = useState<{name: string; revenue: number} | null>(null);
 
   // Real-time attendance from Supabase
@@ -149,12 +149,12 @@ const Index = () => {
       const today = new Date().toISOString().split('T')[0];
       const { data } = await supabase
         .from('sales_screenshots')
-        .select('amount, model_name')
+        .select('amount, model_name, chatter_name')
         .gte('created_at', today + 'T00:00:00')
         .order('amount', { ascending: false })
         .limit(1);
       if (data && data.length > 0 && data[0].amount) {
-        setTopSale({ amount: data[0].amount, model: data[0].model_name || 'Unknown' });
+        setTopSale({ amount: data[0].amount, model: data[0].model_name || 'Unknown', chatter: data[0].chatter_name || 'Unknown' });
       }
 
       // Best model = highest total from earning stats
@@ -328,12 +328,12 @@ const Index = () => {
           {topSale ? (
             <div>
               <p className="text-3xl font-bold text-green-400">${topSale.amount.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">{topSale.model}</p>
+              <p className="text-xs text-muted-foreground mt-1">{topSale.model} · Closed by <span className="text-green-300 font-medium">{topSale.chatter}</span></p>
             </div>
           ) : (
             <div>
               <p className="text-2xl font-bold text-muted-foreground/50">—</p>
-              <p className="text-xs text-muted-foreground mt-1">Sales will show here from screenshots</p>
+              <p className="text-xs text-muted-foreground mt-1">No sales logged yet today</p>
             </div>
           )}
         </div>
@@ -352,7 +352,7 @@ const Index = () => {
           ) : (
             <div>
               <p className="text-2xl font-bold text-muted-foreground/50">—</p>
-              <p className="text-xs text-muted-foreground mt-1">Revenue data will populate from OF API</p>
+              <p className="text-xs text-muted-foreground mt-1">No revenue data yet today</p>
             </div>
           )}
         </div>
