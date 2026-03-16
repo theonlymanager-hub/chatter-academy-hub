@@ -18,7 +18,7 @@ interface CheckItem {
 
 interface PersonChecklist {
   person: string;
-  username: string; // matches login username
+  username: string;
   role: string;
   items: Omit<CheckItem, "checked">[];
 }
@@ -29,12 +29,37 @@ const CHECKLISTS: PersonChecklist[] = [
     username: "luke",
     role: "admin",
     items: [
-      // Luke's actual tasks — strategic / review
-      { id: "luke_review_chats", label: "Review chats — screenshot + voice note anything that needs fixing", category: "start_of_day" },
-      { id: "luke_check_revenue", label: "Check daily revenue numbers", category: "ongoing" },
-      { id: "luke_check_board", label: "Check dashboard — scores, customs, attendance", category: "ongoing" },
+      // Morning Quality Review — Marc's shift (6AM-2PM)
+      { id: "luke_morning_review", label: "🔍 Morning Quality Review — Marc's shift: screenshot 5-10 chats (mix of good + needs improvement)", category: "start_of_day" },
+      { id: "luke_morning_input", label: "📝 Send screenshots with input — where to improve, what was good", category: "start_of_day" },
+      { id: "luke_morning_summary", label: "📊 Overall quality summary for Marc's shift", category: "start_of_day" },
+
+      // Afternoon Quality Review — JD + Jemimah shift (2PM-10PM)
+      { id: "luke_afternoon_review", label: "🔍 Afternoon Quality Review — JD + Jemimah shift: 5-10 screenshots", category: "ongoing" },
+      { id: "luke_afternoon_input", label: "📝 Send screenshots with input — improvements + good examples", category: "ongoing" },
+      { id: "luke_afternoon_summary", label: "📊 Overall quality summary for JD + Jemimah shift", category: "ongoing" },
+
+      // Creative Work
+      { id: "luke_ppv_ideas", label: "💡 PPV ideas — new concepts, scenarios, content angles", category: "ongoing" },
+      { id: "luke_mass_msg_ideas", label: "💡 Mass message ideas — games, engagement, personalised openers", category: "ongoing" },
+      { id: "luke_game_nights", label: "💡 Game nights / fun account events — brainstorm + plan", category: "ongoing" },
+
+      // Interviews
+      { id: "luke_interviews", label: "📞 Take 4-5 interview calls from Zar's filtered pipeline", category: "ongoing" },
+
+      // General Oversight
+      { id: "luke_check_revenue", label: "💰 Check daily revenue + LTV conversions", category: "ongoing" },
+      { id: "luke_check_ig", label: "📱 Check IG accounts — how are they performing?", category: "ongoing" },
+      { id: "luke_check_dashboard", label: "📋 Check dashboard — scores, customs, attendance", category: "ongoing" },
+      { id: "luke_oversee_ops", label: "👁️ General operations overview — anything need attention?", category: "ongoing" },
+
+      // End of Day
+      { id: "luke_overnight_delegate", label: "🌙 Delegate overnight review to Zar/Elle — 5-10 screenshots of KC + Jane shift", category: "end_of_day" },
+
+      // Weekly
       { id: "luke_weekly_mm", label: "📅 WEEKLY: Review mass message calendar for the week", category: "weekly" },
-      { id: "luke_weekly_perf", label: "📅 WEEKLY: Review chatter performance vs targets", category: "weekly" },
+      { id: "luke_weekly_perf", label: "📅 WEEKLY: Review chatter performance vs targets + decide who stays/goes", category: "weekly" },
+      { id: "luke_weekly_creative", label: "📅 WEEKLY: Content planning — PPVs, game nights, new ideas for all 4 accounts", category: "weekly" },
     ],
   },
   {
@@ -42,26 +67,23 @@ const CHECKLISTS: PersonChecklist[] = [
     username: "mark",
     role: "supervisor",
     items: [
-      // Start of day
       { id: "mark_whale_check", label: "Whale check — all whales replied to, last contact verified", category: "start_of_day" },
       { id: "mark_shift_handoff", label: "Post shift handoff message in CHAT TEAM general", category: "start_of_day" },
       { id: "mark_msg_zar", label: "Message Zar with today's tasks", category: "start_of_day" },
       { id: "mark_msg_elle", label: "Message Elle with today's tasks", category: "start_of_day" },
       { id: "mark_attendance", label: "Verify who's on shift — voice channel + log-ins match", category: "start_of_day" },
       { id: "mark_dashboard", label: "Check dashboard — customs pending? Scores updated?", category: "start_of_day" },
-      // Ongoing
       { id: "mark_quality", label: "Quality check — review chats from current shift", category: "ongoing" },
       { id: "mark_discord_dms", label: "Discord DMs — reply to any unread", category: "ongoing" },
       { id: "mark_chat_team", label: "CHAT TEAM channels — check for anything needing action", category: "ongoing" },
       { id: "mark_customs", label: "Chase any pending customs", category: "ongoing" },
       { id: "mark_fan_replies", label: "Check for unanswered fan messages across accounts", category: "ongoing" },
       { id: "mark_kb", label: "Add any new insights to Knowledge Base", category: "ongoing" },
-      // End of day
+      { id: "mark_process_screenshots", label: "Process Luke's quality screenshots — summarise, upload to feedback board, send to Elle", category: "ongoing" },
       { id: "mark_sales_ss", label: "Verify all shift sales screenshots posted", category: "end_of_day" },
       { id: "mark_shift_logs", label: "End-of-shift logs submitted by all chatters", category: "end_of_day" },
       { id: "mark_revenue", label: "Check daily revenue — update dashboard if needed", category: "end_of_day" },
       { id: "mark_prep", label: "Prep tomorrow's priorities — whale list, pending customs, shifts", category: "end_of_day" },
-      // Weekly
       { id: "mark_weekly_mm", label: "📅 WEEKLY: Mass messages + PPVs scheduled for the week", category: "weekly" },
       { id: "mark_weekly_shifts", label: "📅 WEEKLY: Shift calendar updated and shared", category: "weekly" },
       { id: "mark_weekly_perf", label: "📅 WEEKLY: Review chatter performance vs targets", category: "weekly" },
@@ -73,19 +95,16 @@ const CHECKLISTS: PersonChecklist[] = [
     username: "elle",
     role: "data_entry",
     items: [
-      // Start of day
       { id: "elle_attendance", label: "Verify attendance — who logged in? Anyone missing?", category: "start_of_day" },
       { id: "elle_dashboard", label: "Update dashboard data — scores, schedules, team info", category: "start_of_day" },
-      // Ongoing
       { id: "elle_customs", label: "Check customs board — update status, chase if overdue", category: "ongoing" },
       { id: "elle_shift_logs", label: "Chase chatters for missing end-of-shift logs", category: "ongoing" },
       { id: "elle_scores", label: "Update quality scores on dashboard when received", category: "ongoing" },
       { id: "elle_model_comms", label: "Model communications — content requests, schedule updates", category: "ongoing" },
       { id: "elle_airbnb", label: "Airbnb bookings — check upcoming, book if needed", category: "ongoing" },
-      // End of day
+      { id: "elle_overnight_review", label: "🌙 Overnight quality review — screenshot 5-10 chats from KC + Jane shift for Luke", category: "end_of_day" },
       { id: "elle_shift_cal", label: "Shift calendar up to date for tomorrow", category: "end_of_day" },
       { id: "elle_data_check", label: "All dashboard data current and accurate", category: "end_of_day" },
-      // Weekly
       { id: "elle_weekly_cal", label: "📅 WEEKLY: Full shift calendar updated for the week", category: "weekly" },
       { id: "elle_weekly_mm", label: "📅 WEEKLY: Mass message schedules posted to Discord", category: "weekly" },
     ],
@@ -95,17 +114,15 @@ const CHECKLISTS: PersonChecklist[] = [
     username: "zar",
     role: "supervisor",
     items: [
-      // Start of day
       { id: "zar_hiring_check", label: "Check hiring pipeline — any pending applications?", category: "start_of_day" },
       { id: "zar_interviews", label: "Any interviews scheduled today? Prep ready?", category: "start_of_day" },
-      // Ongoing
       { id: "zar_applications", label: "Process new applications — review, approve/reject", category: "ongoing" },
       { id: "zar_tickets", label: "Check hiring tickets — follow up on stale ones", category: "ongoing" },
       { id: "zar_id_verify", label: "ID verifications — assign Verified role when submitted", category: "ongoing" },
+      { id: "zar_filter_calls", label: "Filter candidates — pass top 3-5 to Luke for final interviews", category: "ongoing" },
       { id: "zar_schedule", label: "Schedule mass messages when calendar updated", category: "ongoing" },
-      // End of day
+      { id: "zar_overnight_review", label: "🌙 Overnight quality review — screenshot 5-10 chats from KC + Jane shift for Luke", category: "end_of_day" },
       { id: "zar_hiring_update", label: "Update hiring status — who's in pipeline, where", category: "end_of_day" },
-      // Weekly
       { id: "zar_weekly_interviews", label: "📅 WEEKLY: Batch interviews organised for the week", category: "weekly" },
       { id: "zar_weekly_payouts", label: "📅 WEEKLY: Payout list compiled and sent", category: "weekly" },
     ],
@@ -194,7 +211,6 @@ function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonCheck
 
   return (
     <div className="space-y-6">
-      {/* Progress */}
       <Card className="bg-card/50 border-border/50">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-2">
@@ -220,7 +236,6 @@ function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonCheck
         </CardContent>
       </Card>
 
-      {/* Categories */}
       {categories.map(cat => {
         const config = categoryConfig[cat];
         const catItems = items.filter(i => i.category === cat);
@@ -248,7 +263,6 @@ function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonCheck
         );
       })}
 
-      {/* Custom items */}
       <Card className="bg-card/50 border-border/50">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-cyan-400">➕ Today's Extras</CardTitle>
@@ -284,7 +298,6 @@ function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonCheck
         </CardContent>
       </Card>
 
-      {/* Notes */}
       {!viewOnly && (
         <Card className="bg-card/50 border-border/50">
           <CardHeader className="pb-3">
@@ -305,10 +318,8 @@ export default function DailyChecklist() {
   const isAdmin = user?.role === 'admin';
   const username = user?.username || '';
 
-  // Find this user's checklist
   const myChecklist = CHECKLISTS.find(c => c.username === username);
 
-  // Admin sees tabs for everyone, others see only their own
   if (isAdmin) {
     return (
       <div className="space-y-6">
@@ -337,7 +348,6 @@ export default function DailyChecklist() {
     );
   }
 
-  // Non-admin: show only their checklist
   if (!myChecklist) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
