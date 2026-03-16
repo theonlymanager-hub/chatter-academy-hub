@@ -168,6 +168,7 @@ export default function ChatFeedback() {
           return (
             <div key={entry.id} className="glass-card p-4">
               <div className="flex flex-col md:flex-row gap-4">
+                {entry.image_url && (
                 <div className="shrink-0 md:w-[320px]">
                   <img
                     src={entry.image_url}
@@ -175,6 +176,7 @@ export default function ChatFeedback() {
                     className="rounded-lg border border-border/50 w-full object-contain max-h-[400px]"
                   />
                 </div>
+                )}
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge
