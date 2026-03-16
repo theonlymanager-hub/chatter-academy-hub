@@ -140,7 +140,8 @@ const categoryConfig = {
 function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonChecklist; viewOnly?: boolean }) {
   const today = new Date().toISOString().split("T")[0];
   const dayOfWeek = new Date().getDay();
-  const storageKey = `checklist_${checklist.username}_${today}`;
+  const CHECKLIST_VERSION = "v4"; // bump this when tasks change to force refresh
+  const storageKey = `checklist_${CHECKLIST_VERSION}_${checklist.username}_${today}`;
   const notesKey = `checklist_notes_${checklist.username}_${today}`;
   const customKey = `checklist_custom_${checklist.username}_${today}`;
 
