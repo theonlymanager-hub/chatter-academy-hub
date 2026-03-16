@@ -176,6 +176,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_model_stats: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          message_revenue: number | null
+          model_name: string
+          subscription_revenue: number | null
+          tip_revenue: number | null
+          total_revenue: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          message_revenue?: number | null
+          model_name: string
+          subscription_revenue?: number | null
+          tip_revenue?: number | null
+          total_revenue?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          message_revenue?: number | null
+          model_name?: string
+          subscription_revenue?: number | null
+          tip_revenue?: number | null
+          total_revenue?: number | null
+        }
+        Relationships: []
+      }
       fan_profiles: {
         Row: {
           active_time: string | null
