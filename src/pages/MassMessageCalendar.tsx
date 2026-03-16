@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { modelColors } from "@/lib/mock-data";
 import { Plus, Trash2, Copy, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const modelNames = ["Izzy", "Willow", "Lucinda Bleu", "Ashley Morris"];
@@ -90,55 +89,24 @@ export default function MassMessageCalendar() {
   const [activeTab, setActiveTab] = useState<"schedule" | "ppv">("schedule");
   const [weekOffset, setWeekOffset] = useState(0);
 
-  const [scheduled, setScheduled] = useState<ScheduledMessage[]>([]);
-  const [ppvIdeas, setPPVIdeas] = useState<PPVIdea[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [scheduled, setScheduled] = useState<ScheduledMessage[]>(() => {
+    const saved = localStorage.getItem(SCHEDULE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
 
-  // Load from Supabase on mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [schedRes, ppvRes] = await Promise.all([
-          supabase.from('scheduled_messages').select('*').order('date', { ascending: true }),
-          supabase.from('ppv_ideas').select('*').order('created_at', { ascending: false }),
-        ]);
-        if (schedRes.data) {
-          setScheduled(schedRes.data.map((r: any) => ({
-            id: r.id, model: r.model, date: r.date, time: r.time || '',
-            type: r.type as any, content: r.content || '', status: r.status as any,
-            segment: r.segment || 'All Fans', price: r.price || '',
-            variantB: r.variant_b || '', notes: r.notes || '',
-          })));
-        }
-        if (ppvRes.data) {
-          setPPVIdeas(ppvRes.data.map((r: any) => ({
-            id: r.id, model: r.model, title: r.title || '', description: r.description || '',
-            price: r.price || '', segment: r.segment || 'All Fans',
-            status: r.status as any, conversionRate: r.conversion_rate || '',
-            createdAt: r.created_at,
-          })));
-        }
-      } catch (err) {
-        console.error('Failed to load mass messages:', err);
-        // Fallback to localStorage
-        const saved = localStorage.getItem(SCHEDULE_KEY);
-        if (saved) setScheduled(JSON.parse(saved));
-        const savedPPV = localStorage.getItem(PPV_KEY);
-        if (savedPPV) setPPVIdeas(JSON.parse(savedPPV));
-      }
-      setLoading(false);
-    };
-    loadData();
-  }, []);
+  const [ppvIdeas, setPPVIdeas] = useState<PPVIdea[]>(() => {
+    const saved = localStorage.getItem(PPV_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
 
-  const saveScheduled = useCallback(async (msgs: ScheduledMessage[]) => {
+  const saveScheduled = useCallback((msgs: ScheduledMessage[]) => {
     setScheduled(msgs);
-    localStorage.setItem(SCHEDULE_KEY, JSON.stringify(msgs)); // backup
+    localStorage.setItem(SCHEDULE_KEY, JSON.stringify(msgs));
   }, []);
 
-  const savePPV = useCallback(async (ideas: PPVIdea[]) => {
+  const savePPV = useCallback((ideas: PPVIdea[]) => {
     setPPVIdeas(ideas);
-    localStorage.setItem(PPV_KEY, JSON.stringify(ideas)); // backup
+    localStorage.setItem(PPV_KEY, JSON.stringify(ideas));
   }, []);
 
   // Week navigation
@@ -176,67 +144,39 @@ export default function MassMessageCalendar() {
     return map;
   }, [weekMessages, weekStart]);
 
-  const updateMessage = async (id: string, field: keyof ScheduledMessage, value: string) => {
-    const updated = scheduled.map(m => m.id === id ? { ...m, [field]: value } : m);
-    saveScheduled(updated);
-    // Map field names to DB columns
-    const dbField = field === 'variantB' ? 'variant_b' : field;
-    await supabase.from('scheduled_messages').update({ [dbField]: value }).eq('id', id);
+  const updateMessage = (id: string, field: keyof ScheduledMessage, value: string) => {
+    saveScheduled(scheduled.map(m => m.id === id ? { ...m, [field]: value } : m));
   };
 
-  const addRow = async (dateStr: string) => {
-    const { data } = await supabase.from('scheduled_messages').insert({
-      model: activeModel, date: dateStr, time: '10:00', type: 'Mass Message',
-      content: '', status: 'draft', segment: 'All Fans', price: '',
-    }).select().single();
-    if (data) {
-      const msg: ScheduledMessage = {
-        id: data.id, model: data.model, date: data.date, time: data.time || '',
-        type: data.type as any, content: data.content || '', status: data.status as any,
-        segment: data.segment || 'All Fans', price: data.price || '',
-      };
-      saveScheduled([...scheduled, msg]);
-      toast.success("Row added");
-    }
+  const addRow = (dateStr: string) => {
+    const msg: ScheduledMessage = {
+      id: Date.now().toString(), model: activeModel, date: dateStr,
+      time: "10:00", type: "Mass Message", content: "", status: "draft",
+      segment: "All Fans", price: "",
+    };
+    saveScheduled([...scheduled, msg]);
+    toast.success("Row added");
   };
 
-  const deleteRow = async (id: string) => {
+  const deleteRow = (id: string) => {
     saveScheduled(scheduled.filter(s => s.id !== id));
-    await supabase.from('scheduled_messages').delete().eq('id', id);
   };
 
-  const duplicateRow = async (msg: ScheduledMessage, targetDate: string) => {
-    const { data } = await supabase.from('scheduled_messages').insert({
-      model: msg.model, date: targetDate, time: msg.time, type: msg.type,
-      content: msg.content, status: 'draft', segment: msg.segment,
-      price: msg.price, variant_b: msg.variantB, notes: msg.notes,
-    }).select().single();
-    if (data) {
-      saveScheduled([...scheduled, { ...msg, id: data.id, date: targetDate, status: "draft" as const }]);
-      toast.success("Duplicated");
-    }
+  const duplicateRow = (msg: ScheduledMessage, targetDate: string) => {
+    saveScheduled([...scheduled, { ...msg, id: Date.now().toString(), date: targetDate, status: "draft" as const }]);
+    toast.success("Duplicated");
   };
 
-  const addPPVIdea = async () => {
-    const { data } = await supabase.from('ppv_ideas').insert({
-      model: activeModel, title: '', description: '', price: '$10',
-      segment: 'All Fans', status: 'idea',
-    }).select().single();
-    if (data) {
-      const idea: PPVIdea = {
-        id: data.id, model: data.model, title: '', description: '',
-        price: '$10', segment: 'All Fans', status: 'idea',
-        createdAt: data.created_at,
-      };
-      savePPV([idea, ...ppvIdeas]);
-    }
+  const addPPVIdea = () => {
+    const idea: PPVIdea = {
+      id: Date.now().toString(), model: activeModel, title: "", description: "",
+      price: "$10", segment: "All Fans", status: "idea", createdAt: new Date().toISOString().split("T")[0],
+    };
+    savePPV([idea, ...ppvIdeas]);
   };
 
-  const updatePPV = async (id: string, field: keyof PPVIdea, value: string) => {
-    const updated = ppvIdeas.map(p => p.id === id ? { ...p, [field]: value } : p);
-    savePPV(updated);
-    const dbField = field === 'conversionRate' ? 'conversion_rate' : field === 'createdAt' ? 'created_at' : field;
-    await supabase.from('ppv_ideas').update({ [dbField]: value }).eq('id', id);
+  const updatePPV = (id: string, field: keyof PPVIdea, value: string) => {
+    savePPV(ppvIdeas.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
   const modelColor = modelColors[activeModel] || "217 91% 60%";
@@ -417,7 +357,7 @@ export default function MassMessageCalendar() {
                     {(["idea", "ready", "scheduled", "sent"] as const).map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                   {canEdit && (
-                    <button onClick={async () => { savePPV(ppvIdeas.filter(p => p.id !== idea.id)); await supabase.from('ppv_ideas').delete().eq('id', idea.id); }}
+                    <button onClick={() => savePPV(ppvIdeas.filter(p => p.id !== idea.id))}
                       className="p-1 opacity-0 group-hover:opacity-100 hover:text-destructive transition-all" title="Delete">
                       <Trash2 className="h-3 w-3" />
                     </button>
