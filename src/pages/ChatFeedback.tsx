@@ -6,8 +6,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { modelColors } from "@/lib/mock-data";
-import { Plus, Trash2, Upload, X, Eye, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { Plus, Trash2, Upload, X, Eye, AlertTriangle, CheckCircle, Loader2, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
+
+// Lightbox component for expanding screenshots
+function ImageLightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      <button onClick={onClose} className="absolute top-4 right-4 text-white/80 hover:text-white z-50">
+        <X className="h-8 w-8" />
+      </button>
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      />
+    </div>
+  );
+}
 
 interface FeedbackEntry {
   id: string;
@@ -32,6 +49,7 @@ export default function ChatFeedback() {
   const [showForm, setShowForm] = useState(false);
   const [formTab, setFormTab] = useState<"bad" | "good">("bad");
   const [formImage, setFormImage] = useState("");
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [formDescription, setFormDescription] = useState("");
   const [formChatter, setFormChatter] = useState("");
   const [formModel, setFormModel] = useState("");
@@ -169,12 +187,17 @@ export default function ChatFeedback() {
             <div key={entry.id} className="glass-card p-4">
               <div className="flex flex-col md:flex-row gap-4">
                 {entry.image_url && (
-                <div className="shrink-0 md:w-[320px]">
+                <div className="shrink-0 md:w-[320px] relative group cursor-pointer" onClick={() => setLightboxImage(entry.image_url)}>
                   <img
                     src={entry.image_url}
                     alt="Chat screenshot"
-                    className="rounded-lg border border-border/50 w-full object-contain max-h-[400px]"
+                    className="rounded-lg border border-border/50 w-full object-contain max-h-[400px] transition-opacity group-hover:opacity-90"
                   />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-black/60 rounded-full p-2">
+                      <ZoomIn className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
                 </div>
                 )}
                 <div className="flex-1 space-y-3">
@@ -337,6 +360,10 @@ export default function ChatFeedback() {
         <TabsContent value="bad" className="mt-4">{renderEntries("bad")}</TabsContent>
         <TabsContent value="good" className="mt-4">{renderEntries("good")}</TabsContent>
       </Tabs>
+
+      {lightboxImage && (
+        <ImageLightbox src={lightboxImage} alt="Chat screenshot" onClose={() => setLightboxImage(null)} />
+      )}
     </div>
   );
 }
