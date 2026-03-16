@@ -28,6 +28,7 @@ import StrikeTracker from "./pages/StrikeTracker";
 import ContentIdeas from "./pages/ContentIdeas";
 import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
+import DailyChecklist from "./pages/DailyChecklist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -254,6 +255,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <UserManagement />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Daily Checklist - Admin only */}
+        <Route 
+          path="/my-day" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <DashboardLayout>
+                <DailyChecklist />
               </DashboardLayout>
             </ProtectedRoute>
           } 

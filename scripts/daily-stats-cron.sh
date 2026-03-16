@@ -1,9 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Daily Stats Cron — pulls OF API earnings per model, updates Supabase
-# Run via: crontab — every hour during active hours, or once daily
-# */60 8-23 * * * /Users/luckyai/Projects/chatter-academy-hub/scripts/daily-stats-cron.sh
-
-set -euo pipefail
+# Runs hourly during active hours via crontab
 
 API_BASE="https://app.onlyfansapi.com/api"
 API_KEY="ofapi_Lk9Mh9QRXmdL17xMllrWFxp6FiWwx4uBHkIORdO5b9c8e63a"
@@ -12,23 +9,20 @@ SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 
 TODAY=$(date -u +%Y-%m-%d)
 
-# Model account IDs
-declare -A MODELS=(
-  ["Ashley"]="acct_71750a6057e34776b9b6ca0903b5ee1a"
-  ["Izzie"]="acct_6140bb9805e9416a928d4d7a788f3939"
-  ["Willow"]="acct_f968a6be8f2041dcb9d52f8113f2d258"
-  ["Lucinda"]="acct_62e65e4c2c0740b386cde14811762f4d"
+MODELS=("Ashley" "Izzie" "Willow" "Lucinda")
+ACCT_IDS=(
+  "acct_71750a6057e34776b9b6ca0903b5ee1a"
+  "acct_6140bb9805e9416a928d4d7a788f3939"
+  "acct_f968a6be8f2041dcb9d52f8113f2d258"
+  "acct_62e65e4c2c0740b386cde14811762f4d"
 )
 
 echo "[$(date)] Daily stats cron starting for $TODAY"
 
-BEST_MODEL=""
-BEST_REVENUE=0
-
-for MODEL in "${!MODELS[@]}"; do
-  ACCT_ID="${MODELS[$MODEL]}"
+for i in {1..4}; do
+  MODEL="${MODELS[$i]}"
+  ACCT_ID="${ACCT_IDS[$i]}"
   
-  # Fetch earning stats
   RESP=$(curl -sf -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" \
     "$API_BASE/$ACCT_ID/payouts/earning-statistics" 2>/dev/null || echo '{}')
   
@@ -39,7 +33,7 @@ for MODEL in "${!MODELS[@]}"; do
   
   echo "  $MODEL: total=$TOTAL subs=$SUBS messages=$MESSAGES tips=$TIPS"
   
-  # Upsert into daily_model_stats table
+  # Upsert into daily_model_stats
   curl -sf -X POST "$SUPABASE_URL/rest/v1/daily_model_stats" \
     -H "apikey: $SUPABASE_KEY" \
     -H "Authorization: Bearer $SUPABASE_KEY" \
@@ -52,14 +46,7 @@ for MODEL in "${!MODELS[@]}"; do
       \"subscription_revenue\": $SUBS,
       \"message_revenue\": $MESSAGES,
       \"tip_revenue\": $TIPS
-    }" 2>/dev/null || echo "  WARNING: Failed to upsert $MODEL stats"
-  
-  # Track best model
-  if (( $(echo "$TOTAL > $BEST_REVENUE" | bc -l 2>/dev/null || echo 0) )); then
-    BEST_REVENUE=$TOTAL
-    BEST_MODEL=$MODEL
-  fi
+    }" 2>/dev/null && echo "  ✅ $MODEL upserted" || echo "  ⚠️ $MODEL upsert failed"
 done
 
-echo "[$(date)] Best model today: $BEST_MODEL ($BEST_REVENUE)"
 echo "[$(date)] Daily stats cron complete"

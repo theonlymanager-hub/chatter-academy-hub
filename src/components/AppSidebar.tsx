@@ -17,6 +17,7 @@ import {
   Trophy,
   ShieldAlert,
   Lightbulb,
+  CheckSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -40,6 +41,7 @@ const getAllSections = () => [
     label: "Main",
     items: [
       { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "My Day", url: "/my-day", icon: CheckSquare, roles: ['admin'] },
     ],
   },
   {
