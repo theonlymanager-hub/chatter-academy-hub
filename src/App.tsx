@@ -260,11 +260,11 @@ function AppContent() {
           } 
         />
 
-        {/* Daily Checklist - Admin only */}
+        {/* Daily Checklist - Admin + Supervisors + Data Entry */}
         <Route 
           path="/my-day" 
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
               <DashboardLayout>
                 <DailyChecklist />
               </DashboardLayout>

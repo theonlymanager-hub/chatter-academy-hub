@@ -5,186 +5,222 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Clock, AlertTriangle, Sun, Sunset, Moon, Plus, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
+import { CheckCircle2, Clock, Sun, Moon, Plus, Trash2, Eye } from "lucide-react";
 
 interface CheckItem {
   id: string;
   label: string;
   category: "start_of_day" | "ongoing" | "end_of_day" | "weekly";
   checked: boolean;
-  note?: string;
 }
 
-const DEFAULT_ITEMS: Omit<CheckItem, "checked" | "note">[] = [
-  // Start of day
-  { id: "whale_check", label: "Whale check — all whales replied to, last contact verified", category: "start_of_day" },
-  { id: "shift_handoff", label: "Post shift handoff message in CHAT TEAM general", category: "start_of_day" },
-  { id: "zar_tasks", label: "Message Zar with today's tasks", category: "start_of_day" },
-  { id: "elle_tasks", label: "Message Elle with today's tasks", category: "start_of_day" },
-  { id: "attendance_check", label: "Verify who's on shift — voice channel + log-ins match", category: "start_of_day" },
-  { id: "dashboard_check", label: "Check dashboard — any customs pending? Scores updated?", category: "start_of_day" },
+interface PersonChecklist {
+  person: string;
+  username: string; // matches login username
+  role: string;
+  items: Omit<CheckItem, "checked">[];
+}
 
-  // Ongoing
-  { id: "quality_review", label: "Quality check — review chats from current shift", category: "ongoing" },
-  { id: "discord_dms", label: "Discord DMs — reply to any unread", category: "ongoing" },
-  { id: "chat_team_monitor", label: "CHAT TEAM channels — check for anything needing action", category: "ongoing" },
-  { id: "customs_chase", label: "Chase any pending customs", category: "ongoing" },
-  { id: "fan_replies", label: "Check for unanswered fan messages across accounts", category: "ongoing" },
-  { id: "knowledge_base", label: "Add any new insights to Knowledge Base", category: "ongoing" },
-
-  // End of day
-  { id: "sales_screenshots", label: "Verify all shift sales screenshots posted", category: "end_of_day" },
-  { id: "end_shift_logs", label: "End-of-shift logs submitted by all chatters", category: "end_of_day" },
-  { id: "revenue_check", label: "Check daily revenue — update dashboard if needed", category: "end_of_day" },
-  { id: "tomorrow_prep", label: "Prep tomorrow's priorities — whale list, pending customs, upcoming shifts", category: "end_of_day" },
-
-  // Weekly (Monday)
-  { id: "mass_msg_schedule", label: "📅 WEEKLY: Mass messages + PPVs scheduled for the week", category: "weekly" },
-  { id: "shift_calendar", label: "📅 WEEKLY: Shift calendar updated and shared", category: "weekly" },
-  { id: "performance_review", label: "📅 WEEKLY: Review chatter performance vs targets", category: "weekly" },
-  { id: "ab_test_review", label: "📅 WEEKLY: A/B test results — what's converting?", category: "weekly" },
+const CHECKLISTS: PersonChecklist[] = [
+  {
+    person: "Luke",
+    username: "luke",
+    role: "admin",
+    items: [
+      // Luke's actual tasks — strategic / review
+      { id: "luke_review_chats", label: "Review chats — screenshot + voice note anything that needs fixing", category: "start_of_day" },
+      { id: "luke_check_revenue", label: "Check daily revenue numbers", category: "ongoing" },
+      { id: "luke_check_board", label: "Check dashboard — scores, customs, attendance", category: "ongoing" },
+      { id: "luke_weekly_mm", label: "📅 WEEKLY: Review mass message calendar for the week", category: "weekly" },
+      { id: "luke_weekly_perf", label: "📅 WEEKLY: Review chatter performance vs targets", category: "weekly" },
+    ],
+  },
+  {
+    person: "Mark",
+    username: "mark",
+    role: "supervisor",
+    items: [
+      // Start of day
+      { id: "mark_whale_check", label: "Whale check — all whales replied to, last contact verified", category: "start_of_day" },
+      { id: "mark_shift_handoff", label: "Post shift handoff message in CHAT TEAM general", category: "start_of_day" },
+      { id: "mark_msg_zar", label: "Message Zar with today's tasks", category: "start_of_day" },
+      { id: "mark_msg_elle", label: "Message Elle with today's tasks", category: "start_of_day" },
+      { id: "mark_attendance", label: "Verify who's on shift — voice channel + log-ins match", category: "start_of_day" },
+      { id: "mark_dashboard", label: "Check dashboard — customs pending? Scores updated?", category: "start_of_day" },
+      // Ongoing
+      { id: "mark_quality", label: "Quality check — review chats from current shift", category: "ongoing" },
+      { id: "mark_discord_dms", label: "Discord DMs — reply to any unread", category: "ongoing" },
+      { id: "mark_chat_team", label: "CHAT TEAM channels — check for anything needing action", category: "ongoing" },
+      { id: "mark_customs", label: "Chase any pending customs", category: "ongoing" },
+      { id: "mark_fan_replies", label: "Check for unanswered fan messages across accounts", category: "ongoing" },
+      { id: "mark_kb", label: "Add any new insights to Knowledge Base", category: "ongoing" },
+      // End of day
+      { id: "mark_sales_ss", label: "Verify all shift sales screenshots posted", category: "end_of_day" },
+      { id: "mark_shift_logs", label: "End-of-shift logs submitted by all chatters", category: "end_of_day" },
+      { id: "mark_revenue", label: "Check daily revenue — update dashboard if needed", category: "end_of_day" },
+      { id: "mark_prep", label: "Prep tomorrow's priorities — whale list, pending customs, shifts", category: "end_of_day" },
+      // Weekly
+      { id: "mark_weekly_mm", label: "📅 WEEKLY: Mass messages + PPVs scheduled for the week", category: "weekly" },
+      { id: "mark_weekly_shifts", label: "📅 WEEKLY: Shift calendar updated and shared", category: "weekly" },
+      { id: "mark_weekly_perf", label: "📅 WEEKLY: Review chatter performance vs targets", category: "weekly" },
+      { id: "mark_weekly_ab", label: "📅 WEEKLY: A/B test results — what's converting?", category: "weekly" },
+    ],
+  },
+  {
+    person: "Elle",
+    username: "elle",
+    role: "data_entry",
+    items: [
+      // Start of day
+      { id: "elle_attendance", label: "Verify attendance — who logged in? Anyone missing?", category: "start_of_day" },
+      { id: "elle_dashboard", label: "Update dashboard data — scores, schedules, team info", category: "start_of_day" },
+      // Ongoing
+      { id: "elle_customs", label: "Check customs board — update status, chase if overdue", category: "ongoing" },
+      { id: "elle_shift_logs", label: "Chase chatters for missing end-of-shift logs", category: "ongoing" },
+      { id: "elle_scores", label: "Update quality scores on dashboard when received", category: "ongoing" },
+      { id: "elle_model_comms", label: "Model communications — content requests, schedule updates", category: "ongoing" },
+      { id: "elle_airbnb", label: "Airbnb bookings — check upcoming, book if needed", category: "ongoing" },
+      // End of day
+      { id: "elle_shift_cal", label: "Shift calendar up to date for tomorrow", category: "end_of_day" },
+      { id: "elle_data_check", label: "All dashboard data current and accurate", category: "end_of_day" },
+      // Weekly
+      { id: "elle_weekly_cal", label: "📅 WEEKLY: Full shift calendar updated for the week", category: "weekly" },
+      { id: "elle_weekly_mm", label: "📅 WEEKLY: Mass message schedules posted to Discord", category: "weekly" },
+    ],
+  },
+  {
+    person: "Zar",
+    username: "zar",
+    role: "supervisor",
+    items: [
+      // Start of day
+      { id: "zar_hiring_check", label: "Check hiring pipeline — any pending applications?", category: "start_of_day" },
+      { id: "zar_interviews", label: "Any interviews scheduled today? Prep ready?", category: "start_of_day" },
+      // Ongoing
+      { id: "zar_applications", label: "Process new applications — review, approve/reject", category: "ongoing" },
+      { id: "zar_tickets", label: "Check hiring tickets — follow up on stale ones", category: "ongoing" },
+      { id: "zar_id_verify", label: "ID verifications — assign Verified role when submitted", category: "ongoing" },
+      { id: "zar_schedule", label: "Schedule mass messages when calendar updated", category: "ongoing" },
+      // End of day
+      { id: "zar_hiring_update", label: "Update hiring status — who's in pipeline, where", category: "end_of_day" },
+      // Weekly
+      { id: "zar_weekly_interviews", label: "📅 WEEKLY: Batch interviews organised for the week", category: "weekly" },
+      { id: "zar_weekly_payouts", label: "📅 WEEKLY: Payout list compiled and sent", category: "weekly" },
+    ],
+  },
 ];
 
 const categoryConfig = {
-  start_of_day: { label: "🌅 Start of Day", icon: Sun, color: "text-amber-400" },
-  ongoing: { label: "🔄 Ongoing", icon: Clock, color: "text-blue-400" },
-  end_of_day: { label: "🌙 End of Day", icon: Moon, color: "text-purple-400" },
-  weekly: { label: "📅 Weekly (Monday)", icon: AlertTriangle, color: "text-orange-400" },
+  start_of_day: { label: "🌅 Start of Day", color: "text-amber-400" },
+  ongoing: { label: "🔄 Ongoing", color: "text-blue-400" },
+  end_of_day: { label: "🌙 End of Day", color: "text-purple-400" },
+  weekly: { label: "📅 Weekly (Monday)", color: "text-orange-400" },
 };
 
-export default function DailyChecklist() {
+function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonChecklist; viewOnly?: boolean }) {
+  const today = new Date().toISOString().split("T")[0];
+  const dayOfWeek = new Date().getDay();
+  const storageKey = `checklist_${checklist.username}_${today}`;
+  const notesKey = `checklist_notes_${checklist.username}_${today}`;
+  const customKey = `checklist_custom_${checklist.username}_${today}`;
+
   const [items, setItems] = useState<CheckItem[]>([]);
   const [customItems, setCustomItems] = useState<CheckItem[]>([]);
   const [newItemText, setNewItemText] = useState("");
   const [notes, setNotes] = useState("");
   const [savedNotes, setSavedNotes] = useState("");
-  const today = new Date().toISOString().split("T")[0];
-  const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon
 
   useEffect(() => {
-    loadChecklist();
-  }, []);
-
-  const loadChecklist = async () => {
-    // Try to load today's checklist from localStorage (simple, admin-only)
-    const saved = localStorage.getItem(`checklist_${today}`);
-    const savedCustom = localStorage.getItem(`checklist_custom_${today}`);
-    const savedNotes = localStorage.getItem(`checklist_notes_${today}`);
+    const saved = localStorage.getItem(storageKey);
+    const savedCustom = localStorage.getItem(customKey);
+    const savedN = localStorage.getItem(notesKey);
 
     if (saved) {
       setItems(JSON.parse(saved));
     } else {
-      // Initialize with defaults
-      const initialized = DEFAULT_ITEMS
-        .filter(item => {
-          if (item.category === "weekly" && dayOfWeek !== 1) return false; // Only show weekly on Mondays
-          return true;
-        })
-        .map(item => ({ ...item, checked: false, note: "" }));
+      const initialized = checklist.items
+        .filter(item => item.category !== "weekly" || dayOfWeek === 1)
+        .map(item => ({ ...item, checked: false }));
       setItems(initialized);
     }
 
-    if (savedCustom) {
-      setCustomItems(JSON.parse(savedCustom));
-    }
-
-    if (savedNotes) {
-      setNotes(savedNotes);
-      setSavedNotes(savedNotes);
-    }
-  };
+    if (savedCustom) setCustomItems(JSON.parse(savedCustom));
+    if (savedN) { setNotes(savedN); setSavedNotes(savedN); }
+  }, [checklist.username]);
 
   const toggleItem = (id: string) => {
-    const updatedItems = items.map(item =>
-      item.id === id ? { ...item, checked: !item.checked } : item
-    );
-    setItems(updatedItems);
-    localStorage.setItem(`checklist_${today}`, JSON.stringify(updatedItems));
+    if (viewOnly) return;
+    const updated = items.map(i => i.id === id ? { ...i, checked: !i.checked } : i);
+    setItems(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
   };
 
-  const toggleCustomItem = (id: string) => {
-    const updated = customItems.map(item =>
-      item.id === id ? { ...item, checked: !item.checked } : item
-    );
+  const toggleCustom = (id: string) => {
+    if (viewOnly) return;
+    const updated = customItems.map(i => i.id === id ? { ...i, checked: !i.checked } : i);
     setCustomItems(updated);
-    localStorage.setItem(`checklist_custom_${today}`, JSON.stringify(updated));
+    localStorage.setItem(customKey, JSON.stringify(updated));
   };
 
-  const addCustomItem = () => {
-    if (!newItemText.trim()) return;
-    const newItem: CheckItem = {
-      id: `custom_${Date.now()}`,
-      label: newItemText.trim(),
-      category: "ongoing",
-      checked: false,
-    };
-    const updated = [...customItems, newItem];
+  const addCustom = () => {
+    if (!newItemText.trim() || viewOnly) return;
+    const item: CheckItem = { id: `custom_${Date.now()}`, label: newItemText.trim(), category: "ongoing", checked: false };
+    const updated = [...customItems, item];
     setCustomItems(updated);
-    localStorage.setItem(`checklist_custom_${today}`, JSON.stringify(updated));
+    localStorage.setItem(customKey, JSON.stringify(updated));
     setNewItemText("");
   };
 
-  const removeCustomItem = (id: string) => {
-    const updated = customItems.filter(item => item.id !== id);
+  const removeCustom = (id: string) => {
+    if (viewOnly) return;
+    const updated = customItems.filter(i => i.id !== id);
     setCustomItems(updated);
-    localStorage.setItem(`checklist_custom_${today}`, JSON.stringify(updated));
+    localStorage.setItem(customKey, JSON.stringify(updated));
   };
 
   const saveNotes = () => {
-    localStorage.setItem(`checklist_notes_${today}`, notes);
+    localStorage.setItem(notesKey, notes);
     setSavedNotes(notes);
   };
 
   const allItems = [...items, ...customItems];
-  const completedCount = allItems.filter(i => i.checked).length;
-  const totalCount = allItems.length;
-  const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  const done = allItems.filter(i => i.checked).length;
+  const total = allItems.length;
+  const pct = total > 0 ? (done / total) * 100 : 0;
 
   const categories = ["start_of_day", "ongoing", "end_of_day", "weekly"] as const;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">My Day</h1>
-          <p className="text-muted-foreground">
-            {new Date().toLocaleDateString("en-GB", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="text-3xl font-bold">
-            {completedCount}/{totalCount}
-          </div>
-          <p className="text-xs text-muted-foreground">tasks done</p>
-        </div>
-      </div>
-
-      {/* Progress bar */}
+      {/* Progress */}
       <Card className="bg-card/50 border-border/50">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-3">
-            <Progress value={progress} className="flex-1 h-3" />
-            <span className="text-sm font-medium min-w-[3rem] text-right">
-              {Math.round(progress)}%
-            </span>
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium">{checklist.person}'s Progress</span>
+            <span className="text-2xl font-bold">{done}/{total}</span>
           </div>
-          {progress === 100 && (
+          <div className="flex items-center gap-3">
+            <Progress value={pct} className="flex-1 h-3" />
+            <span className="text-sm font-medium min-w-[3rem] text-right">{Math.round(pct)}%</span>
+          </div>
+          {pct === 100 && (
             <div className="flex items-center gap-2 mt-3 text-green-400">
               <CheckCircle2 className="h-5 w-5" />
               <span className="font-medium">All tasks complete! 🎉</span>
             </div>
           )}
+          {viewOnly && (
+            <div className="flex items-center gap-2 mt-3 text-muted-foreground">
+              <Eye className="h-4 w-4" />
+              <span className="text-sm">View only — {checklist.person} ticks these off</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Task categories */}
+      {/* Categories */}
       {categories.map(cat => {
         const config = categoryConfig[cat];
         const catItems = items.filter(i => i.category === cat);
@@ -193,33 +229,18 @@ export default function DailyChecklist() {
         return (
           <Card key={cat} className="bg-card/50 border-border/50">
             <CardHeader className="pb-3">
-              <CardTitle className={`text-lg flex items-center gap-2 ${config.color}`}>
-                {config.label}
-              </CardTitle>
+              <CardTitle className={`text-lg ${config.color}`}>{config.label}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {catItems.map(item => (
                 <label
                   key={item.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all
-                    ${item.checked
-                      ? "bg-green-500/10 border border-green-500/20"
-                      : "bg-muted/30 border border-transparent hover:border-border/50"
-                    }`}
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-all ${viewOnly ? '' : 'cursor-pointer'}
+                    ${item.checked ? "bg-green-500/10 border border-green-500/20" : "bg-muted/30 border border-transparent hover:border-border/50"}`}
                 >
-                  <Checkbox
-                    checked={item.checked}
-                    onCheckedChange={() => toggleItem(item.id)}
-                    className="h-5 w-5"
-                  />
-                  <span className={`flex-1 ${item.checked ? "line-through text-muted-foreground" : ""}`}>
-                    {item.label}
-                  </span>
-                  {item.checked && (
-                    <Badge variant="outline" className="text-green-400 border-green-400/30 text-xs">
-                      Done
-                    </Badge>
-                  )}
+                  <Checkbox checked={item.checked} onCheckedChange={() => toggleItem(item.id)} disabled={viewOnly} className="h-5 w-5" />
+                  <span className={`flex-1 ${item.checked ? "line-through text-muted-foreground" : ""}`}>{item.label}</span>
+                  {item.checked && <Badge variant="outline" className="text-green-400 border-green-400/30 text-xs">Done</Badge>}
                 </label>
               ))}
             </CardContent>
@@ -230,78 +251,110 @@ export default function DailyChecklist() {
       {/* Custom items */}
       <Card className="bg-card/50 border-border/50">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2 text-cyan-400">
-            ➕ Today's Extras
-          </CardTitle>
+          <CardTitle className="text-lg text-cyan-400">➕ Today's Extras</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {customItems.map(item => (
-            <div
-              key={item.id}
-              className={`flex items-center gap-3 p-3 rounded-lg transition-all
-                ${item.checked
-                  ? "bg-green-500/10 border border-green-500/20"
-                  : "bg-muted/30 border border-transparent"
-                }`}
-            >
-              <Checkbox
-                checked={item.checked}
-                onCheckedChange={() => toggleCustomItem(item.id)}
-                className="h-5 w-5"
-              />
-              <span className={`flex-1 ${item.checked ? "line-through text-muted-foreground" : ""}`}>
-                {item.label}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeCustomItem(item.id)}
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+            <div key={item.id} className={`flex items-center gap-3 p-3 rounded-lg transition-all
+              ${item.checked ? "bg-green-500/10 border border-green-500/20" : "bg-muted/30 border border-transparent"}`}>
+              <Checkbox checked={item.checked} onCheckedChange={() => toggleCustom(item.id)} disabled={viewOnly} className="h-5 w-5" />
+              <span className={`flex-1 ${item.checked ? "line-through text-muted-foreground" : ""}`}>{item.label}</span>
+              {!viewOnly && (
+                <Button variant="ghost" size="sm" onClick={() => removeCustom(item.id)} className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
           ))}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Add a task for today..."
-              value={newItemText}
-              onChange={e => setNewItemText(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && addCustomItem()}
-              className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-            <Button onClick={addCustomItem} size="sm" disabled={!newItemText.trim()}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+          {!viewOnly && (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Add a task for today..."
+                value={newItemText}
+                onChange={e => setNewItemText(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && addCustom()}
+                className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <Button onClick={addCustom} size="sm" disabled={!newItemText.trim()}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Quick notes */}
-      <Card className="bg-card/50 border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2 text-yellow-400">
-            📝 Notes for Today
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            placeholder="Quick notes, reminders, things to follow up on..."
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            className="min-h-[100px] bg-muted/30"
-          />
-          <Button
-            onClick={saveNotes}
-            size="sm"
-            className="mt-2"
-            disabled={notes === savedNotes}
-          >
-            Save Notes
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Notes */}
+      {!viewOnly && (
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg text-yellow-400">📝 Notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea placeholder="Quick notes, reminders..." value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px] bg-muted/30" />
+            <Button onClick={saveNotes} size="sm" className="mt-2" disabled={notes === savedNotes}>Save Notes</Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+export default function DailyChecklist() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const username = user?.username || '';
+
+  // Find this user's checklist
+  const myChecklist = CHECKLISTS.find(c => c.username === username);
+
+  // Admin sees tabs for everyone, others see only their own
+  if (isAdmin) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Daily Tasks</h1>
+          <p className="text-muted-foreground">
+            {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          </p>
+        </div>
+
+        <Tabs defaultValue={username} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            {CHECKLISTS.map(c => (
+              <TabsTrigger key={c.username} value={c.username} className="text-sm">
+                {c.person}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {CHECKLISTS.map(c => (
+            <TabsContent key={c.username} value={c.username}>
+              <ChecklistView checklist={c} viewOnly={c.username !== username} />
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    );
+  }
+
+  // Non-admin: show only their checklist
+  if (!myChecklist) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <p className="text-muted-foreground">No checklist assigned to your account.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">My Day</h1>
+        <p className="text-muted-foreground">
+          {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+        </p>
+      </div>
+      <ChecklistView checklist={myChecklist} />
     </div>
   );
 }

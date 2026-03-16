@@ -41,7 +41,7 @@ const getAllSections = () => [
     label: "Main",
     items: [
       { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "My Day", url: "/my-day", icon: CheckSquare, roles: ['admin'] },
+      { title: "My Day", url: "/my-day", icon: CheckSquare, roles: ['admin', 'supervisor', 'data_entry'] },
     ],
   },
   {
