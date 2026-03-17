@@ -1,3 +1,4 @@
+// fan-profiles-v2
 import { useState, useEffect } from "react";
 import {
   MessageCircle, Clock, Calendar, Briefcase, MapPin, Loader2,
