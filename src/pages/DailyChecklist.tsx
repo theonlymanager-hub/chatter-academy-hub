@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
-import { CheckCircle2, Clock, Sun, Moon, Plus, Trash2, Eye } from "lucide-react";
+import { CheckCircle2, Clock, Sun, Moon, Plus, Trash2, Eye, ListTodo } from "lucide-react";
 
 interface CheckItem {
   id: string;
@@ -315,6 +315,126 @@ function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonCheck
   );
 }
 
+interface TodoItem {
+  id: string;
+  label: string;
+  checked: boolean;
+  createdAt: string;
+}
+
+function TodoList({ username, viewOnly = false }: { username: string; viewOnly?: boolean }) {
+  const todoKey = `todo_persistent_${username}`;
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [newTodoText, setNewTodoText] = useState("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem(todoKey);
+    if (saved) setTodos(JSON.parse(saved));
+  }, [username]);
+
+  const saveTodos = (updated: TodoItem[]) => {
+    setTodos(updated);
+    localStorage.setItem(todoKey, JSON.stringify(updated));
+  };
+
+  const addTodo = () => {
+    if (!newTodoText.trim() || viewOnly) return;
+    const item: TodoItem = {
+      id: `todo_${Date.now()}`,
+      label: newTodoText.trim(),
+      checked: false,
+      createdAt: new Date().toISOString().split("T")[0],
+    };
+    saveTodos([...todos, item]);
+    setNewTodoText("");
+  };
+
+  const toggleTodo = (id: string) => {
+    if (viewOnly) return;
+    saveTodos(todos.map(t => t.id === id ? { ...t, checked: !t.checked } : t));
+  };
+
+  const removeTodo = (id: string) => {
+    if (viewOnly) return;
+    saveTodos(todos.filter(t => t.id !== id));
+  };
+
+  const pending = todos.filter(t => !t.checked);
+  const completed = todos.filter(t => t.checked);
+
+  return (
+    <Card className="bg-card/50 border-border/50">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg text-emerald-400 flex items-center gap-2">
+            <ListTodo className="h-5 w-5" />
+            To-Do List
+          </CardTitle>
+          {todos.length > 0 && (
+            <Badge variant="outline" className="text-emerald-400 border-emerald-400/30">
+              {pending.length} pending
+            </Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">One-off tasks — these persist until you complete or remove them</p>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {pending.map(item => (
+          <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-transparent hover:border-border/50">
+            <Checkbox checked={false} onCheckedChange={() => toggleTodo(item.id)} disabled={viewOnly} className="h-5 w-5" />
+            <div className="flex-1">
+              <span>{item.label}</span>
+              <span className="text-xs text-muted-foreground ml-2">added {item.createdAt}</span>
+            </div>
+            {!viewOnly && (
+              <Button variant="ghost" size="sm" onClick={() => removeTodo(item.id)} className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400">
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        ))}
+
+        {completed.length > 0 && (
+          <div className="pt-2 border-t border-border/30">
+            <p className="text-xs text-muted-foreground mb-2">Completed</p>
+            {completed.map(item => (
+              <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-green-500/5">
+                <Checkbox checked={true} onCheckedChange={() => toggleTodo(item.id)} disabled={viewOnly} className="h-5 w-5" />
+                <span className="flex-1 line-through text-muted-foreground text-sm">{item.label}</span>
+                {!viewOnly && (
+                  <Button variant="ghost" size="sm" onClick={() => removeTodo(item.id)} className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {todos.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4">No to-dos yet. Add something below.</p>
+        )}
+
+        {!viewOnly && (
+          <div className="flex gap-2 pt-2">
+            <input
+              type="text"
+              placeholder="Add a to-do..."
+              value={newTodoText}
+              onChange={e => setNewTodoText(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && addTodo()}
+              className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <Button onClick={addTodo} size="sm" disabled={!newTodoText.trim()}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DailyChecklist() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -342,7 +462,10 @@ export default function DailyChecklist() {
           </TabsList>
           {CHECKLISTS.map(c => (
             <TabsContent key={c.username} value={c.username}>
-              <ChecklistView checklist={c} viewOnly={c.username !== username} />
+              <div className="space-y-6">
+                <TodoList username={c.username} viewOnly={c.username !== username} />
+                <ChecklistView checklist={c} viewOnly={c.username !== username} />
+              </div>
             </TabsContent>
           ))}
         </Tabs>
@@ -366,6 +489,7 @@ export default function DailyChecklist() {
           {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
       </div>
+      <TodoList username={username} />
       <ChecklistView checklist={myChecklist} />
     </div>
   );
