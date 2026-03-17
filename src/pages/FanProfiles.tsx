@@ -562,6 +562,7 @@ export default function FanProfiles() {
     const { data, error } = await supabase
       .from("fan_profiles")
       .select("*")
+      .gt("total_spent", 0)
       .order("total_spent", { ascending: false });
 
     if (error) {
