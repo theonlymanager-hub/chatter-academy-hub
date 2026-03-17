@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 
 const shiftTypes = ["morning", "afternoon", "night"] as const;
-const shiftLabels = { morning: "6AM–2PM", afternoon: "2PM–10PM", night: "10PM–6AM" };
+const shiftLabels = { morning: "6AM–2PM UK / 2PM–10PM PHT", afternoon: "2PM–10PM UK / 10PM–6AM PHT", night: "10PM–6AM UK / 6AM–2PM PHT" };
 const shiftIcons = { morning: Sun, afternoon: Clock, night: Moon };
 const chatters = ["Jane", "KC", "Jaydee", "Jemimah"];
 
@@ -71,6 +71,21 @@ const defaultRequests: ShiftRequest[] = [
 
 /** Roles that can edit the shift calendar and approve/reject requests */
 const EDITOR_ROLES = ["admin", "supervisor", "data_entry"] as const;
+
+// Convert UK time string to PHT (+8 hours)
+function toPHT(timeStr: string): string {
+  const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!match) return timeStr;
+  let hours = parseInt(match[1]);
+  const mins = match[2];
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  hours = (hours + 8) % 24;
+  const newPeriod = hours >= 12 ? "PM" : "AM";
+  const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  return `${displayHour}:${mins} ${newPeriod}`;
+}
 
 export default function ShiftCalendar() {
   const { user, hasPermission } = useAuth();
@@ -178,7 +193,7 @@ export default function ShiftCalendar() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Shift Calendar</h1>
-          <p className="text-muted-foreground text-sm mt-1">Weekly chatter shift schedule</p>
+          <p className="text-muted-foreground text-sm mt-1">Weekly chatter shift schedule — UK (GMT) &amp; Philippine (PHT) time</p>
         </div>
         {!canEditShifts && (
           <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30 gap-1">
@@ -277,7 +292,8 @@ export default function ShiftCalendar() {
                                 return (
                                   <div key={e.id} className="text-xs px-2 py-1.5 rounded-md border" style={{ backgroundColor: `hsl(${color} / 0.15)`, borderColor: `hsl(${color} / 0.3)`, color: `hsl(${color})` }}>
                                     <div className="font-medium">{e.memberName}</div>
-                                    <div className="text-[10px] opacity-70">{e.startTime}–{e.endTime}</div>
+                                    <div className="text-[10px] opacity-70">🇬🇧 {e.startTime}–{e.endTime}</div>
+                                    <div className="text-[10px] opacity-50">🇵🇭 {toPHT(e.startTime)}–{toPHT(e.endTime)}</div>
                                     <ModelBadges />
                                   </div>
                                 );
