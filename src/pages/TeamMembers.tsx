@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Plus, Trash2, Trophy } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Note {
   id: string;
@@ -22,6 +23,16 @@ interface MemberNotes {
   [memberId: string]: Note[];
 }
 
+interface SupabaseQualityScore {
+  chatter_name: string;
+  overall_score: number;
+  response_time_score: number | null;
+  personalisation_score: number | null;
+  conversation_flow_score: number | null;
+  ppv_timing_score: number | null;
+  energy_tone_score: number | null;
+}
+
 export default function TeamMembers() {
   const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
   const [expandedQuality, setExpandedQuality] = useState<Record<string, boolean>>({});
@@ -33,6 +44,40 @@ export default function TeamMembers() {
   const [newNoteText, setNewNoteText] = useState<Record<string, string>>({});
   const [newNoteCategory, setNewNoteCategory] = useState<Record<string, keyof QualityScores>>({});
   const [newNoteScore, setNewNoteScore] = useState<Record<string, number>>({});
+
+  // Supabase quality scores
+  const [supabaseScores, setSupabaseScores] = useState<Record<string, SupabaseQualityScore>>({});
+
+  useEffect(() => {
+    const fetchScores = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('quality_scores')
+          .select('chatter_name, overall_score, response_time_score, personalisation_score, conversation_flow_score, ppv_timing_score, energy_tone_score, created_at')
+          .order('created_at', { ascending: false });
+        if (error || !data) return;
+        const latest: Record<string, SupabaseQualityScore> = {};
+        for (const row of data) {
+          if (!row.chatter_name || row.overall_score == null) continue;
+          if (!latest[row.chatter_name]) {
+            latest[row.chatter_name] = {
+              chatter_name: row.chatter_name,
+              overall_score: row.overall_score,
+              response_time_score: row.response_time_score,
+              personalisation_score: row.personalisation_score,
+              conversation_flow_score: row.conversation_flow_score,
+              ppv_timing_score: row.ppv_timing_score,
+              energy_tone_score: row.energy_tone_score,
+            };
+          }
+        }
+        setSupabaseScores(latest);
+      } catch (e) {
+        console.error('Failed to fetch quality scores:', e);
+      }
+    };
+    fetchScores();
+  }, []);
 
   // Load notes from localStorage
   useEffect(() => {
@@ -133,13 +178,17 @@ export default function TeamMembers() {
     ],
   };
 
-  // Create leaderboard
+  // Create leaderboard using Supabase quality scores
   const leaderboard = teamMembers
     .filter(m => m.category === "chatter")
-    .map(member => ({
-      ...member,
-      combinedScore: (member.qualityScore * 0.6) + (member.revenueGenerated / 1000 * 0.4)
-    }))
+    .map(member => {
+      const sbScore = supabaseScores[member.name]?.overall_score ?? 0;
+      return {
+        ...member,
+        liveQualityScore: sbScore,
+        combinedScore: (sbScore * 0.6) + (member.revenueGenerated / 1000 * 0.4)
+      };
+    })
     .sort((a, b) => b.combinedScore - a.combinedScore);
 
   const qualityCategories: Array<{key: keyof QualityScores, label: string}> = [
@@ -222,7 +271,7 @@ export default function TeamMembers() {
           </div>
           <div className="bg-secondary/50 rounded-lg p-3">
             <p className="text-[10px] text-muted-foreground">Quality Score</p>
-            <p className="text-lg font-bold">{member.qualityScore}<span className="text-xs text-muted-foreground">/10</span></p>
+            <p className="text-lg font-bold">{supabaseScores[member.name] ? `${supabaseScores[member.name].overall_score.toFixed(1)}` : "—"}<span className="text-xs text-muted-foreground">/10</span></p>
           </div>
           <div className="bg-secondary/50 rounded-lg p-3">
             <p className="text-[10px] text-muted-foreground">Tasks Done</p>
@@ -271,18 +320,28 @@ export default function TeamMembers() {
 
             {isQualityExpanded && (
               <div className="mt-3 space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  {qualityCategories.map(({ key, label }) => (
-                    <div key={key} className="bg-secondary/30 rounded-lg p-2">
-                      <p className="text-[10px] text-muted-foreground">{label}</p>
-                      <p className="text-sm font-bold">{member.qualityScores[key]}<span className="text-xs text-muted-foreground">/10</span></p>
+                {supabaseScores[member.name] ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { key: 'response_time_score', label: 'Response Speed' },
+                      { key: 'personalisation_score', label: 'Personalisation' },
+                      { key: 'conversation_flow_score', label: 'Conversation Flow' },
+                      { key: 'ppv_timing_score', label: 'PPV Timing' },
+                      { key: 'energy_tone_score', label: 'Energy & Tone' },
+                    ] as const).map(({ key, label }) => (
+                      <div key={key} className="bg-secondary/30 rounded-lg p-2">
+                        <p className="text-[10px] text-muted-foreground">{label}</p>
+                        <p className="text-sm font-bold">{supabaseScores[member.name][key] ?? "—"}<span className="text-xs text-muted-foreground">/10</span></p>
+                      </div>
+                    ))}
+                    <div className="bg-primary/10 rounded-lg p-2 col-span-2">
+                      <p className="text-[10px] text-muted-foreground">Overall Average</p>
+                      <p className="text-sm font-bold text-primary">{supabaseScores[member.name].overall_score.toFixed(1)}<span className="text-xs text-muted-foreground">/10</span></p>
                     </div>
-                  ))}
-                  <div className="bg-primary/10 rounded-lg p-2 col-span-2">
-                    <p className="text-[10px] text-muted-foreground">Overall Average</p>
-                    <p className="text-sm font-bold text-primary">{member.qualityScores.overall}<span className="text-xs text-muted-foreground">/10</span></p>
                   </div>
-                </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">No quality scores yet</p>
+                )}
               </div>
             )}
           </div>
@@ -479,7 +538,7 @@ export default function TeamMembers() {
                   <div className="flex-1">
                     <p className="font-semibold">{member.name}</p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>Quality: {member.qualityScore}/10</span>
+                      <span>Quality: {member.liveQualityScore ? `${member.liveQualityScore.toFixed(1)}/10` : "—"}</span>
                       <span>Revenue: ${member.revenueGenerated.toLocaleString()}</span>
                       <span>Combined Score: {member.combinedScore.toFixed(1)}</span>
                     </div>

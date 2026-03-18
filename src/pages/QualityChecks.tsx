@@ -42,6 +42,7 @@ export default function QualityChecks() {
 
   const [recentScores, setRecentScores] = useState<any[]>([]);
   const [scoresLoading, setScoresLoading] = useState(true);
+  const [latestScoreByChatter, setLatestScoreByChatter] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchRecentScores = async () => {
@@ -50,7 +51,17 @@ export default function QualityChecks() {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(10);
-      if (!error && data) setRecentScores(data);
+      if (!error && data) {
+        setRecentScores(data);
+        // Build latest score per chatter
+        const latest: Record<string, number> = {};
+        for (const row of data) {
+          if (row.chatter_name && row.overall_score != null && !latest[row.chatter_name]) {
+            latest[row.chatter_name] = row.overall_score;
+          }
+        }
+        setLatestScoreByChatter(latest);
+      }
       setScoresLoading(false);
     };
     fetchRecentScores();
@@ -114,7 +125,7 @@ export default function QualityChecks() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currentUserTeamMember.qualityScore}/10</div>
+              <div className="text-2xl font-bold">{latestScoreByChatter[currentUserTeamMember.name] != null ? `${latestScoreByChatter[currentUserTeamMember.name].toFixed(1)}/10` : "—"}</div>
               <p className="text-xs text-muted-foreground">Overall performance rating</p>
             </CardContent>
           </Card>
@@ -162,7 +173,7 @@ export default function QualityChecks() {
               </div>
               <div>
                 <p className="font-semibold">{currentUserTeamMember.name}</p>
-                <p className="text-sm text-muted-foreground">{currentUserTeamMember.role} • Quality Score: {currentUserTeamMember.qualityScore}/10</p>
+                <p className="text-sm text-muted-foreground">{currentUserTeamMember.role} • Quality Score: {latestScoreByChatter[currentUserTeamMember.name] != null ? `${latestScoreByChatter[currentUserTeamMember.name].toFixed(1)}/10` : "No data"}</p>
               </div>
             </div>
           </CardContent>
@@ -261,7 +272,7 @@ export default function QualityChecks() {
             </div>
             <div>
               <p className="text-sm font-semibold">{selectedChatter.name}</p>
-              <p className="text-[10px] text-muted-foreground">{selectedChatter.role} • Current score: {selectedChatter.qualityScore}/10</p>
+              <p className="text-[10px] text-muted-foreground">{selectedChatter.role} • Current score: {latestScoreByChatter[selectedChatter.name] != null ? `${latestScoreByChatter[selectedChatter.name].toFixed(1)}/10` : "No data"}</p>
             </div>
           </div>
         )}

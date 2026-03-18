@@ -1,5 +1,5 @@
 // todo-list-v1
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { CheckCircle2, Clock, Sun, Moon, Plus, Trash2, Eye, ListTodo } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CheckItem {
   id: string;
@@ -167,37 +168,100 @@ function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonCheck
   const [newItemText, setNewItemText] = useState("");
   const [notes, setNotes] = useState("");
   const [savedNotes, setSavedNotes] = useState("");
+  const [supabaseReady, setSupabaseReady] = useState(false);
 
+  // Load checklist state — Supabase first, fall back to localStorage
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
+    const loadChecklist = async () => {
+      const dayOfWeekNow = new Date().getDay();
+      const baseItems = checklist.items
+        .filter(item => item.category !== "weekly" || dayOfWeekNow === 1)
+        .map(item => ({ ...item, checked: false }));
+
+      try {
+        // Try Supabase first
+        const { data, error } = await supabase
+          .from('daily_checklist_items')
+          .select('item_id, checked')
+          .eq('username', checklist.username)
+          .eq('date', today);
+
+        if (!error && data && data.length > 0) {
+          const checkedMap = new Map(data.map(r => [r.item_id, r.checked]));
+          const merged = baseItems.map(item => ({
+            ...item,
+            checked: checkedMap.get(item.id) ?? false,
+          }));
+          setItems(merged);
+          setSupabaseReady(true);
+          // Sync to localStorage as backup
+          localStorage.setItem(storageKey, JSON.stringify(merged));
+        } else {
+          // Fall back to localStorage
+          const saved = localStorage.getItem(storageKey);
+          if (saved) {
+            setItems(JSON.parse(saved));
+          } else {
+            setItems(baseItems);
+          }
+          setSupabaseReady(true);
+        }
+      } catch (e) {
+        console.error('Supabase checklist load failed, using localStorage:', e);
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          setItems(JSON.parse(saved));
+        } else {
+          setItems(baseItems);
+        }
+        setSupabaseReady(true);
+      }
+    };
+
     const savedCustom = localStorage.getItem(customKey);
     const savedN = localStorage.getItem(notesKey);
-
-    if (saved) {
-      setItems(JSON.parse(saved));
-    } else {
-      const initialized = checklist.items
-        .filter(item => item.category !== "weekly" || dayOfWeek === 1)
-        .map(item => ({ ...item, checked: false }));
-      setItems(initialized);
-    }
-
     if (savedCustom) setCustomItems(JSON.parse(savedCustom));
     if (savedN) { setNotes(savedN); setSavedNotes(savedN); }
+
+    loadChecklist();
   }, [checklist.username]);
+
+  // Write to Supabase helper
+  const writeToSupabase = useCallback(async (itemId: string, checked: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('daily_checklist_items')
+        .upsert({
+          username: checklist.username,
+          item_id: itemId,
+          date: today,
+          checked,
+          checked_at: checked ? new Date().toISOString() : null,
+        }, { onConflict: 'username,item_id,date' });
+      if (error) console.error('Supabase checklist write failed:', error);
+    } catch (e) {
+      console.error('Supabase checklist write failed:', e);
+    }
+  }, [checklist.username, today]);
 
   const toggleItem = (id: string) => {
     if (viewOnly) return;
     const updated = items.map(i => i.id === id ? { ...i, checked: !i.checked } : i);
     setItems(updated);
+    // Dual write: localStorage + Supabase
     localStorage.setItem(storageKey, JSON.stringify(updated));
+    const item = updated.find(i => i.id === id);
+    if (item) writeToSupabase(id, item.checked);
   };
 
   const toggleCustom = (id: string) => {
     if (viewOnly) return;
     const updated = customItems.map(i => i.id === id ? { ...i, checked: !i.checked } : i);
     setCustomItems(updated);
+    // Dual write: localStorage + Supabase
     localStorage.setItem(customKey, JSON.stringify(updated));
+    const item = updated.find(i => i.id === id);
+    if (item) writeToSupabase(id, item.checked);
   };
 
   const addCustom = () => {
