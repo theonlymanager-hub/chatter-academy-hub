@@ -126,15 +126,27 @@ const Index = () => {
 
   // Fetch real-time attendance — who's ACTUALLY on duty right now
   useEffect(() => {
+    // Map Discord display names → dashboard names
+    const discordToDashboard: Record<string, string> = {
+      'ThisIsMerridianPie': 'Jaydee',
+      'maybenotrembrandtt': 'Jaydee',
+      'Marc': 'Marc',
+      'Jane': 'Jane',
+      'KC': 'KC',
+      'Jemimah': 'Jemimah',
+    };
     const fetchLiveAttendance = async () => {
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
       const { data } = await supabase
         .from('attendance')
-        .select('chatter_name')
+        .select('chatter_name, discord_username')
         .eq('date', todayStr)
         .is('logout_time', null);
       if (data) {
-        setLiveAttendance(data.map(r => r.chatter_name));
+        const mapped = data.map(r => {
+          return discordToDashboard[r.chatter_name] || discordToDashboard[r.discord_username] || r.chatter_name;
+        });
+        setLiveAttendance(mapped);
       }
     };
     fetchLiveAttendance();
