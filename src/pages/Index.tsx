@@ -39,9 +39,8 @@ const Index = () => {
 
   // Exciting metrics
   const [pendingCustoms, setPendingCustoms] = useState(0);
-  const [topSale, setTopSale] = useState<{amount: number; model: string; chatter: string} | null>(null);
-  const [topChatter, setTopChatter] = useState<{name: string; totalSales: number; count: number} | null>(null);
-  const [bestModel, setBestModel] = useState<{name: string; revenue: number} | null>(null);
+  const [topChatter, setTopChatter] = useState<{name: string; revenue: number} | null>(null);
+  const [topModel, setTopModel] = useState<{name: string; revenue: number} | null>(null);
 
   // Real-time attendance from Supabase
   const [liveAttendance, setLiveAttendance] = useState<string[]>([]);
@@ -144,57 +143,64 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch top sale, top chatter, and best model
+  // Fetch Top Chatter + Top Model from OF API daily data
   useEffect(() => {
-    const fetchTopSale = async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const { data } = await supabase
-        .from('sales_screenshots')
-        .select('amount, model_name, chatter_name')
-        .gte('created_at', today + 'T00:00:00')
-        .order('amount', { ascending: false });
-      
-      if (data && data.length > 0 && data[0].amount) {
-        setTopSale({ amount: data[0].amount, model: data[0].model_name || 'Unknown', chatter: data[0].chatter_name || 'Unknown' });
-      }
+    const fetchDailyMetrics = async () => {
+      const apiKey = platformApi.getApiKey();
+      if (!apiKey) return;
 
-      // Top chatter = highest total sales today
-      if (data && data.length > 0) {
-        const chatterTotals = new Map<string, {total: number; count: number}>();
-        for (const row of data) {
-          if (!row.chatter_name || !row.amount) continue;
-          const existing = chatterTotals.get(row.chatter_name) || {total: 0, count: 0};
-          chatterTotals.set(row.chatter_name, {total: existing.total + row.amount, count: existing.count + 1});
-        }
-        let best: {name: string; totalSales: number; count: number} | null = null;
-        for (const [name, stats] of chatterTotals) {
-          if (!best || stats.total > best.totalSales) {
-            best = {name, totalSales: stats.total, count: stats.count};
+      try {
+        const dailyEarnings = await platformApi.getAllDailyEarnings();
+
+        // Shift schedule (UTC hours)
+        const SHIFT_SCHEDULE = [
+          { chatters: ['Marc'], startHour: 6, endHour: 14 },
+          { chatters: ['JD', 'Jemimah'], startHour: 14, endHour: 22 },
+          { chatters: ['KC', 'Jane'], startHour: 22, endHour: 30 },
+        ];
+
+        const chatterRevenue: Record<string, number> = {};
+        const modelRevenue: Record<string, number> = {};
+        const modelNames: Record<string, string> = {
+          ashley: 'Ashley', willow: 'Willow', izzie: 'Izzie', lucinda: 'Lucinda',
+        };
+
+        for (const [modelKey, stats] of Object.entries(dailyEarnings)) {
+          if (!stats) continue;
+          const displayName = modelNames[modelKey] || modelKey;
+          modelRevenue[displayName] = (modelRevenue[displayName] || 0) + stats.grossToday;
+
+          for (const tx of stats.transactions) {
+            const txHour = new Date(tx.time * 1000).getUTCHours();
+            const normHour = txHour < 6 ? txHour + 24 : txHour;
+
+            for (const shift of SHIFT_SCHEDULE) {
+              if (normHour >= shift.startHour && normHour < shift.endHour) {
+                const share = tx.gross / shift.chatters.length;
+                for (const chatter of shift.chatters) {
+                  chatterRevenue[chatter] = (chatterRevenue[chatter] || 0) + share;
+                }
+                break;
+              }
+            }
           }
         }
-        if (best) setTopChatter(best);
-      }
 
-      // Best model = highest total from earning stats
-      const modelRevenues: {name: string; revenue: number}[] = [];
-      const modelMap: Record<string, string> = {
-        [ACCOUNT_IDS.ashley]: 'Ashley',
-        [ACCOUNT_IDS.willow]: 'Willow',
-        [ACCOUNT_IDS.izzie]: 'Izzie',
-        [ACCOUNT_IDS.lucinda]: 'Lucinda',
-      };
-      for (const [acctId, stats] of Object.entries(earningStats)) {
-        if (stats?.total) {
-          modelRevenues.push({ name: modelMap[acctId] || acctId, revenue: stats.total });
+        const sortedChatters = Object.entries(chatterRevenue).sort(([, a], [, b]) => b - a);
+        if (sortedChatters.length > 0) {
+          setTopChatter({ name: sortedChatters[0][0], revenue: Math.round(sortedChatters[0][1] * 100) / 100 });
         }
-      }
-      if (modelRevenues.length > 0) {
-        modelRevenues.sort((a, b) => b.revenue - a.revenue);
-        setBestModel(modelRevenues[0]);
+
+        const sortedModels = Object.entries(modelRevenue).sort(([, a], [, b]) => b - a);
+        if (sortedModels.length > 0) {
+          setTopModel({ name: sortedModels[0][0], revenue: Math.round(sortedModels[0][1] * 100) / 100 });
+        }
+      } catch (e) {
+        console.error('Failed to fetch daily metrics:', e);
       }
     };
-    fetchTopSale();
-  }, [earningStats]);
+    fetchDailyMetrics();
+  }, []);
 
   // Calculate totals from API earning stats
   const totalApiRevenue = Object.values(earningStats).reduce((sum, s) => sum + (s?.total || 0), 0);
@@ -336,55 +342,36 @@ const Index = () => {
       )}
 
       {/* Exciting Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Top Sale of the Day */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Top Chatter of the Day */}
         <div className="glass-card p-5 border-l-4 border-green-500">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="h-5 w-5 text-green-400" />
-            <span className="text-sm font-medium text-muted-foreground">Top Sale Today</span>
-          </div>
-          {topSale ? (
-            <div>
-              <p className="text-3xl font-bold text-green-400">${topSale.amount.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">{topSale.model} · Closed by <span className="text-green-300 font-medium">{topSale.chatter}</span></p>
-            </div>
-          ) : (
-            <div>
-              <p className="text-2xl font-bold text-muted-foreground/50">—</p>
-              <p className="text-xs text-muted-foreground mt-1">No sales logged yet today</p>
-            </div>
-          )}
-        </div>
-
-        {/* Top Chatter of the Day */}
-        <div className="glass-card p-5 border-l-4 border-yellow-500">
-          <div className="flex items-center gap-2 mb-2">
-            <MessageSquare className="h-5 w-5 text-yellow-400" />
+            <Users className="h-5 w-5 text-green-400" />
             <span className="text-sm font-medium text-muted-foreground">Top Chatter Today</span>
           </div>
           {topChatter ? (
             <div>
-              <p className="text-3xl font-bold text-yellow-400">{topChatter.name}</p>
-              <p className="text-xs text-muted-foreground mt-1">${topChatter.totalSales.toLocaleString()} total · {topChatter.count} sale{topChatter.count !== 1 ? 's' : ''}</p>
+              <p className="text-3xl font-bold text-green-400">{topChatter.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">${topChatter.revenue.toLocaleString()} revenue generated</p>
             </div>
           ) : (
             <div>
               <p className="text-2xl font-bold text-muted-foreground/50">—</p>
-              <p className="text-xs text-muted-foreground mt-1">No sales logged yet today</p>
+              <p className="text-xs text-muted-foreground mt-1">No sales data yet today</p>
             </div>
           )}
         </div>
 
-        {/* Best Performing Model */}
+        {/* Top Model of the Day */}
         <div className="glass-card p-5 border-l-4 border-primary">
           <div className="flex items-center gap-2 mb-2">
             <Star className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">Best Model Today</span>
+            <span className="text-sm font-medium text-muted-foreground">Top Model Today</span>
           </div>
-          {bestModel ? (
+          {topModel ? (
             <div>
-              <p className="text-3xl font-bold text-primary">{bestModel.name}</p>
-              <p className="text-xs text-muted-foreground mt-1">${bestModel.revenue.toLocaleString()} revenue</p>
+              <p className="text-3xl font-bold text-primary">{topModel.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">${topModel.revenue.toLocaleString()} gross revenue today</p>
             </div>
           ) : (
             <div>

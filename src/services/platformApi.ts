@@ -169,6 +169,50 @@ export const platformApi = {
     }
   },
 
+  // Daily Earning Stats — parse per-transaction data from earning-statistics endpoint
+  async getDailyEarningStats(accountId: string): Promise<{ grossToday: number; netToday: number; transactions: Array<{ time: number; gross: number; net: number; category: string }> } | null> {
+    try {
+      const response = await fetch(`${API_BASE}/${accountId}/payouts/earning-statistics`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) return null;
+      const raw = await response.json();
+      const data = raw.data || raw;
+      const months = data?.list?.months || {};
+      const todayStr = new Date().toISOString().split('T')[0];
+      let grossToday = 0;
+      let netToday = 0;
+      const transactions: Array<{ time: number; gross: number; net: number; category: string }> = [];
+      for (const [, categories] of Object.entries(months)) {
+        const cats = categories as Record<string, any>;
+        for (const [catName, entries] of Object.entries(cats)) {
+          if (!Array.isArray(entries)) continue;
+          for (const entry of entries) {
+            const entryDate = new Date(entry.time * 1000).toISOString().split('T')[0];
+            if (entryDate === todayStr) {
+              grossToday += entry.gross || 0;
+              netToday += entry.net || 0;
+              transactions.push({ time: entry.time, gross: entry.gross || 0, net: entry.net || 0, category: catName });
+            }
+          }
+        }
+      }
+      return { grossToday, netToday, transactions };
+    } catch (e) {
+      console.error('Failed to fetch daily earning stats:', e);
+      return null;
+    }
+  },
+
+  // Get daily earnings for all accounts
+  async getAllDailyEarnings(): Promise<Record<string, { grossToday: number; netToday: number; transactions: Array<{ time: number; gross: number; net: number; category: string }> } | null>> {
+    const results: Record<string, { grossToday: number; netToday: number; transactions: Array<{ time: number; gross: number; net: number; category: string }> } | null> = {};
+    for (const [name, id] of Object.entries(ACCOUNT_IDS)) {
+      results[name] = await this.getDailyEarningStats(id);
+    }
+    return results;
+  },
+
   // Earning Statistics
   async getEarningStats(accountId: string): Promise<EarningStats | null> {
     try {
