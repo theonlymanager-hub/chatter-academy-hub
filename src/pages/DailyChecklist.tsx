@@ -144,6 +144,7 @@ const CHECKLISTS: PersonChecklist[] = [
       { id: "mateo_kb_review", label: "📚 Knowledge Base — review material, ensure training completed by chatters", category: "ongoing" },
       { id: "mateo_onboarding", label: "👋 New chatter onboarding — help with any new starters", category: "ongoing" },
       { id: "mateo_weekly_calls", label: "📅 WEEKLY (Sat/Sun): Chatter calls — review scores, assign tasks for next week", category: "weekly" },
+      { id: "mateo_weekly_scheduling", label: "📅 WEEKLY (Sunday): Schedule all mass messages, PPVs and prompts for the following week", category: "weekly" },
     ],
   },
 ];
