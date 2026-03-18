@@ -11,10 +11,10 @@ export const ACCOUNT_IDS = {
   lucinda: 'acct_62e65e4c2c0740b386cde14811762f4d',
 } as const;
 
-// Note: API key should be stored securely - in production use environment variables
-// For now using localStorage for demo purposes
+// API key - fallback to built-in key if not set in localStorage
+const DEFAULT_API_KEY = 'ofapi_Lk9Mh9QRXmdL17xMllrWFxp6FiWwx4uBHkIORdO5b9c8e63a';
 const getApiKey = () => {
-  return localStorage.getItem('platform-api-key') || '';
+  return localStorage.getItem('platform-api-key') || DEFAULT_API_KEY;
 };
 
 const getHeaders = (apiKey?: string) => ({
