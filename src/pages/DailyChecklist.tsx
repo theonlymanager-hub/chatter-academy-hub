@@ -128,6 +128,23 @@ const CHECKLISTS: PersonChecklist[] = [
       { id: "zar_weekly_payouts", label: "📅 WEEKLY: Payout list compiled and sent", category: "weekly" },
     ],
   },
+  {
+    person: "Mateo",
+    username: "mateo",
+    role: "supervisor",
+    items: [
+      { id: "mateo_quality_checks", label: "🔍 Quality checks — review 15 chats across Marc, Jemimah, JD", category: "start_of_day" },
+      { id: "mateo_feedback_board", label: "📝 Add 2+ feedback items per chatter to Chat Feedback Board", category: "start_of_day" },
+      { id: "mateo_whale_check", label: "🐋 Whale contact check — all whales replied to, no unanswered messages", category: "start_of_day" },
+      { id: "mateo_customs", label: "🛃 Customs clearance — make sure customs are being done, not sitting", category: "ongoing" },
+      { id: "mateo_strike_tracker", label: "⚠️ Strike tracker — update with any infractions", category: "ongoing" },
+      { id: "mateo_scorecards", label: "📊 Chatter scorecards — check and maintain", category: "ongoing" },
+      { id: "mateo_content_ideas", label: "💡 Content ideas — PPVs, mass messages, prompts", category: "ongoing" },
+      { id: "mateo_kb_review", label: "📚 Knowledge Base — review material, ensure training completed by chatters", category: "ongoing" },
+      { id: "mateo_onboarding", label: "👋 New chatter onboarding — help with any new starters", category: "ongoing" },
+      { id: "mateo_weekly_calls", label: "📅 WEEKLY (Sat/Sun): Chatter calls — review scores, assign tasks for next week", category: "weekly" },
+    ],
+  },
 ];
 
 const categoryConfig = {
@@ -140,7 +157,7 @@ const categoryConfig = {
 function ChecklistView({ checklist, viewOnly = false }: { checklist: PersonChecklist; viewOnly?: boolean }) {
   const today = new Date().toISOString().split("T")[0];
   const dayOfWeek = new Date().getDay();
-  const CHECKLIST_VERSION = "v4"; // bump this when tasks change to force refresh
+  const CHECKLIST_VERSION = "v5"; // bump — added Mateo supervisor checklist
   const storageKey = `checklist_${CHECKLIST_VERSION}_${checklist.username}_${today}`;
   const notesKey = `checklist_notes_${checklist.username}_${today}`;
   const customKey = `checklist_custom_${checklist.username}_${today}`;
