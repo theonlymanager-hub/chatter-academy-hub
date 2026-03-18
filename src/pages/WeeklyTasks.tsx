@@ -13,6 +13,12 @@ interface WeeklyTask {
 }
 
 const initialTasks: WeeklyTask[] = [
+  // Mandatory Training tasks for all chatters
+  { id: "wt_train_jane", title: "📚 Review Knowledge Base + complete weekly training quiz", assignee: "Jane", completed: false, category: "Training" },
+  { id: "wt_train_marc", title: "📚 Review Knowledge Base + complete weekly training quiz", assignee: "Marc", completed: false, category: "Training" },
+  { id: "wt_train_jd", title: "📚 Review Knowledge Base + complete weekly training quiz", assignee: "Jaydee", completed: false, category: "Training" },
+  { id: "wt_train_jem", title: "📚 Review Knowledge Base + complete weekly training quiz", assignee: "Jemimah", completed: false, category: "Training" },
+  { id: "wt_train_kc", title: "📚 Review Knowledge Base + complete weekly training quiz", assignee: "KC", completed: false, category: "Training" },
   { id: "wt1", title: "Create a whale (subscriber spending $500+)", assignee: "Jane", completed: false, category: "Revenue" },
   { id: "wt2", title: "Hit $500 daily revenue target", assignee: "Jane", completed: false, category: "Revenue" },
   { id: "wt3", title: "Use 3 upsell techniques in one conversation", assignee: "Marc", completed: true, category: "Technique" },
@@ -34,6 +40,7 @@ const categoryColors: Record<string, string> = {
   Revenue: "bg-primary/20 text-primary",
   Technique: "bg-accent/20 text-accent",
   Script: "bg-warning/20 text-warning",
+  Training: "bg-purple-500/20 text-purple-400",
 };
 
 export default function WeeklyTasks() {
