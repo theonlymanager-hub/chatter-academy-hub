@@ -252,6 +252,17 @@ export default function TeamMembers() {
           )}
         </div>
 
+        {/* Prominent Quality Score */}
+        <div className="flex items-center justify-center py-3 rounded-xl" style={{ backgroundColor: `hsl(${color} / 0.08)` }}>
+          <div className="text-center">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Quality Score</p>
+            <p className="text-5xl font-extrabold tracking-tight" style={{ color: `hsl(${color})` }}>
+              {supabaseScores[member.name] ? supabaseScores[member.name].overall_score.toFixed(1) : "—"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">/ 10</p>
+          </div>
+        </div>
+
         {/* Job Description */}
         {jobDescriptions[member.name] && (
           <ul className="text-xs text-muted-foreground space-y-1 border-l-2 pl-3" style={{ borderColor: `hsl(${color} / 0.5)` }}>
@@ -270,12 +281,12 @@ export default function TeamMembers() {
             <p className="text-lg font-bold">${member.revenueGenerated.toLocaleString()}</p>
           </div>
           <div className="bg-secondary/50 rounded-lg p-3">
-            <p className="text-[10px] text-muted-foreground">Quality Score</p>
-            <p className="text-lg font-bold">{supabaseScores[member.name] ? `${supabaseScores[member.name].overall_score.toFixed(1)}` : "—"}<span className="text-xs text-muted-foreground">/10</span></p>
-          </div>
-          <div className="bg-secondary/50 rounded-lg p-3">
             <p className="text-[10px] text-muted-foreground">Tasks Done</p>
             <p className="text-lg font-bold">{member.tasksCompleted}<span className="text-xs text-muted-foreground">/{member.weeklyTasks}</span></p>
+          </div>
+          <div className="bg-secondary/50 rounded-lg p-3">
+            <p className="text-[10px] text-muted-foreground">Training</p>
+            <p className="text-lg font-bold">{member.trainingProgress}%</p>
           </div>
           
           {/* Chatter Analytics - Only for chatters */}
@@ -297,13 +308,6 @@ export default function TeamMembers() {
           )}
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-muted-foreground">Training Progress</span>
-            <span className="text-xs font-medium">{member.trainingProgress}%</span>
-          </div>
-          <Progress value={member.trainingProgress} className="h-2" />
-        </div>
 
         {/* Quality Score Categories — only for chatters */}
         {isChatter && (
