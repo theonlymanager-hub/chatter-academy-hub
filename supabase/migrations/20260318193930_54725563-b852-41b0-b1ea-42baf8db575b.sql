@@ -1,0 +1,1 @@
+CREATE POLICY "Allow delete on quality_scores" ON public.quality_scores FOR DELETE TO public USING (true);
