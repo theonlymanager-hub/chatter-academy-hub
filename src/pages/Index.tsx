@@ -40,6 +40,7 @@ const Index = () => {
   // Exciting metrics
   const [pendingCustoms, setPendingCustoms] = useState(0);
   const [topSale, setTopSale] = useState<{amount: number; model: string; chatter: string} | null>(null);
+  const [topChatter, setTopChatter] = useState<{name: string; totalSales: number; count: number} | null>(null);
   const [bestModel, setBestModel] = useState<{name: string; revenue: number} | null>(null);
 
   // Real-time attendance from Supabase
@@ -143,7 +144,7 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch top sale and best model from sales_screenshots
+  // Fetch top sale, top chatter, and best model
   useEffect(() => {
     const fetchTopSale = async () => {
       const today = new Date().toISOString().split('T')[0];
@@ -151,10 +152,27 @@ const Index = () => {
         .from('sales_screenshots')
         .select('amount, model_name, chatter_name')
         .gte('created_at', today + 'T00:00:00')
-        .order('amount', { ascending: false })
-        .limit(1);
+        .order('amount', { ascending: false });
+      
       if (data && data.length > 0 && data[0].amount) {
         setTopSale({ amount: data[0].amount, model: data[0].model_name || 'Unknown', chatter: data[0].chatter_name || 'Unknown' });
+      }
+
+      // Top chatter = highest total sales today
+      if (data && data.length > 0) {
+        const chatterTotals = new Map<string, {total: number; count: number}>();
+        for (const row of data) {
+          if (!row.chatter_name || !row.amount) continue;
+          const existing = chatterTotals.get(row.chatter_name) || {total: 0, count: 0};
+          chatterTotals.set(row.chatter_name, {total: existing.total + row.amount, count: existing.count + 1});
+        }
+        let best: {name: string; totalSales: number; count: number} | null = null;
+        for (const [name, stats] of chatterTotals) {
+          if (!best || stats.total > best.totalSales) {
+            best = {name, totalSales: stats.total, count: stats.count};
+          }
+        }
+        if (best) setTopChatter(best);
       }
 
       // Best model = highest total from earning stats
@@ -318,7 +336,7 @@ const Index = () => {
       )}
 
       {/* Exciting Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Top Sale of the Day */}
         <div className="glass-card p-5 border-l-4 border-green-500">
           <div className="flex items-center gap-2 mb-2">
@@ -329,6 +347,25 @@ const Index = () => {
             <div>
               <p className="text-3xl font-bold text-green-400">${topSale.amount.toLocaleString()}</p>
               <p className="text-xs text-muted-foreground mt-1">{topSale.model} · Closed by <span className="text-green-300 font-medium">{topSale.chatter}</span></p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-2xl font-bold text-muted-foreground/50">—</p>
+              <p className="text-xs text-muted-foreground mt-1">No sales logged yet today</p>
+            </div>
+          )}
+        </div>
+
+        {/* Top Chatter of the Day */}
+        <div className="glass-card p-5 border-l-4 border-yellow-500">
+          <div className="flex items-center gap-2 mb-2">
+            <MessageSquare className="h-5 w-5 text-yellow-400" />
+            <span className="text-sm font-medium text-muted-foreground">Top Chatter Today</span>
+          </div>
+          {topChatter ? (
+            <div>
+              <p className="text-3xl font-bold text-yellow-400">{topChatter.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">${topChatter.totalSales.toLocaleString()} total · {topChatter.count} sale{topChatter.count !== 1 ? 's' : ''}</p>
             </div>
           ) : (
             <div>

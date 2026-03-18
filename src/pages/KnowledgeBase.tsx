@@ -218,6 +218,137 @@ export default function KnowledgeBase() {
           </AccordionContent>
         </AccordionItem>
 
+        {/* ─── LOCATION CONNECTION STRATEGY ─── */}
+        <AccordionItem value="location-strategy" className="glass-card border rounded-lg px-5">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
+                <Send className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-bold">Location Connection Strategy</h2>
+                <p className="text-xs text-muted-foreground font-normal">Use location and proximity to create deep emotional connections</p>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4">
+            <div className="glass-card p-4 border-l-4 border-green-500">
+              <h3 className="font-semibold text-sm mb-2 text-green-400">🗺️ The Golden Rule</h3>
+              <p className="text-sm text-muted-foreground">
+                Don't just say "I've been there" — go <strong className="text-foreground">DEEPER</strong>. If a fan says Oregon, say you have relatives there, you're from Arizona (nearby = hope of meeting). Give the fan the <strong className="text-foreground">IDEA</strong> they might meet the model — never say it directly (against rules) — but plant the seed.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm">How To Execute:</h3>
+              {[
+                { step: "1", title: "Research Their Area", desc: "Find a local sports team, a player name, a restaurant, a college — something SPECIFIC to their location. Google it if you have to." },
+                { step: "2", title: "Create a Connection", desc: "Example: fan mentions local football team → 'omg I know [player name] through my cousin!' This makes the conversation feel REAL and unique." },
+                { step: "3", title: "Build Proximity", desc: "If they're in Oregon, you're from Arizona (nearby). If they're in Texas, you visited Houston last summer. The closer you are, the more real the fantasy feels." },
+                { step: "4", title: "Layer It", desc: "Each message should build on the last, adding more depth to the shared connection. Don't just mention it once — keep referencing it naturally." },
+              ].map((item) => (
+                <div key={item.step} className="glass-card p-3 flex items-start gap-3">
+                  <span className="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full shrink-0">Step {item.step}</span>
+                  <div>
+                    <h4 className="text-sm font-semibold">{item.title}</h4>
+                    <p className="text-sm text-muted-foreground">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="glass-card p-4 bg-green-500/5 border border-green-500/20">
+              <h3 className="font-semibold text-sm mb-2">🎯 The Goal</h3>
+              <p className="text-sm text-muted-foreground">
+                Make it exciting. Make the fan feel <strong className="text-foreground">uniquely connected</strong> — not like he's talking to a generic script that says the same thing to everyone. Every fan follows 10-15 models. The one who feels REAL and LOCAL wins their money.
+              </p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* ─── FAN TYPE IDENTIFICATION ─── */}
+        <AccordionItem value="fan-type-identification" className="glass-card border rounded-lg px-5">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center shrink-0">
+                <Brain className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-bold">Fan Type Identification (First 5-10 Messages)</h2>
+                <p className="text-xs text-muted-foreground font-normal">Profile every fan BEFORE deciding your approach</p>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4">
+            <div className="glass-card p-4 border-l-4 border-yellow-500">
+              <h3 className="font-semibold text-sm mb-2 text-yellow-400">⚠️ Critical Rule</h3>
+              <p className="text-sm text-muted-foreground">
+                First 5-10 messages = <strong className="text-foreground">PROFILING PHASE</strong>. Do NOT go sexual yet. Ask questions, build rapport, figure out who this person is. The first few messages determine EVERYTHING about how the rest of the conversation goes.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm">Warning Signals — When To Pull Back:</h3>
+              {[
+                { signal: "One-word answers to sexual content", action: "STOP immediately. Pull back to personal connection. This fan is shy/conservative." },
+                { signal: "Answer length decreasing", action: "You're using the WRONG approach. Switch tactics — try a completely different angle." },
+                { signal: "Fan ignores flirty messages", action: "They're not ready. More rapport building needed. Don't force it." },
+                { signal: "Fan only responds to personal questions", action: "This is a potential WHALE. Invest in the relationship. Don't rush to sales." },
+              ].map((item, i) => (
+                <div key={i} className="glass-card p-3">
+                  <p className="text-sm font-semibold text-red-400">🚩 {item.signal}</p>
+                  <p className="text-sm text-muted-foreground mt-1">→ {item.action}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="glass-card p-4 bg-yellow-500/5 border border-yellow-500/20">
+              <h3 className="font-semibold text-sm mb-2">💡 Key Insight</h3>
+              <p className="text-sm text-muted-foreground">
+                There is NO one-size-fits-all script. Conservative fans need comfort. Quick-buyers want transactions. Potential whales need patience. <strong className="text-foreground">Each fan type requires a DIFFERENT approach</strong> — identify the type, THEN choose your route.
+              </p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* ─── STANDING OUT FROM OTHER MODELS ─── */}
+        <AccordionItem value="standing-out" className="glass-card border rounded-lg px-5">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                <Star className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-bold">Standing Out From Other Models</h2>
+                <p className="text-xs text-muted-foreground font-normal">Why fans should spend HERE and not on 14 other models</p>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4">
+            <div className="glass-card p-4 border-l-4 border-purple-500">
+              <h3 className="font-semibold text-sm mb-2 text-purple-400">🔑 The Reality</h3>
+              <p className="text-sm text-muted-foreground">
+                Every fan follows <strong className="text-foreground">10-15 other models</strong>. We MUST stand out. If our conversation feels the same as everyone else's, the fan has no reason to spend money HERE instead of there.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm">How We Win:</h3>
+              {[
+                { title: "Personal Touches", desc: "Reference their football team BY NAME. Mention their city. Ask about their hobby specifically. Make them feel REMEMBERED." },
+                { title: "Games & Competitions", desc: "Games, prizes, competitions in mass messages — not just selfies. Give fans a reason to engage that goes beyond just looking at photos." },
+                { title: "Feel Like a Real Person", desc: "The model should feel like a REAL person who remembers them, not a script bot. Use their name, reference past conversations, show genuine interest." },
+                { title: "The Test Question", desc: "Before sending any message, ask yourself: 'If this fan is chatting with 3 other models right now, why would they spend money HERE instead of there?' If you can't answer that, rewrite the message." },
+              ].map((item, i) => (
+                <div key={i} className="glass-card p-3">
+                  <h4 className="text-sm font-semibold">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground mt-1">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         {/* ─── 2. CONVERSATION TECHNIQUES & NAVIGATION ─── */}
         <AccordionItem value="conversation-techniques" className="glass-card border rounded-lg px-5">
           <AccordionTrigger className="hover:no-underline">
