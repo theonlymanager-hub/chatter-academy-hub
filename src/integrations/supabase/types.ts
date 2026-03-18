@@ -131,33 +131,6 @@ export type Database = {
         }
         Relationships: []
       }
-      daily_checklist_items: {
-        Row: {
-          id: string
-          username: string
-          item_id: string
-          date: string
-          checked: boolean
-          checked_at: string | null
-        }
-        Insert: {
-          id?: string
-          username: string
-          item_id: string
-          date?: string
-          checked?: boolean
-          checked_at?: string | null
-        }
-        Update: {
-          id?: string
-          username?: string
-          item_id?: string
-          date?: string
-          checked?: boolean
-          checked_at?: string | null
-        }
-        Relationships: []
-      }
       customs: {
         Row: {
           assigned_to: string | null
@@ -200,6 +173,33 @@ export type Database = {
           price?: number | null
           status?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      daily_checklist_items: {
+        Row: {
+          checked: boolean
+          checked_at: string | null
+          date: string
+          id: string
+          item_id: string
+          username: string
+        }
+        Insert: {
+          checked?: boolean
+          checked_at?: string | null
+          date?: string
+          id?: string
+          item_id: string
+          username: string
+        }
+        Update: {
+          checked?: boolean
+          checked_at?: string | null
+          date?: string
+          id?: string
+          item_id?: string
+          username?: string
         }
         Relationships: []
       }
