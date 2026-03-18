@@ -176,6 +176,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_checklist_items: {
+        Row: {
+          checked: boolean
+          checked_at: string | null
+          date: string
+          id: string
+          item_id: string
+          username: string
+        }
+        Insert: {
+          checked?: boolean
+          checked_at?: string | null
+          date?: string
+          id?: string
+          item_id: string
+          username: string
+        }
+        Update: {
+          checked?: boolean
+          checked_at?: string | null
+          date?: string
+          id?: string
+          item_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       daily_model_stats: {
         Row: {
           created_at: string | null
