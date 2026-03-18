@@ -308,13 +308,6 @@ export default function TeamMembers() {
           )}
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-muted-foreground">Training Progress</span>
-            <span className="text-xs font-medium">{member.trainingProgress}%</span>
-          </div>
-          <Progress value={member.trainingProgress} className="h-2" />
-        </div>
 
         {/* Quality Score Categories — only for chatters */}
         {isChatter && (
