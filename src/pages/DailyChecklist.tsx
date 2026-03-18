@@ -144,6 +144,7 @@ const CHECKLISTS: PersonChecklist[] = [
       { id: "mateo_kb_review", label: "📚 Knowledge Base — review material, ensure training completed by chatters", category: "ongoing" },
       { id: "mateo_onboarding", label: "👋 New chatter onboarding — help with any new starters", category: "ongoing" },
       { id: "mateo_weekly_calls", label: "📅 WEEKLY (Sat/Sun): Chatter calls — review scores, assign tasks for next week", category: "weekly" },
+      { id: "mateo_weekly_scheduling", label: "📅 WEEKLY (Sunday): Schedule all mass messages, PPVs and prompts for the following week", category: "weekly" },
     ],
   },
 ];
@@ -534,9 +535,9 @@ export default function DailyChecklist() {
         </div>
 
         <Tabs defaultValue={username} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="flex w-full overflow-x-auto">
             {CHECKLISTS.map(c => (
-              <TabsTrigger key={c.username} value={c.username} className="text-sm">
+              <TabsTrigger key={c.username} value={c.username} className="flex-1 min-w-0 text-sm">
                 {c.person}
               </TabsTrigger>
             ))}
