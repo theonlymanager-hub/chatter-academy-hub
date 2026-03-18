@@ -149,7 +149,12 @@ export const teamMembers: TeamMember[] = [
     qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
     revenueGenerated: 0, status: "offline", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
   },
-  
+  { 
+    id: "8", name: "Mateo", avatar: "MT", role: "Quality Check Manager", category: "supervisor", shiftTimes: "Flexible",
+    trainingProgress: 0, qualityScore: 0, 
+    qualityScores: { personalisation: 0, responseSpeed: 0, ppvStrategy: 0, followUp: 0, fanRetention: 0, grammar: 0, aftercare: 0, overall: 0 },
+    revenueGenerated: 0, status: "online", weeklyTasks: 0, tasksCompleted: 0, clockedIn: false
+  },
 
 ];
 
