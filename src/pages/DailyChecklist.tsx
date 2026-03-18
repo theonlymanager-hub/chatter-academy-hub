@@ -535,9 +535,9 @@ export default function DailyChecklist() {
         </div>
 
         <Tabs defaultValue={username} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="flex w-full overflow-x-auto">
             {CHECKLISTS.map(c => (
-              <TabsTrigger key={c.username} value={c.username} className="text-sm">
+              <TabsTrigger key={c.username} value={c.username} className="flex-1 min-w-0 text-sm">
                 {c.person}
               </TabsTrigger>
             ))}
