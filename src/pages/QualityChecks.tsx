@@ -11,19 +11,19 @@ import { Info, ClipboardCheck, TrendingUp, Calendar, User, BarChart3 } from "luc
 import { supabase } from "@/integrations/supabase/client";
 
 const categories = [
-  { label: "Response Time", dbKey: "response_time_score" },
-  { label: "Personalisation", dbKey: "personalisation_score" },
-  { label: "Conversation Flow", dbKey: "conversation_flow_score" },
-  { label: "PPV Timing", dbKey: "ppv_timing_score" },
-  { label: "Energy & Tone", dbKey: "energy_tone_score" },
+  { label: "Conversation Flow & Energy", dbKey: "response_time_score" },
+  { label: "Personalisation & Fan Profiling", dbKey: "personalisation_score" },
+  { label: "Sales & PPV Execution", dbKey: "conversation_flow_score" },
+  { label: "Whale Development & Retention", dbKey: "ppv_timing_score" },
+  { label: "Standards & Rules Compliance", dbKey: "energy_tone_score" },
 ];
 
 const categoryDescriptions: Record<string, string> = {
-  "Response Time": "Speed and consistency of replies. Are fans waiting too long? Is the chatter responsive during peak hours?",
-  "Personalisation": "Using the fan's name, remembering details, referencing past conversations. Making them feel like they're the only one.",
-  "Conversation Flow": "Natural transitions, keeping engagement high, knowing when to pitch vs chat. Smooth, not robotic.",
-  "PPV Timing": "Sending PPV at the right moment — after rapport, during peak engagement, matching fan mood and spending patterns.",
-  "Energy & Tone": "Matching the model's brand voice, enthusiasm level, emotional intelligence. Does it feel authentic?",
+  "Conversation Flow & Energy": "Matching energy, keeping conversations alive, natural transitions, no dead-end messages. Are they reading the fan and adapting? (KB: Conversation Techniques & Navigation)",
+  "Personalisation & Fan Profiling": "Adapting approach to fan type (first 5-10 messages), using their name/details, location strategy, remembering past conversations. (KB: Fan Type Identification, Location Connection)",
+  "Sales & PPV Execution": "PPV timing after rapport, pricing psychology, upselling naturally, not spamming. Building toward a sale, not just chatting. (KB: Sales & Upselling, PPV Strategy)",
+  "Whale Development & Retention": "Building high-value relationships, making fans feel special, aftercare with hooks, standing out from other models. Long game. (KB: Whale Creation, Fan Psychology, Standing Out)",
+  "Standards & Rules Compliance": "No copy-paste openers, no guilt tripping, no lazy replies (<15 chars), response time under 10 mins, following all Knowledge Base rules. (KB: Common Mistakes, Quality Standards)",
 };
 
 export default function QualityChecks() {
@@ -197,14 +197,14 @@ export default function QualityChecks() {
           <h2 className="text-sm font-bold uppercase tracking-wide">How Quality Checks Work</h2>
         </div>
         <div className="space-y-2 text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">Each chatter is reviewed <span className="text-primary font-bold">6 times per shift</span>, spread across different times.</p>
+          <p className="font-medium text-foreground">Each chatter is reviewed across <span className="text-primary font-bold">5 different chats per shift</span>, spread throughout the shift.</p>
           <ul className="list-disc list-inside space-y-1 ml-1">
-            <li>Reviews happen at <strong>random intervals</strong> throughout the shift — not all at once</li>
-            <li>Each review samples <strong>3–4 different chats</strong> (not just one conversation)</li>
+            <li>Reviews are <strong>spread across the shift</strong> — e.g. at 3PM, 5PM, 7PM — not all at once</li>
+            <li>Each review is <strong>one chat conversation</strong>, scored against the Knowledge Base criteria</li>
             <li>This gives a <strong>broad, representative picture</strong> of how they're chatting across the whole shift</li>
-            <li>Scores are based on the <strong>overall pattern</strong>, not a single cherry-picked interaction</li>
+            <li>At the end, the <strong>overall score + key issues</strong> are submitted here</li>
           </ul>
-          <p className="text-xs mt-2 italic">Supervisor checks the chats via OnlyFans API, scores each category below, and adds specific feedback notes.</p>
+          <p className="text-xs mt-2 italic">Supervisor reads the chats, scores each category below based on the Knowledge Base standards, and adds specific coaching notes.</p>
         </div>
       </div>
 
@@ -331,11 +331,11 @@ export default function QualityChecks() {
             {recentScores.map((score) => {
               const color = chatterColors[score.chatter_name] || "217 91% 60%";
               const scoreCategories = [
-                { label: "Response Time", value: score.response_time_score },
-                { label: "Personalisation", value: score.personalisation_score },
-                { label: "Conversation Flow", value: score.conversation_flow_score },
-                { label: "PPV Timing", value: score.ppv_timing_score },
-                { label: "Energy & Tone", value: score.energy_tone_score },
+                { label: "Conversation Flow & Energy", value: score.response_time_score },
+                { label: "Personalisation & Fan Profiling", value: score.personalisation_score },
+                { label: "Sales & PPV Execution", value: score.conversation_flow_score },
+                { label: "Whale Development & Retention", value: score.ppv_timing_score },
+                { label: "Standards & Rules Compliance", value: score.energy_tone_score },
               ];
               return (
                 <div key={score.id} className="p-4 rounded-lg border" style={{ borderColor: `hsl(${color} / 0.3)`, backgroundColor: `hsl(${color} / 0.03)` }}>
