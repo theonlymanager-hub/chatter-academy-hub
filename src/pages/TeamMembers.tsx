@@ -50,6 +50,8 @@ interface QualityScoreRecord {
 }
 
 export default function TeamMembers() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
   const [expandedQuality, setExpandedQuality] = useState<Record<string, boolean>>({});
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
@@ -344,10 +346,12 @@ export default function TeamMembers() {
         )}
 
         <div className={`grid ${gridCols} gap-3`}>
-          <div className="bg-secondary/50 rounded-lg p-3">
-            <p className="text-[10px] text-muted-foreground">Revenue (week)</p>
-            <p className="text-lg font-bold">${member.revenueGenerated.toLocaleString()}</p>
-          </div>
+          {isAdmin && (
+            <div className="bg-secondary/50 rounded-lg p-3">
+              <p className="text-[10px] text-muted-foreground">Revenue (week)</p>
+              <p className="text-lg font-bold">${member.revenueGenerated.toLocaleString()}</p>
+            </div>
+          )}
           <div className="bg-secondary/50 rounded-lg p-3">
             <p className="text-[10px] text-muted-foreground">Tasks Done</p>
             <p className="text-lg font-bold">{member.tasksCompleted}<span className="text-xs text-muted-foreground">/{member.weeklyTasks}</span></p>
@@ -358,7 +362,7 @@ export default function TeamMembers() {
           </div>
           
           {/* Chatter Analytics - Only for chatters */}
-          {isChatter && member.analytics && (
+          {isChatter && member.analytics && isAdmin && (
             <>
               <div className="bg-secondary/50 rounded-lg p-3">
                 <p className="text-[10px] text-muted-foreground">Shifts This Week</p>
@@ -702,7 +706,7 @@ export default function TeamMembers() {
                     <p className="font-semibold">{member.name}</p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>Quality: {member.liveQualityScore ? `${member.liveQualityScore.toFixed(1)}/10` : "—"}</span>
-                      <span>Revenue: ${member.revenueGenerated.toLocaleString()}</span>
+                      {isAdmin && <span>Revenue: ${member.revenueGenerated.toLocaleString()}</span>}
                       <span>Combined Score: {member.combinedScore.toFixed(1)}</span>
                     </div>
                   </div>

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { platformApi, ACCOUNT_IDS, AccountStats, Fan } from '@/services/platformApi';
 import { Settings, RefreshCw, Check, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ChatterShift {
   chatterId: string;
@@ -61,6 +62,8 @@ const mockPerformance: ChatterPerformance[] = [
 ];
 
 export default function ChatterAnalytics() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [isLoading, setIsLoading] = useState(false);
   const [todayShifts, setTodayShifts] = useState<ChatterShift[]>(mockShifts);
   const [performance, setPerformance] = useState<ChatterPerformance[]>(mockPerformance);
@@ -124,6 +127,14 @@ export default function ChatterAnalytics() {
   };
 
   const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
+
+  if (!isAdmin) {
+    return (
+      <div className="glass-card p-8 rounded-lg text-center">
+        <p className="text-muted-foreground">Revenue analytics are only available to admins.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
