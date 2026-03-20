@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronDown, ChevronUp, Plus, Trash2, Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import DashboardActivityView from "@/components/DashboardActivityView";
 
 interface Note {
   id: string;
@@ -618,6 +619,11 @@ export default function TeamMembers() {
         <h1 className="text-2xl font-bold tracking-tight">Team Members</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your chatting team</p>
       </div>
+
+      {/* Dashboard Activity — visible to admin and supervisor */}
+      {(user?.role === 'admin' || user?.role === 'supervisor') && (
+        <DashboardActivityView />
+      )}
 
       {/* Supervisors Section */}
       <div className="space-y-4">

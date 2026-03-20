@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PageVisitTracker from "./components/PageVisitTracker";
+import { PageVisitProvider } from "./hooks/usePageVisitTracker";
 import Login from "./components/Login";
 import Index from "./pages/Index";
 import TeamMembers from "./pages/TeamMembers";
@@ -42,6 +44,7 @@ function AppContent() {
 
   return (
     <BrowserRouter>
+      <PageVisitTracker />
       <Routes>
         {/* Dashboard - All roles */}
         <Route 
@@ -69,7 +72,7 @@ function AppContent() {
         <Route 
           path="/tasks" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
               <DashboardLayout>
                 <Tasks />
               </DashboardLayout>
@@ -102,7 +105,7 @@ function AppContent() {
         <Route 
           path="/knowledge-base" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
               <DashboardLayout>
                 <KnowledgeBase />
               </DashboardLayout>
@@ -240,7 +243,7 @@ function AppContent() {
         <Route 
           path="/fans" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
               <DashboardLayout>
                 <FanProfiles />
               </DashboardLayout>
@@ -284,7 +287,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <AppContent />
+        <PageVisitProvider>
+          <AppContent />
+        </PageVisitProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

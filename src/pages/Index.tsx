@@ -6,6 +6,7 @@ import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import DailyCheckInBanner from "@/components/DailyCheckInBanner";
 
 const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const today = weekDays[new Date().getDay()];
@@ -274,6 +275,9 @@ const Index = () => {
 
   return (
     <div className="space-y-6 max-w-7xl">
+      {/* Daily Check-In Banner for Chatters */}
+      <DailyCheckInBanner />
+
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Chatting Operations — Overview of your chatting team performance</p>
