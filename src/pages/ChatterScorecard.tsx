@@ -55,6 +55,7 @@ function getVerdict(score: number): { label: string; color: string } {
 
 export default function ChatterScorecard() {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const canScore = user?.role === "admin" || user?.role === "supervisor";
 
   const [scores, setScores] = useState<ScoreEntry[]>([]);
@@ -175,7 +176,7 @@ export default function ChatterScorecard() {
                   )}
                 </div>
                 <p className={`text-[10px] mt-1 ${verdict.color}`}>{verdict.label}</p>
-                {current && (
+                {current && isAdmin && (
                   <p className="text-[10px] text-muted-foreground mt-0.5">${current.revenue.toLocaleString()} revenue</p>
                 )}
               </div>
@@ -201,16 +202,18 @@ export default function ChatterScorecard() {
                 {CHATTERS.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div>
-              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Monthly Revenue ($)</label>
-              <input
-                type="number"
-                value={formRevenue}
-                onChange={e => setFormRevenue(e.target.value)}
-                placeholder="Total $ generated this month"
-                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-              />
-            </div>
+            {isAdmin && (
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase block mb-1">Monthly Revenue ($)</label>
+                <input
+                  type="number"
+                  value={formRevenue}
+                  onChange={e => setFormRevenue(e.target.value)}
+                  placeholder="Total $ generated this month"
+                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -279,7 +282,7 @@ export default function ChatterScorecard() {
                         <span className={`text-2xl font-bold ${getScoreColor(s.overall)}`}>{s.overall.toFixed(1)}/10</span>
                         <Badge variant="outline" className={`text-[10px] ${verdict.color}`}>{verdict.label}</Badge>
                         <span className="text-xs text-muted-foreground">{s.month}</span>
-                        <span className="text-xs text-green-400 font-semibold">${s.revenue.toLocaleString()}</span>
+                        {isAdmin && <span className="text-xs text-green-400 font-semibold">${s.revenue.toLocaleString()}</span>}
                       </div>
                       <div className="flex gap-3 mt-2 flex-wrap">
                         {CATEGORIES.map(cat => (

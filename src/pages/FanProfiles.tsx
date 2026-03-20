@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Fan {
   id: string;
@@ -291,11 +292,13 @@ function FanCard({
   modelColor,
   onEdit,
   onMarkMessaged,
+  isAdmin,
 }: {
   fan: Fan;
   modelColor: string;
   onEdit: (fan: Fan) => void;
   onMarkMessaged: (id: string) => void;
+  isAdmin: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const contact = needsContact(fan.lastMessaged);
@@ -356,11 +359,15 @@ function FanCard({
 
             {/* Row 2: Key stats at a glance */}
             <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
-              <span className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3 text-green-400" />
-                <span className="text-green-400 font-bold">${fan.totalSpent.toLocaleString()}</span> lifetime
-              </span>
-              <span className="text-border/60">|</span>
+              {isAdmin && (
+                <>
+                  <span className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-green-400" />
+                    <span className="text-green-400 font-bold">${fan.totalSpent.toLocaleString()}</span> lifetime
+                  </span>
+                  <span className="text-border/60">|</span>
+                </>
+              )}
               <span className="flex items-center gap-1">
                 <MessageCircle className="h-3 w-3" />
                 Last contact: <span className={contact ? "text-red-400 font-semibold" : "text-foreground"}>{timeSince(fan.lastMessaged)}</span>
@@ -416,18 +423,22 @@ function FanCard({
 
           {/* Spending & Content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <InfoBox
-              icon={<DollarSign className="h-4 w-4 text-green-400" />}
-              label="Total Lifetime Spend"
-              value={`$${fan.totalSpent.toLocaleString()}`}
-              valueClass="text-green-400 text-lg font-bold"
-            />
-            <InfoBox
-              icon={<ShoppingBag className="h-4 w-4 text-amber-400" />}
-              label="Spent Money On"
-              value={spentOn || "Not recorded"}
-              valueClass={spentOn ? "text-foreground" : "text-muted-foreground/40 italic"}
-            />
+            {isAdmin && (
+              <>
+                <InfoBox
+                  icon={<DollarSign className="h-4 w-4 text-green-400" />}
+                  label="Total Lifetime Spend"
+                  value={`$${fan.totalSpent.toLocaleString()}`}
+                  valueClass="text-green-400 text-lg font-bold"
+                />
+                <InfoBox
+                  icon={<ShoppingBag className="h-4 w-4 text-amber-400" />}
+                  label="Spent Money On"
+                  value={spentOn || "Not recorded"}
+                  valueClass={spentOn ? "text-foreground" : "text-muted-foreground/40 italic"}
+                />
+              </>
+            )}
             <InfoBox
               icon={<Heart className="h-4 w-4 text-pink-400" />}
               label="Favourite Content"
@@ -547,6 +558,8 @@ function MiniInfo({ label, value, alert }: { label: string; value?: string; aler
 
 /* ─── Main Page ─── */
 export default function FanProfiles() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [fansByModel, setFansByModel] = useState<Record<string, Fan[]>>({});
   const [totalsByModel, setTotalsByModel] = useState<Record<string, number>>({});
   const [countsByModel, setCountsByModel] = useState<Record<string, number>>({});
@@ -686,19 +699,23 @@ export default function FanProfiles() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className={`grid grid-cols-2 ${isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-3`}>
         <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
           <p className="text-[10px] text-muted-foreground uppercase">Total Fans</p>
           <p className="text-2xl font-bold">{totalFans}</p>
         </div>
-        <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
-          <p className="text-[10px] text-muted-foreground uppercase">Lifetime Spend</p>
-          <p className="text-2xl font-bold text-green-400">${totalSpend.toLocaleString()}</p>
-        </div>
-        <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
-          <p className="text-[10px] text-muted-foreground uppercase">Avg per Fan</p>
-          <p className="text-2xl font-bold">${totalFans ? Math.round(totalSpend / totalFans).toLocaleString() : 0}</p>
-        </div>
+        {isAdmin && (
+          <>
+            <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
+              <p className="text-[10px] text-muted-foreground uppercase">Lifetime Spend</p>
+              <p className="text-2xl font-bold text-green-400">${totalSpend.toLocaleString()}</p>
+            </div>
+            <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
+              <p className="text-[10px] text-muted-foreground uppercase">Avg per Fan</p>
+              <p className="text-2xl font-bold">${totalFans ? Math.round(totalSpend / totalFans).toLocaleString() : 0}</p>
+            </div>
+          </>
+        )}
         <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
           <p className="text-[10px] text-muted-foreground uppercase">Need Contact</p>
           <p className={`text-2xl font-bold ${totalNeedsContact > 0 ? "text-red-400" : "text-green-400"}`}>{totalNeedsContact}</p>
@@ -770,8 +787,12 @@ export default function FanProfiles() {
                   <h2 className="text-xl font-bold">{model}</h2>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span>{count} fans</span>
-                    <span>·</span>
-                    <span className="text-green-400 font-semibold">${totalLifetime.toLocaleString()} lifetime</span>
+                    {isAdmin && (
+                      <>
+                        <span>·</span>
+                        <span className="text-green-400 font-semibold">${totalLifetime.toLocaleString()} lifetime</span>
+                      </>
+                    )}
                     {needsContactCount > 0 && (
                       <>
                         <span>·</span>
@@ -814,6 +835,7 @@ export default function FanProfiles() {
                     modelColor={color}
                     onEdit={setEditingFan}
                     onMarkMessaged={markMessaged}
+                    isAdmin={isAdmin}
                   />
                 ))}
               </div>

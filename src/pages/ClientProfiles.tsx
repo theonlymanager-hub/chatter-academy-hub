@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { FileText, Link, ExternalLink, Pencil, Check, X, Camera } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ClientProfile {
   id: string;
@@ -94,6 +95,8 @@ const defaultProfiles: ClientProfile[] = [
 ];
 
 export default function ClientProfiles() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [profiles, setProfiles] = useState<ClientProfile[]>(defaultProfiles);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<ClientProfile>>({});
@@ -187,7 +190,7 @@ export default function ClientProfiles() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      @{profile.username} • {profile.ofRanking} • Q1: {profile.q1Revenue}
+                      @{profile.username} • {profile.ofRanking}{isAdmin ? ` • Q1: ${profile.q1Revenue}` : ''}
                     </p>
                   </div>
                 </div>
@@ -207,14 +210,16 @@ export default function ClientProfiles() {
                             className="h-8 text-sm"
                           />
                         </div>
-                        <div>
-                          <label className="text-[10px] text-muted-foreground uppercase block mb-1">Q1 Revenue</label>
-                          <Input
-                            value={editData.q1Revenue || ""}
-                            onChange={e => setEditData({ ...editData, q1Revenue: e.target.value })}
-                            className="h-8 text-sm"
-                          />
-                        </div>
+                        {isAdmin && (
+                          <div>
+                            <label className="text-[10px] text-muted-foreground uppercase block mb-1">Q1 Revenue</label>
+                            <Input
+                              value={editData.q1Revenue || ""}
+                              onChange={e => setEditData({ ...editData, q1Revenue: e.target.value })}
+                              className="h-8 text-sm"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -277,15 +282,17 @@ export default function ClientProfiles() {
                       </div>
 
                       {/* Stats Row */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className={`grid grid-cols-2 ${isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
                         <div className="p-3 rounded-lg bg-secondary/20 text-center">
                           <p className="text-xs text-muted-foreground">OF Ranking</p>
                           <p className="font-bold text-lg" style={{ color: `hsl(${color})` }}>{profile.ofRanking}</p>
                         </div>
-                        <div className="p-3 rounded-lg bg-secondary/20 text-center">
-                          <p className="text-xs text-muted-foreground">Q1 Revenue</p>
-                          <p className="font-bold text-lg">{profile.q1Revenue}</p>
-                        </div>
+                        {isAdmin && (
+                          <div className="p-3 rounded-lg bg-secondary/20 text-center">
+                            <p className="text-xs text-muted-foreground">Q1 Revenue</p>
+                            <p className="font-bold text-lg">{profile.q1Revenue}</p>
+                          </div>
+                        )}
                         <div className="p-3 rounded-lg bg-secondary/20 text-center">
                           <p className="text-xs text-muted-foreground">Type</p>
                           <p className="font-bold text-lg">{profile.type}</p>

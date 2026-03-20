@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const today = weekDays[new Date().getDay()];
@@ -29,6 +30,9 @@ interface QualityScore {
 }
 
 const Index = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   // Revenue from API
   const [earningStats, setEarningStats] = useState<Record<string, EarningStats | null>>({});
   const [revenueLoading, setRevenueLoading] = useState(true);
@@ -321,8 +325,8 @@ const Index = () => {
         })}
       </div>
 
-      {/* Per-Model Revenue Breakdown */}
-      {totalApiRevenue > 0 && (
+      {/* Per-Model Revenue Breakdown — Admin Only */}
+      {isAdmin && totalApiRevenue > 0 && (
         <div className="glass-card p-5 space-y-4">
           <div className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
@@ -364,7 +368,7 @@ const Index = () => {
           {topChatter ? (
             <div>
               <p className="text-3xl font-bold text-green-400">{topChatter.name}</p>
-              <p className="text-xs text-muted-foreground mt-1">${topChatter.revenue.toLocaleString()} revenue generated</p>
+              {isAdmin && <p className="text-xs text-muted-foreground mt-1">${topChatter.revenue.toLocaleString()} revenue generated</p>}
             </div>
           ) : (
             <div>
@@ -383,12 +387,12 @@ const Index = () => {
           {topModel ? (
             <div>
               <p className="text-3xl font-bold text-primary">{topModel.name}</p>
-              <p className="text-xs text-muted-foreground mt-1">${topModel.revenue.toLocaleString()} gross revenue today</p>
+              {isAdmin && <p className="text-xs text-muted-foreground mt-1">${topModel.revenue.toLocaleString()} gross revenue today</p>}
             </div>
           ) : (
             <div>
               <p className="text-2xl font-bold text-muted-foreground/50">—</p>
-              <p className="text-xs text-muted-foreground mt-1">No revenue data yet today</p>
+              <p className="text-xs text-muted-foreground mt-1">No data yet today</p>
             </div>
           )}
         </div>
