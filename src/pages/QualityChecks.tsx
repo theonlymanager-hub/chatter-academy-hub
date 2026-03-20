@@ -33,6 +33,7 @@ export default function QualityChecks() {
     Object.fromEntries(categories.map((c) => [c.label, 5]))
   );
   const [notes, setNotes] = useState("");
+  const [supervisorNotes, setSupervisorNotes] = useState("");
   const [shiftDate, setShiftDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -81,11 +82,21 @@ export default function QualityChecks() {
     }
     setSubmitting(true);
 
+    // Combine notes and supervisor notes into a single field
+    let combinedNotes = "";
+    if (notes.trim() && supervisorNotes.trim()) {
+      combinedNotes = `NOTES: ${notes.trim()} | SUPERVISOR: ${supervisorNotes.trim()}`;
+    } else if (supervisorNotes.trim()) {
+      combinedNotes = `NOTES:  | SUPERVISOR: ${supervisorNotes.trim()}`;
+    } else if (notes.trim()) {
+      combinedNotes = notes.trim();
+    }
+
     const row: Record<string, any> = {
       chatter_name: selectedChatter.name,
       shift_date: shiftDate,
       overall_score: parseFloat(avgScore),
-      notes: notes || null,
+      notes: combinedNotes || null,
       reviewed_by: user?.displayName || "Unknown",
     };
     for (const cat of categories) {
@@ -105,6 +116,7 @@ export default function QualityChecks() {
     setSelectedMember("");
     setScores(Object.fromEntries(categories.map((c) => [c.label, 5])));
     setNotes("");
+    setSupervisorNotes("");
   };
 
   // If user is a chatter, show their own scores view
@@ -311,6 +323,11 @@ export default function QualityChecks() {
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add coaching notes, areas for improvement, positive highlights..." className="bg-secondary/50 min-h-[100px]" />
         </div>
 
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Supervisor Notes <span className="text-xs text-muted-foreground">(private feedback for management)</span></label>
+          <Textarea value={supervisorNotes} onChange={(e) => setSupervisorNotes(e.target.value)} placeholder="Internal supervisor observations, action items, escalations..." className="bg-secondary/50 min-h-[80px] border-primary/20" />
+        </div>
+
         <Button onClick={handleSubmit} className="w-full" disabled={submitting}>
           {submitting ? "Submitting..." : "Submit Quality Check"}
         </Button>
@@ -374,7 +391,20 @@ export default function QualityChecks() {
                     })}
                   </div>
                   {score.notes && (
-                    <p className="text-xs text-muted-foreground mt-2 italic border-t border-border/30 pt-2">"{score.notes}"</p>
+                    <div className="text-xs mt-2 border-t border-border/30 pt-2 space-y-1">
+                      {(() => {
+                        const supervisorMatch = score.notes.match(/\|\s*SUPERVISOR:\s*(.*)/);
+                        const notesMatch = score.notes.match(/^NOTES:\s*(.*?)(?:\s*\|\s*SUPERVISOR:|$)/);
+                        const regularNotes = notesMatch ? notesMatch[1].trim() : (supervisorMatch ? score.notes.replace(/\|\s*SUPERVISOR:.*/, "").trim() : score.notes);
+                        const supNotes = supervisorMatch ? supervisorMatch[1].trim() : "";
+                        return (
+                          <>
+                            {regularNotes && <p className="text-muted-foreground italic">📝 "{regularNotes}"</p>}
+                            {supNotes && <p className="text-primary/80 italic">👤 Supervisor: "{supNotes}"</p>}
+                          </>
+                        );
+                      })()}
+                    </div>
                   )}
                 </div>
               );

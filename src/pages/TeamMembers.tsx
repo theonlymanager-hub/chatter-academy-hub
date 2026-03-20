@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronDown, ChevronUp, Plus, Trash2, Trophy } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2, Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Note {
@@ -33,6 +33,21 @@ interface SupabaseQualityScore {
   energy_tone_score: number | null;
 }
 
+interface QualityScoreRecord {
+  id: string;
+  chatter_name: string;
+  overall_score: number;
+  response_time_score: number | null;
+  personalisation_score: number | null;
+  conversation_flow_score: number | null;
+  ppv_timing_score: number | null;
+  energy_tone_score: number | null;
+  notes: string | null;
+  shift_date: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+}
+
 export default function TeamMembers() {
   const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
   const [expandedQuality, setExpandedQuality] = useState<Record<string, boolean>>({});
@@ -47,16 +62,20 @@ export default function TeamMembers() {
 
   // Supabase quality scores
   const [supabaseScores, setSupabaseScores] = useState<Record<string, SupabaseQualityScore>>({});
+  // All quality score records grouped by chatter name
+  const [allScoresByChatter, setAllScoresByChatter] = useState<Record<string, QualityScoreRecord[]>>({});
+  const [expandedHistory, setExpandedHistory] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchScores = async () => {
       try {
         const { data, error } = await supabase
           .from('quality_scores')
-          .select('chatter_name, overall_score, response_time_score, personalisation_score, conversation_flow_score, ppv_timing_score, energy_tone_score, created_at')
+          .select('id, chatter_name, overall_score, response_time_score, personalisation_score, conversation_flow_score, ppv_timing_score, energy_tone_score, notes, shift_date, reviewed_by, created_at')
           .order('created_at', { ascending: false });
         if (error || !data) return;
         const latest: Record<string, SupabaseQualityScore> = {};
+        const allGrouped: Record<string, QualityScoreRecord[]> = {};
         for (const row of data) {
           if (!row.chatter_name || row.overall_score == null) continue;
           if (!latest[row.chatter_name]) {
@@ -70,14 +89,62 @@ export default function TeamMembers() {
               energy_tone_score: row.energy_tone_score,
             };
           }
+          if (!allGrouped[row.chatter_name]) {
+            allGrouped[row.chatter_name] = [];
+          }
+          allGrouped[row.chatter_name].push({
+            id: row.id,
+            chatter_name: row.chatter_name,
+            overall_score: row.overall_score,
+            response_time_score: row.response_time_score,
+            personalisation_score: row.personalisation_score,
+            conversation_flow_score: row.conversation_flow_score,
+            ppv_timing_score: row.ppv_timing_score,
+            energy_tone_score: row.energy_tone_score,
+            notes: row.notes,
+            shift_date: row.shift_date,
+            reviewed_by: row.reviewed_by,
+            created_at: row.created_at,
+          });
         }
         setSupabaseScores(latest);
+        setAllScoresByChatter(allGrouped);
       } catch (e) {
         console.error('Failed to fetch quality scores:', e);
       }
     };
     fetchScores();
   }, []);
+
+  const toggleHistory = (memberId: string) => {
+    setExpandedHistory(prev => ({ ...prev, [memberId]: !prev[memberId] }));
+  };
+
+  // Helper to parse notes into regular notes and supervisor notes
+  const parseNotes = (notesStr: string | null): { notes: string; supervisorNotes: string } => {
+    if (!notesStr) return { notes: "", supervisorNotes: "" };
+    const supervisorMatch = notesStr.match(/\|\s*SUPERVISOR:\s*(.*)/);
+    const notesMatch = notesStr.match(/^NOTES:\s*(.*?)(?:\s*\|\s*SUPERVISOR:|$)/);
+    if (notesMatch || supervisorMatch) {
+      return {
+        notes: notesMatch ? notesMatch[1].trim() : notesStr.replace(/\|\s*SUPERVISOR:.*/, "").trim(),
+        supervisorNotes: supervisorMatch ? supervisorMatch[1].trim() : "",
+      };
+    }
+    return { notes: notesStr, supervisorNotes: "" };
+  };
+
+  const getScoreColor = (score: number): string => {
+    if (score >= 7) return "text-green-500";
+    if (score >= 5) return "text-yellow-500";
+    return "text-red-500";
+  };
+
+  const getScoreBgColor = (score: number): string => {
+    if (score >= 7) return "bg-green-500/10";
+    if (score >= 5) return "bg-yellow-500/10";
+    return "bg-red-500/10";
+  };
 
   // Load notes from localStorage
   useEffect(() => {
@@ -345,6 +412,97 @@ export default function TeamMembers() {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-2">No quality scores yet</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Quality Score History — only for chatters */}
+        {isChatter && (
+          <div className="border-t border-border/30 pt-3">
+            <button
+              onClick={() => toggleHistory(member.id)}
+              className="flex items-center justify-between w-full text-sm font-medium hover:text-primary transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                📈 Quality Score History
+                {allScoresByChatter[member.name]?.length > 0 && (
+                  <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+                    {allScoresByChatter[member.name].length}
+                  </span>
+                )}
+              </span>
+              {expandedHistory[member.id] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {expandedHistory[member.id] && (
+              <div className="mt-3 space-y-3">
+                {allScoresByChatter[member.name]?.length > 0 ? (
+                  <>
+                    {/* Average & Trend Summary */}
+                    <div className="flex items-center gap-4 p-3 rounded-lg bg-secondary/30">
+                      <div className="flex-1">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Average Score</p>
+                        <p className="text-xl font-bold">
+                          {(allScoresByChatter[member.name].reduce((sum, s) => sum + s.overall_score, 0) / allScoresByChatter[member.name].length).toFixed(1)}
+                          <span className="text-xs text-muted-foreground font-normal">/10</span>
+                        </p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Reviews</p>
+                        <p className="text-xl font-bold">{allScoresByChatter[member.name].length}</p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Trend</p>
+                        <div className="flex items-center gap-1">
+                          {allScoresByChatter[member.name].length >= 2 ? (
+                            (() => {
+                              const latest = allScoresByChatter[member.name][0].overall_score;
+                              const previous = allScoresByChatter[member.name][1].overall_score;
+                              const diff = latest - previous;
+                              if (diff > 0) return <><TrendingUp className="h-5 w-5 text-green-500" /><span className="text-sm font-bold text-green-500">+{diff.toFixed(1)}</span></>;
+                              if (diff < 0) return <><TrendingDown className="h-5 w-5 text-red-500" /><span className="text-sm font-bold text-red-500">{diff.toFixed(1)}</span></>;
+                              return <><Minus className="h-5 w-5 text-muted-foreground" /><span className="text-sm font-bold text-muted-foreground">0.0</span></>;
+                            })()
+                          ) : (
+                            <span className="text-sm text-muted-foreground">—</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score History List */}
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {allScoresByChatter[member.name].map((record) => {
+                        const { notes: regularNotes, supervisorNotes } = parseNotes(record.notes);
+                        return (
+                          <div key={record.id} className={`rounded-lg p-3 ${getScoreBgColor(record.overall_score)}`}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-lg font-bold ${getScoreColor(record.overall_score)}`}>
+                                  {record.overall_score.toFixed(1)}
+                                </span>
+                                <span className="text-xs text-muted-foreground">/10</span>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-medium">{record.shift_date || new Date(record.created_at).toLocaleDateString("en-GB")}</p>
+                                <p className="text-[10px] text-muted-foreground">by {record.reviewed_by || "Unknown"}</p>
+                              </div>
+                            </div>
+                            {regularNotes && (
+                              <p className="text-xs text-muted-foreground mt-2 italic">📝 {regularNotes}</p>
+                            )}
+                            {supervisorNotes && (
+                              <p className="text-xs mt-1 text-primary/80 italic">👤 Supervisor: {supervisorNotes}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">No quality checks recorded yet</p>
                 )}
               </div>
             )}
