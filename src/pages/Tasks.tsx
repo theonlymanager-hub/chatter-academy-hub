@@ -54,7 +54,7 @@ const defaultTasks: Task[] = [
   // JEMIMAH — Overdoes messages (Luke feedback), customs follow-up needed, PPV pacing
   { id: "je1", title: "Match the fan's energy — if they send 1 line, reply with 1-2 lines max. Don't overwhelm.", assignee: "Jemimah", status: "pending", priority: "high" },
   { id: "je2", title: "Space out PPVs — never send a 2nd PPV until the fan has replied 3+ times after the first", assignee: "Jemimah", status: "pending", priority: "high" },
-  { id: "je3", title: "Check customs board at start of shift — follow up on any pending customs assigned to your accounts", assignee: "Jemimah", status: "pending", priority: "high" },
+  { id: "je3", title: "If a fan asks about a custom, note it and flag to your supervisor immediately — don't promise timelines", assignee: "Jemimah", status: "pending", priority: "high" },
   { id: "je4", title: "Use aftercare messages after a fan tips or buys — 'that made my day 🥰' builds loyalty", assignee: "Jemimah", status: "pending", priority: "medium" },
   { id: "je5", title: "Don't stack multiple long messages back-to-back. One message, wait for reply, then respond.", assignee: "Jemimah", status: "pending", priority: "medium" },
 
@@ -85,19 +85,19 @@ export default function Tasks() {
   }>({ title: "", assignee: "", priority: "medium" });
 
   useEffect(() => {
-    const saved = localStorage.getItem("chatter-tasks-v3");
+    const saved = localStorage.getItem("chatter-tasks-v4");
     if (saved) {
       setTasks(JSON.parse(saved));
     } else {
       setTasks(defaultTasks);
-      localStorage.setItem("chatter-tasks-v3", JSON.stringify(defaultTasks));
+      localStorage.setItem("chatter-tasks-v4", JSON.stringify(defaultTasks));
     }
     requestAnimationFrame(() => setMounted(true));
   }, []);
 
   useEffect(() => {
     if (tasks.length > 0) {
-      localStorage.setItem("chatter-tasks-v3", JSON.stringify(tasks));
+      localStorage.setItem("chatter-tasks-v4", JSON.stringify(tasks));
     }
   }, [tasks]);
 
