@@ -217,11 +217,11 @@ function AppContent() {
           } 
         />
 
-        {/* Operations - Admin, Supervisor, Data Entry */}
+        {/* Operations - Admin, Supervisor, Data Entry, Chatter */}
         <Route 
           path="/customs" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
               <DashboardLayout>
                 <Customs />
               </DashboardLayout>
