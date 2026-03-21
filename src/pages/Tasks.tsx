@@ -37,21 +37,40 @@ const chattersInfo: ChatterInfo[] = [
 const MAX_TASKS_PER_CHATTER = 5;
 
 const defaultTasks: Task[] = [
-  { id: "1", title: "Review morning shift conversations", assignee: "Jane", status: "pending", priority: "high" },
-  { id: "2", title: "Send PPV follow-ups to inactive fans", assignee: "Marc", status: "pending", priority: "medium" },
-  { id: "3", title: "Update fan profile notes", assignee: "Jemimah", status: "completed", priority: "low" },
-  { id: "4", title: "Check DM response times", assignee: "JD", status: "pending", priority: "high" },
-  { id: "5", title: "Send welcome messages to new subs", assignee: "KC", status: "pending", priority: "medium" },
-  { id: "6", title: "Create a whale (subscriber spending $500+)", assignee: "Jane", status: "pending", priority: "high" },
-  { id: "7", title: "Hit $500 daily revenue target", assignee: "Jane", status: "pending", priority: "high" },
-  { id: "8", title: "Use 3 upsell techniques in one conversation", assignee: "Marc", status: "completed", priority: "medium" },
-  { id: "9", title: "Complete the PPV script for Izzy", assignee: "Marc", status: "pending", priority: "medium" },
-  { id: "10", title: "Create a whale (subscriber spending $500+)", assignee: "JD", status: "pending", priority: "high" },
-  { id: "11", title: "Use the rapport-building technique 5 times", assignee: "JD", status: "pending", priority: "medium" },
-  { id: "13", title: "Hit $300 daily revenue target", assignee: "Jemimah", status: "completed", priority: "high" },
-  { id: "14", title: "Use the VIP treatment technique on 3 subs", assignee: "Jemimah", status: "pending", priority: "medium" },
-  { id: "16", title: "Complete Willow mass message script", assignee: "KC", status: "pending", priority: "medium" },
-  { id: "18", title: "Hit $400 daily revenue target", assignee: "KC", status: "pending", priority: "high" },
+  // MARC — QC: rushes to sell, no rapport, misses fan cues, defensive responses
+  { id: "m1", title: "Spend 5+ messages building rapport before ANY mention of PPV or content", assignee: "Marc", status: "pending", priority: "high" },
+  { id: "m2", title: "React to what the fan says — if they mention a city, hobby, or interest, ask a follow-up question about it", assignee: "Marc", status: "pending", priority: "high" },
+  { id: "m3", title: "When a fan questions legitimacy, respond playfully not defensively (e.g. 'haha you'll see I'm very real 😘')", assignee: "Marc", status: "pending", priority: "high" },
+  { id: "m4", title: "Read the fan's tone — if they hint at a kink or preference, lean into it instead of ignoring it", assignee: "Marc", status: "pending", priority: "medium" },
+  { id: "m5", title: "No copy-paste openers — personalise every first message based on the fan's profile or previous chat", assignee: "Marc", status: "pending", priority: "medium" },
+
+  // JD — Subs leave after 1st PPV, free content seekers, needs better hooks
+  { id: "j1", title: "After a fan unlocks a PPV, immediately send a teaser or voice note — don't let the convo die", assignee: "JD", status: "pending", priority: "high" },
+  { id: "j2", title: "When a fan asks for free content, redirect with 'I made something special just for you 😏' and send PPV", assignee: "JD", status: "pending", priority: "high" },
+  { id: "j3", title: "Build a 3-message hook sequence after every PPV purchase: thank → tease next → ask personal question", assignee: "JD", status: "pending", priority: "high" },
+  { id: "j4", title: "Poke all whales within first 30 mins of shift — check last contact time and send personalised message", assignee: "JD", status: "pending", priority: "medium" },
+  { id: "j5", title: "Track which fans disappeared after 1st PPV — try a different re-engagement approach (voice note, selfie, game)", assignee: "JD", status: "pending", priority: "medium" },
+
+  // JEMIMAH — Overdoes messages (Luke feedback), customs follow-up needed, PPV pacing
+  { id: "je1", title: "Match the fan's energy — if they send 1 line, reply with 1-2 lines max. Don't overwhelm.", assignee: "Jemimah", status: "pending", priority: "high" },
+  { id: "je2", title: "Space out PPVs — never send a 2nd PPV until the fan has replied 3+ times after the first", assignee: "Jemimah", status: "pending", priority: "high" },
+  { id: "je3", title: "Check customs board at start of shift — follow up on any pending customs assigned to your accounts", assignee: "Jemimah", status: "pending", priority: "high" },
+  { id: "je4", title: "Use aftercare messages after a fan tips or buys — 'that made my day 🥰' builds loyalty", assignee: "Jemimah", status: "pending", priority: "medium" },
+  { id: "je5", title: "Don't stack multiple long messages back-to-back. One message, wait for reply, then respond.", assignee: "Jemimah", status: "pending", priority: "medium" },
+
+  // KC — Good whale instincts, needs to convert low-spenders, build deeper connections
+  { id: "k1", title: "For fans who say 'can't spend right now' — don't drop them. Build the relationship so they come back on payday", assignee: "KC", status: "pending", priority: "high" },
+  { id: "k2", title: "Note every fan's payday, interests, and spending pattern in fan profiles after each convo", assignee: "KC", status: "pending", priority: "medium" },
+  { id: "k3", title: "Send a personalised morning/evening message to top 3 spenders — reference something from last convo", assignee: "KC", status: "pending", priority: "high" },
+  { id: "k4", title: "For new subs who ignore welcome message — try a different approach after 24hrs (voice note or question)", assignee: "KC", status: "pending", priority: "medium" },
+  { id: "k5", title: "When a whale is active, prioritise them over new subs — whales = guaranteed revenue", assignee: "KC", status: "pending", priority: "medium" },
+
+  // JANE — Lazy aftercare, no re-engagement hooks, fans leave after 1st PPV
+  { id: "ja1", title: "After every tip or PPV purchase, send a genuine aftercare message within 2 minutes — not just 'thanks babe'", assignee: "Jane", status: "pending", priority: "high" },
+  { id: "ja2", title: "Create a re-engagement hook for fans who went quiet — 'I was thinking about you today...' + personal detail", assignee: "Jane", status: "pending", priority: "high" },
+  { id: "ja3", title: "Don't let conversations end without a hook — always leave them with a question or teaser for next time", assignee: "Jane", status: "pending", priority: "high" },
+  { id: "ja4", title: "Poke ALL whales within first 30 mins of shift — check when they were last contacted", assignee: "Jane", status: "pending", priority: "medium" },
+  { id: "ja5", title: "For fans who bought 1 PPV then left — send a voice note 24hrs later saying you missed them", assignee: "Jane", status: "pending", priority: "medium" },
 ];
 
 export default function Tasks() {
@@ -66,19 +85,19 @@ export default function Tasks() {
   }>({ title: "", assignee: "", priority: "medium" });
 
   useEffect(() => {
-    const saved = localStorage.getItem("chatter-tasks-v2");
+    const saved = localStorage.getItem("chatter-tasks-v3");
     if (saved) {
       setTasks(JSON.parse(saved));
     } else {
       setTasks(defaultTasks);
-      localStorage.setItem("chatter-tasks-v2", JSON.stringify(defaultTasks));
+      localStorage.setItem("chatter-tasks-v3", JSON.stringify(defaultTasks));
     }
     requestAnimationFrame(() => setMounted(true));
   }, []);
 
   useEffect(() => {
     if (tasks.length > 0) {
-      localStorage.setItem("chatter-tasks-v2", JSON.stringify(tasks));
+      localStorage.setItem("chatter-tasks-v3", JSON.stringify(tasks));
     }
   }, [tasks]);
 
