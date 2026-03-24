@@ -19,6 +19,7 @@ import {
   Lightbulb,
   Sparkles,
   TrendingUp,
+  MapPin,
   CheckSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -64,6 +65,7 @@ const getAllSections = () => [
       { title: "Content Ideas", url: "/content-ideas", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry'] },
       { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "LTV Tracker", url: "/ltv", icon: TrendingUp, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Airbnb Tracker", url: "/airbnb", icon: MapPin, roles: ['admin', 'supervisor', 'data_entry'] },
       { title: "Strike Tracker", url: "/strikes", icon: ShieldAlert, roles: ['admin', 'supervisor'] },
       { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor'] },
     ],

@@ -30,6 +30,7 @@ import StrikeTracker from "./pages/StrikeTracker";
 import ContentIdeas from "./pages/ContentIdeas";
 import ScenarioBoard from "./pages/ScenarioBoard";
 import LtvTracker from "./pages/LtvTracker";
+import AirbnbTracker from "./pages/AirbnbTracker";
 import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
 import DailyChecklist from "./pages/DailyChecklist";
@@ -226,6 +227,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
               <DashboardLayout>
                 <LtvTracker />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Airbnb Tracker - Admin, Supervisor, Data Entry */}
+        <Route 
+          path="/airbnb" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+              <DashboardLayout>
+                <AirbnbTracker />
               </DashboardLayout>
             </ProtectedRoute>
           } 
