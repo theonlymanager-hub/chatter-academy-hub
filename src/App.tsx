@@ -29,6 +29,7 @@ import ChatFeedback from "./pages/ChatFeedback";
 import StrikeTracker from "./pages/StrikeTracker";
 import ContentIdeas from "./pages/ContentIdeas";
 import ScenarioBoard from "./pages/ScenarioBoard";
+import LtvTracker from "./pages/LtvTracker";
 import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
 import DailyChecklist from "./pages/DailyChecklist";
@@ -213,6 +214,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
               <DashboardLayout>
                 <ScenarioBoard />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* LTV Tracker - Admin, Supervisor, Data Entry */}
+        <Route 
+          path="/ltv" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+              <DashboardLayout>
+                <LtvTracker />
               </DashboardLayout>
             </ProtectedRoute>
           } 
