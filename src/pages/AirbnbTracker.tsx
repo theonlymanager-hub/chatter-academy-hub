@@ -325,7 +325,15 @@ export default function AirbnbTracker() {
                         </>
                       )}
                       <Button size="sm" variant="outline" onClick={() => copyShareLink(booking)}>
-                        <Copy className="h-3 w-3 mr-1" /> Copy Checklist
+                        <Copy className="h-3 w-3 mr-1" /> Copy Text
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => {
+                        const url = `${window.location.origin}/shoot/${booking.shareToken}`;
+                        navigator.clipboard.writeText(url).then(() => {
+                          toast({ title: "Share link copied!", description: "Send this to the model — no login needed." });
+                        });
+                      }}>
+                        <Share2 className="h-3 w-3 mr-1" /> Share Link
                       </Button>
                       {canManage && (
                         <Button size="sm" variant="ghost" className="text-red-400" onClick={() => deleteBooking(booking.id)}>

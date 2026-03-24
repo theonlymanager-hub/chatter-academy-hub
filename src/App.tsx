@@ -31,6 +31,7 @@ import ContentIdeas from "./pages/ContentIdeas";
 import ScenarioBoard from "./pages/ScenarioBoard";
 import LtvTracker from "./pages/LtvTracker";
 import AirbnbTracker from "./pages/AirbnbTracker";
+import ShootChecklist from "./pages/ShootChecklist";
 import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
 import DailyChecklist from "./pages/DailyChecklist";
@@ -49,6 +50,9 @@ function AppContent() {
     <BrowserRouter>
       <PageVisitTracker />
       <Routes>
+        {/* Public shoot checklist - NO LOGIN REQUIRED */}
+        <Route path="/shoot/:token" element={<ShootChecklist />} />
+
         {/* Dashboard - All roles */}
         <Route 
           path="/" 
