@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, Trophy, TrendingUp, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuizResult {
   username: string;
@@ -16,10 +17,32 @@ export default function TrainingResults() {
   const [results, setResults] = useState<QuizResult[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('training-quiz-results');
-    if (saved) {
-      setResults(JSON.parse(saved));
+    async function fetchResults() {
+      // Try Supabase first
+      const { data, error } = await supabase
+        .from('quiz_results')
+        .select('*')
+        .order('completed_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const mapped: QuizResult[] = data.map((r: any) => ({
+          username: r.username,
+          score: r.score,
+          total: r.total,
+          percentage: r.percentage,
+          categoryScores: (r.category_scores as Record<string, { correct: number; total: number }>) || {},
+          date: r.completed_at,
+        }));
+        setResults(mapped);
+      } else {
+        // Fallback to localStorage for backward compatibility
+        const saved = localStorage.getItem('training-quiz-results');
+        if (saved) {
+          setResults(JSON.parse(saved));
+        }
+      }
     }
+    fetchResults();
   }, []);
 
   // Group by user, get latest + best for each
@@ -131,15 +154,19 @@ export default function TrainingResults() {
                 </div>
 
                 {/* Category breakdown */}
-                <div className="text-xs text-muted-foreground mb-1 font-medium">Category Breakdown (latest):</div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(latest.categoryScores).map(([cat, { correct, total }]) => (
-                    <div key={cat} className="p-2 rounded bg-secondary/20 text-center">
-                      <p className="text-xs font-bold">{correct}/{total}</p>
-                      <p className="text-[9px] text-muted-foreground truncate">{cat}</p>
+                {Object.keys(latest.categoryScores).length > 0 && (
+                  <>
+                    <div className="text-xs text-muted-foreground mb-1 font-medium">Category Breakdown (latest):</div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {Object.entries(latest.categoryScores).map(([cat, { correct, total }]) => (
+                        <div key={cat} className="p-2 rounded bg-secondary/20 text-center">
+                          <p className="text-xs font-bold">{correct}/{total}</p>
+                          <p className="text-[9px] text-muted-foreground truncate">{cat}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           ))}

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MANDATORY_PAGES } from '@/hooks/usePageVisitTracker';
 import { CheckCircle2, XCircle, Clock, Activity } from 'lucide-react';
-
-const LOGIN_STORAGE_KEY = 'onlyboard_dashboard_logins';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DailyVisitData {
   username: string;
@@ -16,32 +15,52 @@ function getTodayStr(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 }
 
-function getAllLogins(): DailyVisitData[] {
-  try {
-    const raw = localStorage.getItem(LOGIN_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
 // Known chatters for tracking
 const KNOWN_CHATTERS = ['marc', 'jaydee', 'jemimah', 'kc', 'jane'];
 
 export default function DashboardActivityView() {
   const [activity, setActivity] = useState<DailyVisitData[]>([]);
 
-  useEffect(() => {
+  async function fetchActivity() {
     const today = getTodayStr();
-    const allLogins = getAllLogins();
-    const todayLogins = allLogins.filter((l) => l.date === today);
-    setActivity(todayLogins);
+
+    // Try Supabase first — this is the shared source of truth
+    try {
+      const { data, error } = await supabase
+        .from('dashboard_activity')
+        .select('*')
+        .eq('date', today);
+
+      if (!error && data && data.length > 0) {
+        const mapped: DailyVisitData[] = data.map((d: any) => ({
+          username: d.username,
+          date: d.date,
+          pagesVisited: Array.isArray(d.pages_visited) ? d.pages_visited : [],
+          loginTime: d.login_time,
+          lastSync: d.last_sync || '',
+        }));
+        setActivity(mapped);
+        return;
+      }
+    } catch {
+      // Fall through to localStorage
+    }
+
+    // Fallback: localStorage (only shows current browser's data)
+    try {
+      const raw = localStorage.getItem('onlyboard_dashboard_logins');
+      const allLogins: DailyVisitData[] = raw ? JSON.parse(raw) : [];
+      setActivity(allLogins.filter((l) => l.date === today));
+    } catch {
+      setActivity([]);
+    }
+  }
+
+  useEffect(() => {
+    fetchActivity();
 
     // Refresh every 30s
-    const interval = setInterval(() => {
-      const freshLogins = getAllLogins().filter((l) => l.date === getTodayStr());
-      setActivity(freshLogins);
-    }, 30000);
+    const interval = setInterval(fetchActivity, 30000);
     return () => clearInterval(interval);
   }, []);
 

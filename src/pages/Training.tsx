@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, RotateCcw, Play, Trophy, GraduationCap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Question {
   id: number;
@@ -226,18 +227,30 @@ function getCurrentUser(): string {
   return 'Unknown';
 }
 
-// Save quiz result for management view
-function saveQuizResult(username: string, score: number, total: number, categoryScores: Record<string, { correct: number; total: number }>) {
+// Save quiz result for management view — writes to both Supabase and localStorage
+async function saveQuizResult(username: string, score: number, total: number, categoryScores: Record<string, { correct: number; total: number }>) {
+  const percentage = Math.round((score / total) * 100);
+  const now = new Date().toISOString();
+
+  // Save to localStorage as fallback
   const results = JSON.parse(localStorage.getItem('training-quiz-results') || '[]');
-  results.push({
-    username,
-    score,
-    total,
-    percentage: Math.round((score / total) * 100),
-    categoryScores,
-    date: new Date().toISOString(),
-  });
+  results.push({ username, score, total, percentage, categoryScores, date: now });
   localStorage.setItem('training-quiz-results', JSON.stringify(results));
+
+  // Save to Supabase so admins/supervisors can see all results
+  try {
+    await supabase.from('quiz_results').insert({
+      username,
+      score,
+      total,
+      percentage,
+      category_scores: categoryScores as any,
+      quiz_name: 'Training Quiz',
+      completed_at: now,
+    });
+  } catch {
+    // Supabase write failed — localStorage still has the data
+  }
 }
 
 export default function Training() {

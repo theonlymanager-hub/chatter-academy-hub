@@ -59,7 +59,7 @@ export function PageVisitProvider({ children }: { children: React.ReactNode }) {
   const [allUsersActivity, setAllUsersActivity] = useState<DailyVisitData[]>([]);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialize: load today's visits for current user
+  // Initialize: load today's visits for current user + fetch all from Supabase
   useEffect(() => {
     if (!user) return;
 
@@ -83,12 +83,59 @@ export function PageVisitProvider({ children }: { children: React.ReactNode }) {
       const updated = [...allLogins, newLogin];
       saveAllLogins(updated);
       setTodayVisits([]);
+
+      // Write login to Supabase
+      supabase.from('dashboard_activity').upsert(
+        {
+          username: user.username,
+          date: today,
+          pages_visited: [] as any,
+          login_time: new Date().toISOString(),
+          last_sync: new Date().toISOString(),
+        },
+        { onConflict: 'username,date' }
+      ).then(() => {});
     }
 
-    setAllUsersActivity(allLogins);
+    // Fetch ALL users' activity from Supabase for today
+    fetchAllActivity(today, allLogins);
   }, [user]);
 
-  // Sync to Supabase periodically (graceful — table may not exist)
+  async function fetchAllActivity(today: string, localLogins: DailyVisitData[]) {
+    try {
+      const { data, error } = await supabase
+        .from('dashboard_activity')
+        .select('*')
+        .eq('date', today);
+
+      if (!error && data && data.length > 0) {
+        const supabaseActivity: DailyVisitData[] = data.map((d: any) => ({
+          username: d.username,
+          date: d.date,
+          pagesVisited: Array.isArray(d.pages_visited) ? d.pages_visited : [],
+          loginTime: d.login_time,
+          lastSync: d.last_sync || '',
+        }));
+
+        // Merge: Supabase is source of truth, but include local data for current user if fresher
+        const merged = [...supabaseActivity];
+        // Also include any local-only entries not in Supabase
+        for (const local of localLogins.filter(l => l.date === today)) {
+          if (!merged.find(m => m.username === local.username)) {
+            merged.push(local);
+          }
+        }
+        setAllUsersActivity(merged);
+      } else {
+        // Fallback to localStorage
+        setAllUsersActivity(localLogins.filter(l => l.date === today));
+      }
+    } catch {
+      setAllUsersActivity(localLogins.filter(l => l.date === today));
+    }
+  }
+
+  // Sync current user's visits to Supabase
   const syncToSupabase = useCallback(async () => {
     if (!user) return;
     const today = getTodayStr();
@@ -99,21 +146,23 @@ export function PageVisitProvider({ children }: { children: React.ReactNode }) {
     if (!current) return;
 
     try {
-      // Attempt upsert — will fail gracefully if table doesn't exist
-      await supabase.from('dashboard_logins').upsert(
+      await supabase.from('dashboard_activity').upsert(
         {
           username: current.username,
-          login_date: current.date,
-          pages_visited: current.pagesVisited,
+          date: current.date,
+          pages_visited: current.pagesVisited as any,
           login_time: current.loginTime,
+          last_sync: new Date().toISOString(),
         },
-        { onConflict: 'username,login_date' }
+        { onConflict: 'username,date' }
       );
-      // Update lastSync
       current.lastSync = new Date().toISOString();
       saveAllLogins(allLogins);
+
+      // Re-fetch all activity so supervisor sees updates
+      fetchAllActivity(today, allLogins);
     } catch {
-      // Table might not exist yet — that's fine, localStorage is primary
+      // Supabase write failed — localStorage is still primary
     }
   }, [user]);
 
