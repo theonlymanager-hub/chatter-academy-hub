@@ -18,9 +18,14 @@ interface Scenario {
   cooldownUntil: string | null;
   createdBy: string;
   createdAt: string;
+  // Scenario package fields
+  scriptFlow?: string;
+  aiContent?: string;
+  realContent?: string;
+  vaultRef?: string;
 }
 
-const STORAGE_KEY = "scenario-board-v2";
+const STORAGE_KEY = "scenario-board-v3";
 const MODELS = ["Ashley Morris", "Lucinda Bleu", "Izzy", "Willow"];
 const CATEGORIES = [
   { value: "casual", label: "Casual/Daytime", emoji: "☀️" },
@@ -56,9 +61,9 @@ const COOLDOWN_DAYS = 14;
 
 const SEED_SCENARIOS: Omit<Scenario, "id" | "createdAt">[] = [
   // ASHLEY - Casual
-  { model: "Ashley Morris", text: "Just got back from my first ever Pilates class and my legs are DEAD 😂 but honestly I feel amazing. Have you ever tried it?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
-  { model: "Ashley Morris", text: "I just tried cooking pasta from scratch and honestly it was a disaster 😭 the kitchen looks like a war zone but at least I looked cute doing it", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
-  { model: "Ashley Morris", text: "Went shopping with my girls today and spent way too much 🛍️ got some cute stuff though... wanna see what I picked up?", category: "flirty", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "Just got back from my first ever Pilates class and my legs are DEAD 😂 but honestly I feel amazing. Have you ever tried it?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark", scriptFlow: "1. Send scenario opener\n2. Fan responds → ask what exercise they do\n3. Share gym selfie (AI) → build rapport\n4. Transition: 'my legs are so sore... wanna see the outfit I wore?' → PPV teaser\n5. Send PPV (real gym/workout content)", aiContent: "Gym selfie in leggings, post-workout glow photo, gym changing room mirror pic", realContent: "Workout video, stretching clip, sweaty post-gym photo set", vaultRef: "Scenario 1 — Pilates" },
+  { model: "Ashley Morris", text: "I just tried cooking pasta from scratch and honestly it was a disaster 😭 the kitchen looks like a war zone but at least I looked cute doing it", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark", scriptFlow: "1. Send scenario opener\n2. Fan responds → share kitchen disaster photo (AI)\n3. Ask if they cook → rapport building\n4. Transition: 'I made a mess but I looked cute... wanna see the apron situation? 😏' → PPV teaser\n5. Can do LIVE version: model goes to kitchen at Airbnb, films mess in real time", aiContent: "Messy kitchen photo, sauce on face selfie, failed pasta close-up", realContent: "Cooking in apron video, kitchen dancing clip", vaultRef: "Scenario 2 — Cooking Disaster" },
+  { model: "Ashley Morris", text: "Went shopping with my girls today and spent way too much 🛍️ got some cute stuff though... wanna see what I picked up?", category: "flirty", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark", scriptFlow: "1. Send scenario opener\n2. Fan responds → send AI photos of shops/bags\n3. Ask their opinion on fashion → engagement\n4. Transition: 'I got something special... wanna see the try-on? 😏' → PPV\n5. Model orders clothes online, films real try-on at home", aiContent: "Shopping bag photos, store fronts, car with bags", realContent: "Try-on video, outfit reveal photo set", vaultRef: "Scenario 3 — Shopping Spree" },
   { model: "Ashley Morris", text: "Just finished a study session at the coffee shop and I'm so wired on caffeine rn ☕ what are you up to?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
   { model: "Ashley Morris", text: "Had the laziest Sunday ever — stayed in bed watching Netflix all day 🤭 sometimes you just need that right?", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
   { model: "Ashley Morris", text: "Just got back from a road trip to Sedona with my roommate and the views were insane 🏜️ wish you could've been there", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
@@ -370,6 +375,34 @@ export default function ScenarioBoard() {
                       )}
                     </div>
                     <p className="text-sm leading-relaxed">{scenario.text}</p>
+                    {/* Scenario Package Details */}
+                    {(scenario.scriptFlow || scenario.aiContent || scenario.realContent || scenario.vaultRef) && (
+                      <div className="mt-3 space-y-2 border-t border-border/20 pt-3">
+                        {scenario.vaultRef && (
+                          <div className="flex items-center gap-2">
+                            <Badge className="text-[10px] bg-amber-500/20 text-amber-300 border-amber-500/30">📁 {scenario.vaultRef}</Badge>
+                          </div>
+                        )}
+                        {scenario.scriptFlow && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">📋 Script Flow</p>
+                            <p className="text-xs whitespace-pre-wrap text-muted-foreground">{scenario.scriptFlow}</p>
+                          </div>
+                        )}
+                        {scenario.aiContent && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">🤖 AI Content (Free to send)</p>
+                            <p className="text-xs text-muted-foreground">{scenario.aiContent}</p>
+                          </div>
+                        )}
+                        {scenario.realContent && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">💰 Real Content (Behind PPV)</p>
+                            <p className="text-xs text-muted-foreground">{scenario.realContent}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
                       <span>Added by {scenario.createdBy} · {scenario.createdAt}</span>
                       {scenario.usedBy && <span>Used by <strong>{scenario.usedBy}</strong> on {scenario.usedAt}</span>}
