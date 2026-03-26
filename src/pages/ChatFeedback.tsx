@@ -91,16 +91,32 @@ export default function ChatFeedback() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Limit size to 500KB for Supabase text column
-    if (file.size > 500000) {
-      toast.error("Image too large. Please use a smaller screenshot (under 500KB).");
+    // Limit size to 5MB raw, then compress
+    if (file.size > 5000000) {
+      toast.error("Image too large. Please use a screenshot under 5MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormImage(reader.result as string);
+    // Compress image via canvas to keep Supabase text column manageable
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 1200;
+      let width = img.width;
+      let height = img.height;
+      if (width > MAX_WIDTH) {
+        height = Math.round((height * MAX_WIDTH) / width);
+        width = MAX_WIDTH;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, width, height);
+      const compressed = canvas.toDataURL('image/jpeg', 0.7);
+      setFormImage(compressed);
+      URL.revokeObjectURL(url);
     };
-    reader.readAsDataURL(file);
+    img.src = url;
   };
 
   const addEntry = async () => {
@@ -317,7 +333,7 @@ export default function ChatFeedback() {
             ) : (
               <label className="flex items-center justify-center gap-2 h-24 rounded-lg border-2 border-dashed border-border/50 cursor-pointer hover:border-primary/50 hover:bg-secondary/20 transition-colors">
                 <Upload className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Click to upload screenshot (max 500KB)</span>
+                <span className="text-sm text-muted-foreground">Click to upload screenshot (max 5MB)</span>
                 <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
               </label>
             )}
