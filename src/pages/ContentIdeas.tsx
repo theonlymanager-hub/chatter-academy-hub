@@ -313,9 +313,23 @@ export default function ContentIdeas() {
         </select>
       </div>
 
-      {/* Game cards */}
-      <div className="space-y-3">
-        {filtered.map((game) => {
+      {/* Game cards — grouped by difficulty */}
+      <div className="space-y-6">
+        {(filterDifficulty === "all" ? ["Beginner", "Intermediate", "Advanced"] : [filterDifficulty]).map(diff => {
+          const revenueOrder: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+          const group = filtered
+            .filter(g => g.difficulty === diff)
+            .sort((a, b) => (revenueOrder[a.revenue] ?? 2) - (revenueOrder[b.revenue] ?? 2));
+          if (group.length === 0) return null;
+          const diffEmoji = diff === "Beginner" ? "🟢" : diff === "Intermediate" ? "🟡" : "🔴";
+          return (
+            <div key={diff}>
+              <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <span>{diffEmoji}</span> {diff}
+                <Badge variant="outline" className="text-xs ml-1">{group.length} games</Badge>
+              </h2>
+              <div className="space-y-3">
+        {group.map((game) => {
           const isExpanded = expandedId === game.id;
           return (
             <div key={game.id} className="glass-card overflow-hidden">
@@ -367,6 +381,12 @@ export default function ContentIdeas() {
                   </div>
                 </div>
               )}
+            </div>
+          );
+        })}
+      </div>
+
+          </div>
             </div>
           );
         })}
