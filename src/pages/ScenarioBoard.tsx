@@ -239,20 +239,21 @@ export default function ScenarioBoard() {
         )}
       </div>
 
-      {/* Model Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Model Selection */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {MODELS.map(model => {
           const stats = getModelStats(model);
           const shortName = model.split(" ")[0];
+          const isSelected = filterModel === model;
           return (
-            <div key={model} className="glass-card p-4 cursor-pointer hover:border-primary/30 transition-colors"
-              onClick={() => setFilterModel(filterModel === model ? "all" : model)}>
-              <p className="text-[10px] text-muted-foreground uppercase">{shortName}</p>
-              <p className="text-2xl font-bold">{stats.available}<span className="text-sm text-muted-foreground">/{stats.total}</span></p>
-              <div className="flex gap-2 mt-1">
-                <span className="text-[10px] text-green-400">✅ {stats.available}</span>
-                <span className="text-[10px] text-orange-400">🟠 {stats.inUse}</span>
-                <span className="text-[10px] text-zinc-400">⏳ {stats.cooldown}</span>
+            <div key={model} className={`glass-card p-6 cursor-pointer transition-all ${isSelected ? "border-primary/60 bg-primary/10 ring-1 ring-primary/30" : "hover:border-primary/30 hover:bg-secondary/20"}`}
+              onClick={() => setFilterModel(isSelected ? "all" : model)}>
+              <p className="text-lg font-bold mb-1">{shortName}</p>
+              <p className="text-3xl font-bold text-primary">{stats.available}<span className="text-sm text-muted-foreground font-normal">/{stats.total}</span></p>
+              <div className="flex gap-3 mt-2">
+                <span className="text-xs text-green-400">✅ {stats.available}</span>
+                <span className="text-xs text-orange-400">🟠 {stats.inUse}</span>
+                <span className="text-xs text-zinc-400">⏳ {stats.cooldown}</span>
               </div>
             </div>
           );
@@ -297,8 +298,8 @@ export default function ScenarioBoard() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex gap-3 flex-wrap items-center">
+      {/* Filters - only show when model selected */}
+      {filterModel !== "all" && (<div className="flex gap-3 flex-wrap items-center">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input value={search} onChange={e => setSearch(e.target.value)}
@@ -322,13 +323,23 @@ export default function ScenarioBoard() {
           <option value="cooldown">⏳ Cooldown</option>
           <option value="archived">📁 Archived</option>
         </select>
-      </div>
+      </div>)}
 
       {/* Scenario count */}
-      <p className="text-sm text-muted-foreground">{filtered.length} scenario{filtered.length !== 1 ? "s" : ""} shown</p>
+      {filterModel !== "all" && (
+        <p className="text-sm text-muted-foreground">{filtered.length} scenario{filtered.length !== 1 ? "s" : ""} shown</p>
+      )}
 
-      {/* Scenarios List */}
-      <div className="space-y-3">
+      {/* Model Selection View - show when no model selected */}
+      {filterModel === "all" && !showForm && (
+        <div className="text-center text-muted-foreground text-sm mt-4">
+          <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
+          <p>Select a model above to view their scenarios</p>
+        </div>
+      )}
+
+      {/* Scenarios List - only show when a model is selected */}
+      {filterModel !== "all" && (<div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="glass-card p-8 text-center">
             <MessageCircle className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
@@ -390,7 +401,7 @@ export default function ScenarioBoard() {
             );
           })
         )}
-      </div>
+      </div>)}
     </div>
   );
 }
