@@ -273,7 +273,7 @@ export default function ChatFeedback() {
                   <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
                     <p className="text-sm whitespace-pre-wrap">{entry.description}</p>
                   </div>
-                  {isAdmin && (
+                  {(isAdmin || user?.role === "supervisor") && (
                     <div className="flex gap-1">
                       <Button
                         size="sm"
