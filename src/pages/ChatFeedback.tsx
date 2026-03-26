@@ -37,7 +37,7 @@ interface FeedbackEntry {
 }
 
 const MODEL_OPTIONS = ["Izzy", "Willow", "Lucinda Bleu", "Ashley Morris"];
-const CHATTER_OPTIONS = ["Marc", "JD", "Jemimah", "KC", "Jane"];
+const CHATTER_OPTIONS = ["All Chatters", "Marc", "JD", "Jemimah", "KC", "Jane"];
 
 export default function ChatFeedback() {
   const { user } = useAuth();
