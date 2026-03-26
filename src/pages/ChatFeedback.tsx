@@ -273,15 +273,17 @@ export default function ChatFeedback() {
                   <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
                     <p className="text-sm whitespace-pre-wrap">{entry.description}</p>
                   </div>
-                  {isAdmin && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-xs gap-1"
-                      onClick={() => deleteEntry(entry.id)}
-                    >
-                      <Trash2 className="h-3 w-3" /> Delete
-                    </Button>
+                  {canAdd && (
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-xs gap-1"
+                        onClick={() => deleteEntry(entry.id)}
+                      >
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
