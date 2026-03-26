@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import TeamMembers from "./pages/TeamMembers";
 import Training from "./pages/Training";
 import TrainingResults from "./pages/TrainingResults";
+import TrainingVideos from "./pages/TrainingVideos";
 import Tasks from "./pages/Tasks";
 import QualityChecks from "./pages/QualityChecks";
 import ShiftCalendar from "./pages/ShiftCalendar";
@@ -95,6 +96,16 @@ function AppContent() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Training />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/training-videos" 
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <TrainingVideos />
               </DashboardLayout>
             </ProtectedRoute>
           } 

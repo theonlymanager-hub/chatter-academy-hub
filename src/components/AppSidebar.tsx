@@ -19,6 +19,7 @@ import {
   Lightbulb,
   Sparkles,
   CheckSquare,
+  Video,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -85,7 +86,8 @@ const getAllSections = () => [
     label: "Knowledge & Training",
     items: [
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Training", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Training Quiz", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Training Videos", url: "/training-videos", icon: Video, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Training Results", url: "/training-results", icon: Trophy, roles: ['admin', 'supervisor'] },
     ],
   },
