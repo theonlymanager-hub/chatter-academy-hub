@@ -48,7 +48,7 @@ export default function ChatFeedback() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formTab, setFormTab] = useState<"bad" | "good">("bad");
-  const [formImage, setFormImage] = useState("");
+  const [formImages, setFormImages] = useState<string[]>([]);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [formDescription, setFormDescription] = useState("");
   const [formChatter, setFormChatter] = useState("");
@@ -88,46 +88,71 @@ export default function ChatFeedback() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // Limit size to 5MB raw, then compress
-    if (file.size > 5000000) {
-      toast.error("Image too large. Please use a screenshot under 5MB.");
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+        URL.revokeObjectURL(url);
+        resolve(compressed);
+      };
+      img.src = url;
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    if (formImages.length + files.length > 5) {
+      toast.error("Maximum 5 images per entry.");
       return;
     }
-    // Compress image via canvas to keep Supabase text column manageable
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 1200;
-      let width = img.width;
-      let height = img.height;
-      if (width > MAX_WIDTH) {
-        height = Math.round((height * MAX_WIDTH) / width);
-        width = MAX_WIDTH;
+    for (const file of files) {
+      if (file.size > 5000000) {
+        toast.error(`${file.name} is too large (max 5MB per image).`);
+        continue;
       }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0, width, height);
-      const compressed = canvas.toDataURL('image/jpeg', 0.7);
-      setFormImage(compressed);
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
+      const compressed = await compressImage(file);
+      setFormImages(prev => [...prev, compressed]);
+    }
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  // Parse image_url field — supports both single base64 string and JSON array
+  const getImages = (imageUrl: string): string[] => {
+    if (!imageUrl) return [];
+    try {
+      const parsed = JSON.parse(imageUrl);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+    return [imageUrl];
   };
 
   const addEntry = async () => {
-    if (!formImage || !formDescription || !formChatter || !formModel) return;
+    if (!formImages.length || !formDescription || !formChatter || !formModel) return;
     setSubmitting(true);
+
+    const imageData = formImages.length === 1 ? formImages[0] : JSON.stringify(formImages);
 
     const { error } = await (supabase as any)
       .from("chat_feedback")
       .insert({
         tab: formTab,
-        image_url: formImage,
+        image_url: imageData,
         description: formDescription,
         chatter_name: formChatter,
         model: formModel,
@@ -142,7 +167,7 @@ export default function ChatFeedback() {
       existing.unshift({
         id: Date.now().toString(),
         tab: formTab,
-        imageData: formImage,
+        imageData: imageData,
         description: formDescription,
         chatterName: formChatter,
         model: formModel,
@@ -153,7 +178,7 @@ export default function ChatFeedback() {
       toast.success("Feedback entry added!");
     }
 
-    setFormImage("");
+    setFormImages([]);
     setFormDescription("");
     setFormChatter("");
     setFormModel("");
@@ -203,17 +228,21 @@ export default function ChatFeedback() {
             <div key={entry.id} className="glass-card p-4">
               <div className="flex flex-col md:flex-row gap-4">
                 {entry.image_url && (
-                <div className="shrink-0 md:w-[320px] relative group cursor-pointer" onClick={() => setLightboxImage(entry.image_url)}>
-                  <img
-                    src={entry.image_url}
-                    alt="Chat screenshot"
-                    className="rounded-lg border border-border/50 w-full object-contain max-h-[400px] transition-opacity group-hover:opacity-90"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="bg-black/60 rounded-full p-2">
-                      <ZoomIn className="h-5 w-5 text-white" />
+                <div className="shrink-0 md:w-[320px] flex flex-col gap-2">
+                  {getImages(entry.image_url).map((imgSrc, idx) => (
+                    <div key={idx} className="relative group cursor-pointer" onClick={() => setLightboxImage(imgSrc)}>
+                      <img
+                        src={imgSrc}
+                        alt={`Chat screenshot ${idx + 1}`}
+                        className="rounded-lg border border-border/50 w-full object-contain max-h-[400px] transition-opacity group-hover:opacity-90"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="bg-black/60 rounded-full p-2">
+                          <ZoomIn className="h-5 w-5 text-white" />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
                 )}
                 <div className="flex-1 space-y-3">
@@ -321,20 +350,23 @@ export default function ChatFeedback() {
           </div>
 
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase block mb-1">Screenshot</label>
-            {formImage ? (
-              <div className="relative inline-block">
-                <img src={formImage} alt="Preview" className="rounded-lg border border-border/50 max-h-[200px]" />
-                <Button size="sm" variant="destructive" className="absolute top-2 right-2 h-6 w-6 p-0"
-                  onClick={() => setFormImage("")}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            ) : (
+            <label className="text-[10px] text-muted-foreground uppercase block mb-1">Screenshots ({formImages.length}/5)</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formImages.map((img, idx) => (
+                <div key={idx} className="relative inline-block">
+                  <img src={img} alt={`Preview ${idx + 1}`} className="rounded-lg border border-border/50 max-h-[120px]" />
+                  <Button size="sm" variant="destructive" className="absolute top-1 right-1 h-5 w-5 p-0"
+                    onClick={() => setFormImages(prev => prev.filter((_, i) => i !== idx))}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            {formImages.length < 5 && (
               <label className="flex items-center justify-center gap-2 h-24 rounded-lg border-2 border-dashed border-border/50 cursor-pointer hover:border-primary/50 hover:bg-secondary/20 transition-colors">
                 <Upload className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Click to upload screenshot (max 5MB)</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                <span className="text-sm text-muted-foreground">{formImages.length === 0 ? 'Click to upload screenshots (max 5MB each, up to 5)' : 'Add more screenshots'}</span>
+                <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
               </label>
             )}
           </div>
@@ -350,7 +382,7 @@ export default function ChatFeedback() {
               } className="min-h-[120px]" />
           </div>
 
-          <Button onClick={addEntry} disabled={!formImage || !formDescription || !formChatter || !formModel || submitting}
+          <Button onClick={addEntry} disabled={!formImages.length || !formDescription || !formChatter || !formModel || submitting}
             className="w-full">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Add to {formTab === "bad" ? "Bad Examples" : "Good Examples"}
