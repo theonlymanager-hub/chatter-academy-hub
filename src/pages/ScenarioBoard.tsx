@@ -54,6 +54,51 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const COOLDOWN_DAYS = 14;
 
+const SEED_SCENARIOS: Omit<Scenario, "id" | "createdAt">[] = [
+  // ASHLEY - Casual
+  { model: "Ashley Morris", text: "Just got back from my first ever Pilates class and my legs are DEAD 😂 but honestly I feel amazing. Have you ever tried it?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "I just tried cooking pasta from scratch and honestly it was a disaster 😭 the kitchen looks like a war zone but at least I looked cute doing it", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "Went shopping with my girls today and spent way too much 🛍️ got some cute stuff though... wanna see what I picked up?", category: "flirty", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "Just finished a study session at the coffee shop and I'm so wired on caffeine rn ☕ what are you up to?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "Had the laziest Sunday ever — stayed in bed watching Netflix all day 🤭 sometimes you just need that right?", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "Just got back from a road trip to Sedona with my roommate and the views were insane 🏜️ wish you could've been there", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "I'm babysitting my friend's puppy this weekend and I literally can't stop cuddling him 🐶 look how cute he is", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "Just got out of the shower and I'm trying to decide what to wear tonight... girls night 🥂 help me pick?", category: "evening", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  // ASHLEY - Spicy
+  { model: "Ashley Morris", text: "Can't sleep... lying in bed thinking about things I probably shouldn't be 🙈 anyone up?", category: "spicy", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Ashley Morris", text: "Just got back from the gym and I'm all sweaty... need someone to help me cool down 😏", category: "spicy", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+
+  // IZZY - Casual/Military
+  { model: "Izzy", text: "Morning PT was brutal today 💪 5am runs hit different when it's still dark out. What time did you wake up?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Izzy", text: "Finally got a weekend off base and I found this cute little coffee shop in town ☕ needed this so bad", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Izzy", text: "BBQ on base today with the squad 🍖 the food was mid but the vibes were immaculate. How was your day?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Izzy", text: "Just did a 10 mile ruck march and my feet are destroyed 😩 but honestly I love pushing myself. You work out?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Izzy", text: "Got my hair done today for the first time in months 💇‍♀️ feeling cute. Needed this after a long week", category: "flirty", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Izzy", text: "Missing home today... Texas sunsets just hit different 🌅 where's home for you?", category: "evening", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Izzy", text: "Just finished a night shift and I can't sleep 😴 my brain won't turn off. Talk to me?", category: "evening", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Izzy", text: "Tried hiking this trail near base today and it was BEAUTIFUL 🏔️ nature is my therapy honestly", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+
+  // WILLOW - Casual
+  { model: "Willow", text: "Just dyed my hair even redder and I'm kinda obsessed 🔥 do you like redheads?", category: "flirty", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Willow", text: "Spent the whole morning at a farmers market and got way too many candles 🕯️ my room smells amazing now", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Willow", text: "Rainy day so I'm curled up with a book and tea ☕🌧️ perfect cozy day. What do you do on rainy days?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Willow", text: "Just tried this new Thai place near me and it was SO good 🍜 I'm a total foodie. What's your favourite cuisine?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Willow", text: "Movie night with my cat tonight 🐱🎬 she always judges my movie choices lol. What should I watch?", category: "evening", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Willow", text: "Yoga this morning has me feeling so zen 🧘‍♀️ I swear it fixes everything. You ever try it?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Willow", text: "Took myself on a solo date to the art gallery today 🎨 sometimes you just need your own company", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Willow", text: "Just baked cookies and they actually turned out good for once 🍪 wish I could share some with you", category: "flirty", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+
+  // LUCINDA - Casual/Goth
+  { model: "Lucinda Bleu", text: "Just reorganised my entire vinyl collection 🎶 there's something so satisfying about it. You into music?", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Lucinda Bleu", text: "Went to a vintage shop today and found the sickest leather jacket 🖤 goth girl shopping spree", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Lucinda Bleu", text: "Doing my makeup for like an hour because I have nowhere to go 😂 but I look hot so whatever", category: "flirty", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Lucinda Bleu", text: "Late night vibes... listening to The Cure and overthinking everything 🌙 you ever get like that?", category: "evening", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Lucinda Bleu", text: "Went to a gig last night and my ears are still ringing 🎸 but it was so worth it. You like live music?", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Lucinda Bleu", text: "Just got a new piercing and I'm lowkey scared it's gonna hurt for days 😬 but it looks fire", category: "casual", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Lucinda Bleu", text: "Sketching in my room with candles lit 🕯️✏️ this is my version of peace. What's yours?", category: "evening", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+  { model: "Lucinda Bleu", text: "Found this abandoned building to do a photoshoot in today 📸 the aesthetic was PERFECT", category: "weekend", status: "available", oneTimeOnly: false, usedBy: null, usedAt: null, cooldownUntil: null, createdBy: "mark" },
+];
+
 export default function ScenarioBoard() {
   const { user } = useAuth();
   const canManage = user?.role === "admin" || user?.role === "supervisor" || user?.role === "data_entry";
@@ -76,7 +121,6 @@ export default function ScenarioBoard() {
     if (saved) {
       try {
         let data: Scenario[] = JSON.parse(saved);
-        // Auto-release cooldowns that have expired
         const today = new Date().toISOString().split("T")[0];
         data = data.map(s => {
           if (s.status === "cooldown" && s.cooldownUntil && s.cooldownUntil <= today) {
@@ -84,9 +128,18 @@ export default function ScenarioBoard() {
           }
           return s;
         });
+        // Seed if empty
+        if (data.length === 0) {
+          data = SEED_SCENARIOS.map((s, i) => ({ ...s, id: (Date.now() + i).toString(), createdAt: new Date().toISOString() }));
+        }
         setScenarios(data);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       } catch { setScenarios([]); }
+    } else {
+      // First load — seed with defaults
+      const seeded: Scenario[] = SEED_SCENARIOS.map((s, i) => ({ ...s, id: (Date.now() + i).toString(), createdAt: new Date().toISOString() }));
+      setScenarios(seeded);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
     }
   }, []);
 
