@@ -26,7 +26,7 @@ interface Scenario {
   vaultRef?: string;
 }
 
-const STORAGE_KEY = "scenario-board-v3";
+const STORAGE_KEY = "scenario-board-v4";
 const MODELS = ["Ashley Morris", "Lucinda Bleu", "Izzy", "Willow"];
 const CATEGORIES = [
   { value: "casual", label: "Casual/Daytime", emoji: "☀️" },
