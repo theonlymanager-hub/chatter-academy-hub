@@ -974,7 +974,7 @@ export default function KnowledgeBase() {
                   <li>🚫 NEVER mention other platforms for payment</li>
                   <li>🚫 Don't promise meetups (even jokingly)</li>
                   <li>🚫 No underage references — ever</li>
-                  <li>🚫 Keep everything on OnlyFans</li>
+                  <li>🚫 Keep everything on the platform</li>
                   <li>🚫 No screenshots or recording</li>
                 </ul>
               </div>

@@ -165,7 +165,7 @@ export default function ChatterAnalytics() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">API Configuration</CardTitle>
-            <CardDescription>Connect to OnlyFans API for live data</CardDescription>
+            <CardDescription>Connect to the platform API for live data</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">

@@ -1,5 +1,5 @@
 // Platform API Integration Service
-// OnlyFans API integration via app.onlyfansapi.com
+// Platform API integration via app.onlyfansapi.com
 
 const API_BASE = 'https://app.onlyfansapi.com/api';
 
