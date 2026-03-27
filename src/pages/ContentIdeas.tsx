@@ -384,9 +384,7 @@ export default function ContentIdeas() {
             </div>
           );
         })}
-      </div>
-
-          </div>
+              </div>
             </div>
           );
         })}
