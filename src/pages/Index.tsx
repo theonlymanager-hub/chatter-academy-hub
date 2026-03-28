@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import {
-  DollarSign,
   Users,
   Star,
-  Clock,
   TrendingUp,
   ExternalLink,
   Activity,
@@ -69,37 +67,60 @@ const Index = () => {
   const [teamActivity, setTeamActivity] = useState<TeamActivityEntry[]>([]);
   const [liveAttendance, setLiveAttendance] = useState<string[]>([]);
 
-  // ─ track own activity via localStorage ─
+  // ─ track own activity via Supabase dashboard_activity table ─
   useEffect(() => {
     if (!user) return;
-    const KEY = "dashboard_team_activity";
-    const now = Date.now();
+    const username = user.username || "Unknown";
+    const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
 
-    // Read existing
-    let entries: TeamActivityEntry[] = [];
-    try {
-      entries = JSON.parse(localStorage.getItem(KEY) || "[]");
-    } catch {}
+    const upsertAndFetch = async () => {
+      // Upsert current user's activity
+      const now = new Date().toISOString();
+      const { data: existing } = await supabase
+        .from("dashboard_activity")
+        .select("id")
+        .eq("username", username)
+        .eq("date", todayStr)
+        .maybeSingle();
 
-    // Upsert self
-    const idx = entries.findIndex((e) => e.username === user.username);
-    const entry: TeamActivityEntry = { username: user.username || "Unknown", role: user.role || "chatter", lastActive: now };
-    if (idx >= 0) entries[idx] = entry;
-    else entries.push(entry);
+      if (existing) {
+        await supabase
+          .from("dashboard_activity")
+          .update({ last_sync: now })
+          .eq("id", existing.id);
+      } else {
+        await supabase
+          .from("dashboard_activity")
+          .insert({ username, date: todayStr, login_time: now, last_sync: now });
+      }
 
-    // Prune entries older than 24h
-    entries = entries.filter((e) => now - e.lastActive < 86400000);
-    localStorage.setItem(KEY, JSON.stringify(entries));
-    setTeamActivity(entries.sort((a, b) => b.lastActive - a.lastActive));
+      // Fetch ALL team members' activity from today
+      const { data: allActivity } = await supabase
+        .from("dashboard_activity")
+        .select("username, last_sync, login_time, date")
+        .eq("date", todayStr)
+        .order("last_sync", { ascending: false });
 
+      if (allActivity) {
+        // Also look up roles from app_users
+        const { data: users } = await supabase
+          .from("app_users")
+          .select("username, role");
+        const roleMap: Record<string, string> = {};
+        if (users) users.forEach((u) => { roleMap[u.username] = u.role; });
+
+        const entries: TeamActivityEntry[] = allActivity.map((a) => ({
+          username: a.username,
+          role: roleMap[a.username] || "chatter",
+          lastActive: new Date(a.last_sync).getTime(),
+        }));
+        setTeamActivity(entries);
+      }
+    };
+
+    upsertAndFetch();
     // Refresh every 30s
-    const interval = setInterval(() => {
-      entry.lastActive = Date.now();
-      const idx2 = entries.findIndex((e) => e.username === user.username);
-      if (idx2 >= 0) entries[idx2] = entry;
-      localStorage.setItem(KEY, JSON.stringify(entries));
-      setTeamActivity([...entries].sort((a, b) => b.lastActive - a.lastActive));
-    }, 30000);
+    const interval = setInterval(upsertAndFetch, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
@@ -131,7 +152,9 @@ const Index = () => {
   // ─ fetch pending customs ─
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("customs").select("id").neq("status", "completed");
+      const { data, error } = await supabase.from("customs").select("id, status").eq("status", "pending");
+      if (error) console.error("Customs query error:", error);
+      console.log(`[Dashboard] Pending customs count: ${data?.length || 0}`, data);
       setPendingCustoms(data?.length || 0);
     })();
   }, []);
@@ -158,7 +181,6 @@ const Index = () => {
 
   // ─ derived ─
   const totalRevenue = Object.values(earningStats).reduce((s, e) => s + (e?.total || 0), 0);
-  const totalSubs = Object.values(earningStats).reduce((s, e) => s + (e?.subscriptions || 0), 0);
   const chattersOnly = teamMembers.filter((m) => m.category === "chatter");
   const onlineCount = liveAttendance.length;
 
@@ -181,10 +203,8 @@ const Index = () => {
       </div>
 
       {/* ── Quick Stats Row ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {[
-          { label: "Revenue This Week", value: revenueLoading ? "…" : fmt(totalRevenue), icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Total Subs Revenue", value: revenueLoading ? "…" : fmt(totalSubs), icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
           { label: "Average LTV", value: revenueLoading ? "…" : fmt(avgLtv), icon: TrendingUp, color: "text-violet-400", bg: "bg-violet-500/10" },
           { label: "Chatters On Shift", value: `${onlineCount}/${chattersOnly.length}`, icon: Activity, color: "text-amber-400", bg: "bg-amber-500/10" },
         ].map(({ label, value, icon: Icon, color, bg }) => (
@@ -220,7 +240,7 @@ const Index = () => {
               </div>
 
               <div>
-                <p className="text-2xl font-bold" style={{ color }}>{revenueLoading ? "…" : fmt(revenue)}</p>
+                <p className="text-2xl font-bold" style={{ color }}>{revenueLoading ? "…" : (revenue > 0 ? fmt(revenue) : "$0")}</p>
                 <p className="text-[11px] text-muted-foreground">weekly revenue</p>
               </div>
 
@@ -241,11 +261,11 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div>
                   <p className="text-muted-foreground">Subs Rev</p>
-                  <p className="font-medium">{revenueLoading ? "…" : fmt(subs)}</p>
+                  <p className="font-medium">{revenueLoading ? "…" : (subs > 0 ? fmt(subs) : "$0")}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">LTV</p>
-                  <p className="font-medium">{revenueLoading ? "…" : (stats ? fmt(stats.total / Math.max(1, Math.round(stats.subscriptions / 10))) : "$0")}</p>
+                  <p className="font-medium">{revenueLoading ? "…" : (stats && stats.total > 0 ? fmt(stats.total / Math.max(1, Math.round(stats.subscriptions / 10))) : "$0")}</p>
                 </div>
               </div>
             </div>
