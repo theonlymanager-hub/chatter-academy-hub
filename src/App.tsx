@@ -37,6 +37,7 @@ import ShootChecklist from "./pages/ShootChecklist";
 import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
 import DailyChecklist from "./pages/DailyChecklist";
+import ClientOnboarding from "./pages/ClientOnboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -337,6 +338,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
               <DashboardLayout>
                 <DailyChecklist />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Client Onboarding - Admin + Supervisor */}
+        <Route 
+          path="/onboarding" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+              <DashboardLayout>
+                <ClientOnboarding />
               </DashboardLayout>
             </ProtectedRoute>
           } 

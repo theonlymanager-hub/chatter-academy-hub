@@ -20,6 +20,7 @@ import {
   Sparkles,
   CheckSquare,
   Video,
+  Rocket,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -90,6 +91,12 @@ const getAllSections = () => [
       { title: "Training Quiz", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Training Videos", url: "/training-videos", icon: Video, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Training Results", url: "/training-results", icon: Trophy, roles: ['admin', 'supervisor'] },
+    ],
+  },
+  {
+    label: "🚀 Operations",
+    items: [
+      { title: "Client Onboarding", url: "/onboarding", icon: Rocket, roles: ['admin', 'supervisor'] },
     ],
   },
   {
