@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, Trophy, TrendingUp, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { isDemoUser } from "@/utils/demo";
 
 interface QuizResult {
   username: string;
@@ -14,6 +16,8 @@ interface QuizResult {
 }
 
 export default function TrainingResults() {
+  const { user } = useAuth();
+  const isDemo = isDemoUser(user?.role);
   const [results, setResults] = useState<QuizResult[]>([]);
 
   useEffect(() => {
@@ -89,7 +93,7 @@ export default function TrainingResults() {
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{avgScore}%</p>
+              <p className="text-2xl font-bold">{isDemo ? "••••" : `${avgScore}%`}</p>
               <p className="text-xs text-muted-foreground">Average score</p>
             </div>
           </CardContent>
@@ -126,8 +130,8 @@ export default function TrainingResults() {
                     {username}
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <Badge variant={best.percentage >= 80 ? "default" : best.percentage >= 60 ? "secondary" : "destructive"}>
-                      Best: {best.percentage}%
+                    <Badge variant={isDemo ? "secondary" : best.percentage >= 80 ? "default" : best.percentage >= 60 ? "secondary" : "destructive"}>
+                      Best: {isDemo ? "••••" : `${best.percentage}%`}
                     </Badge>
                     <Badge variant="outline">{attempts} attempt{attempts !== 1 ? 's' : ''}</Badge>
                   </div>
@@ -136,15 +140,15 @@ export default function TrainingResults() {
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                   <div className="p-2 rounded-lg bg-secondary/30 text-center">
-                    <p className="text-lg font-bold">{best.score}/{best.total}</p>
+                    <p className="text-lg font-bold">{isDemo ? "••••" : `${best.score}/${best.total}`}</p>
                     <p className="text-[10px] text-muted-foreground">Best Score</p>
                   </div>
                   <div className="p-2 rounded-lg bg-secondary/30 text-center">
-                    <p className="text-lg font-bold">{latest.score}/{latest.total}</p>
+                    <p className="text-lg font-bold">{isDemo ? "••••" : `${latest.score}/${latest.total}`}</p>
                     <p className="text-[10px] text-muted-foreground">Latest Score</p>
                   </div>
                   <div className="p-2 rounded-lg bg-secondary/30 text-center">
-                    <p className="text-lg font-bold">{latest.percentage}%</p>
+                    <p className="text-lg font-bold">{isDemo ? "••••" : `${latest.percentage}%`}</p>
                     <p className="text-[10px] text-muted-foreground">Latest %</p>
                   </div>
                   <div className="p-2 rounded-lg bg-secondary/30 text-center">
@@ -160,7 +164,7 @@ export default function TrainingResults() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {Object.entries(latest.categoryScores).map(([cat, { correct, total }]) => (
                         <div key={cat} className="p-2 rounded bg-secondary/20 text-center">
-                          <p className="text-xs font-bold">{correct}/{total}</p>
+                          <p className="text-xs font-bold">{isDemo ? "••••" : `${correct}/${total}`}</p>
                           <p className="text-[9px] text-muted-foreground truncate">{cat}</p>
                         </div>
                       ))}

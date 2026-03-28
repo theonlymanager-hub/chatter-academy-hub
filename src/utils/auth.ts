@@ -48,5 +48,6 @@ export function createInitialUsers(): User[] {
     { id: generateId(), username: 'doug', password: hashPassword('Doug@Admin1'), role: 'admin' as UserRole, displayName: 'Doug', createdAt: now },
     { id: generateId(), username: 'sam', password: hashPassword('Guest$am1'), role: 'chatter' as UserRole, displayName: 'Sam (Guest)', createdAt: now },
     { id: generateId(), username: 'mateo', password: hashPassword('Mat3o$upe!'), role: 'supervisor' as UserRole, displayName: 'Mateo', createdAt: now },
+    { id: generateId(), username: 'demo', password: hashPassword('Demo2026!'), role: 'demo' as UserRole, displayName: 'Demo', createdAt: now },
   ];
 }

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronDown, ChevronUp, Plus, Check, Clock, Pencil, Trash2, DollarSign, CalendarClock, AlertTriangle, Loader2 } from "lucide-react";
 import { modelColors } from "@/lib/mock-data";
 import { useAuth } from "@/contexts/AuthContext";
+import { isDemoUser } from "@/utils/demo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -85,6 +86,7 @@ function dbToCustom(row: any): CustomOrder {
 export default function Customs() {
   const { user } = useAuth();
   const canEdit = user && ['admin', 'supervisor', 'data_entry'].includes(user.role);
+  const isDemo = isDemoUser(user?.role);
   const [customs, setCustoms] = useState<CustomOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
@@ -287,7 +289,7 @@ export default function Customs() {
               <p className="text-sm font-medium" style={{ color: `hsl(${color})` }}>{model}</p>
               <p className="text-2xl font-bold mt-1">{modelCustoms.length}</p>
               <p className="text-[10px] text-muted-foreground">{pending} pending · {complete} complete</p>
-              {totalRevenue > 0 && (
+              {totalRevenue > 0 && !isDemo && (
                 <p className="text-xs font-semibold mt-1 text-green-400">${totalRevenue.toLocaleString()}</p>
               )}
             </div>
@@ -401,7 +403,7 @@ export default function Customs() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-sm font-medium">{custom.description}</p>
-                            {custom.price > 0 && (
+                            {custom.price > 0 && !isDemo && (
                               <span className="inline-flex items-center gap-0.5 text-sm font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20">
                                 <DollarSign className="h-3 w-3" />{custom.price}
                               </span>
@@ -415,8 +417,8 @@ export default function Customs() {
                           )}
 
                           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
-                            <span>Fan: <strong className="text-foreground">{custom.fanName}</strong></span>
-                            {custom.fanOfUsername && (
+                            <span>Fan: <strong className="text-foreground">{isDemo ? `Fan #${custom.id.slice(-4).toUpperCase()}` : custom.fanName}</strong></span>
+                            {!isDemo && custom.fanOfUsername && (
                               <span className="font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded text-[10px]">
                                 {custom.fanOfUsername}
                               </span>

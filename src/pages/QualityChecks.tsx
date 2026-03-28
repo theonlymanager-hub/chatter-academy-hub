@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Info, ClipboardCheck, TrendingUp, Calendar, User, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoUser } from "@/utils/demo";
 
 const categories = [
   { label: "Conversation Flow & Energy", dbKey: "response_time_score" },
@@ -28,6 +29,7 @@ const categoryDescriptions: Record<string, string> = {
 
 export default function QualityChecks() {
   const { user, hasPermission } = useAuth();
+  const isDemo = isDemoUser(user?.role);
   const [selectedMember, setSelectedMember] = useState("");
   const [scores, setScores] = useState<Record<string, number>>(
     Object.fromEntries(categories.map((c) => [c.label, 5]))
@@ -294,8 +296,8 @@ export default function QualityChecks() {
             <div key={category.label} className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm">{category.label}</label>
-                <span className={`text-sm font-bold ${scores[category.label] >= 8 ? "text-success" : scores[category.label] >= 5 ? "text-warning" : "text-destructive"}`}>
-                  {scores[category.label]}/10
+                <span className={`text-sm font-bold ${isDemo ? "text-muted-foreground" : scores[category.label] >= 8 ? "text-success" : scores[category.label] >= 5 ? "text-warning" : "text-destructive"}`}>
+                  {isDemo ? "••••" : `${scores[category.label]}/10`}
                 </span>
               </div>
               <Slider
@@ -312,10 +314,10 @@ export default function QualityChecks() {
 
         <div className="flex items-center justify-center gap-2 py-3">
           <span className="text-sm text-muted-foreground">Average Score:</span>
-          <span className={`text-3xl font-bold ${Number(avgScore) >= 8 ? "text-success" : Number(avgScore) >= 5 ? "text-warning" : "text-destructive"}`}>
-            {avgScore}
+          <span className={`text-3xl font-bold ${isDemo ? "text-muted-foreground" : Number(avgScore) >= 8 ? "text-success" : Number(avgScore) >= 5 ? "text-warning" : "text-destructive"}`}>
+            {isDemo ? "••••" : avgScore}
           </span>
-          <span className="text-sm text-muted-foreground">/10</span>
+          {!isDemo && <span className="text-sm text-muted-foreground">/10</span>}
         </div>
 
         <div className="space-y-2">
@@ -367,10 +369,10 @@ export default function QualityChecks() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className={`text-xl font-bold ${(score.overall_score || 0) >= 8 ? "text-success" : (score.overall_score || 0) >= 5 ? "text-warning" : "text-destructive"}`}>
-                        {(score.overall_score || 0).toFixed(1)}
+                      <span className={`text-xl font-bold ${isDemo ? "text-muted-foreground" : (score.overall_score || 0) >= 8 ? "text-success" : (score.overall_score || 0) >= 5 ? "text-warning" : "text-destructive"}`}>
+                        {isDemo ? "••••" : (score.overall_score || 0).toFixed(1)}
                       </span>
-                      <span className="text-xs text-muted-foreground">/10</span>
+                      {!isDemo && <span className="text-xs text-muted-foreground">/10</span>}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -381,10 +383,10 @@ export default function QualityChecks() {
                         <div key={cat.label} className="space-y-0.5">
                           <div className="flex items-center justify-between">
                             <span className="text-[11px] text-muted-foreground">{cat.label}</span>
-                            <span className={`text-[11px] font-bold ${val >= 8 ? "text-success" : val >= 5 ? "text-warning" : "text-destructive"}`}>{val}/10</span>
+                            <span className={`text-[11px] font-bold ${isDemo ? "text-muted-foreground" : val >= 8 ? "text-success" : val >= 5 ? "text-warning" : "text-destructive"}`}>{isDemo ? "••••" : `${val}/10`}</span>
                           </div>
                           <div className="h-2 w-full rounded-full bg-secondary/50 overflow-hidden">
-                            <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${val * 10}%` }} />
+                            <div className={`h-full rounded-full transition-all ${isDemo ? "bg-muted-foreground/30" : barColor}`} style={{ width: isDemo ? "50%" : `${val * 10}%` }} />
                           </div>
                         </div>
                       );

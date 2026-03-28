@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { isDemoUser } from "@/utils/demo";
 
 interface Fan {
   id: string;
@@ -292,12 +293,14 @@ function FanCard({
   onEdit,
   onMarkMessaged,
   isAdmin,
+  isDemo,
 }: {
   fan: Fan;
   modelColor: string;
   onEdit: (fan: Fan) => void;
   onMarkMessaged: (id: string) => void;
   isAdmin: boolean;
+  isDemo: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const contact = needsContact(fan.lastMessaged);
@@ -322,15 +325,15 @@ function FanCard({
             className="h-11 w-11 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5"
             style={{ backgroundColor: modelColor }}
           >
-            {fan.name ? fan.name.slice(0, 2).toUpperCase() : "??"}
+            {isDemo ? "??" : (fan.name ? fan.name.slice(0, 2).toUpperCase() : "??")}
           </div>
 
           {/* Main Info */}
           <div className="min-w-0 flex-1">
             {/* Row 1: Name + Username + Badges */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-base">{fan.name || "Unknown"}</span>
-              {fan.ofUsername && (
+              <span className="font-bold text-base">{isDemo ? `Fan #${fan.id.slice(-4).toUpperCase()}` : (fan.name || "Unknown")}</span>
+              {!isDemo && fan.ofUsername && (
                 <a
                   href={`https://onlyfans.com/${fan.ofUsername}`}
                   target="_blank"
@@ -358,7 +361,7 @@ function FanCard({
 
             {/* Row 2: Key stats at a glance */}
             <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
-              {isAdmin && (
+              {isAdmin && !isDemo && (
                 <>
                   <span className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-green-400" />
@@ -422,7 +425,7 @@ function FanCard({
 
           {/* Spending & Content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {isAdmin && (
+            {isAdmin && !isDemo && (
               <>
                 <InfoBox
                   icon={<DollarSign className="h-4 w-4 text-green-400" />}
@@ -559,6 +562,7 @@ function MiniInfo({ label, value, alert }: { label: string; value?: string; aler
 export default function FanProfiles() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const isDemo = isDemoUser(user?.role);
   const [fansByModel, setFansByModel] = useState<Record<string, Fan[]>>({});
   const [totalsByModel, setTotalsByModel] = useState<Record<string, number>>({});
   const [countsByModel, setCountsByModel] = useState<Record<string, number>>({});
@@ -698,12 +702,12 @@ export default function FanProfiles() {
       </div>
 
       {/* Summary Stats */}
-      <div className={`grid grid-cols-2 ${isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-3`}>
+      <div className={`grid grid-cols-2 ${isAdmin && !isDemo ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-3`}>
         <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
           <p className="text-[10px] text-muted-foreground uppercase">Total Fans</p>
           <p className="text-2xl font-bold">{totalFans}</p>
         </div>
-        {isAdmin && (
+        {isAdmin && !isDemo && (
           <>
             <div className="glass-card p-4 rounded-lg border border-border/20 text-center">
               <p className="text-[10px] text-muted-foreground uppercase">Lifetime Spend</p>
@@ -786,7 +790,7 @@ export default function FanProfiles() {
                   <h2 className="text-xl font-bold">{model}</h2>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span>{count} fans</span>
-                    {isAdmin && (
+                    {isAdmin && !isDemo && (
                       <>
                         <span>·</span>
                         <span className="text-green-400 font-semibold">${totalLifetime.toLocaleString()} lifetime</span>
@@ -835,6 +839,7 @@ export default function FanProfiles() {
                     onEdit={setEditingFan}
                     onMarkMessaged={markMessaged}
                     isAdmin={isAdmin}
+                    isDemo={isDemo}
                   />
                 ))}
               </div>

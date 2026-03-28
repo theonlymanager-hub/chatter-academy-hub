@@ -72,7 +72,7 @@ function AppContent() {
         <Route 
           path="/team" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <TeamMembers />
               </DashboardLayout>
@@ -82,7 +82,7 @@ function AppContent() {
         <Route 
           path="/tasks" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
               <DashboardLayout>
                 <Tasks />
               </DashboardLayout>
@@ -125,7 +125,7 @@ function AppContent() {
         <Route 
           path="/knowledge-base" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
               <DashboardLayout>
                 <KnowledgeBase />
               </DashboardLayout>
@@ -159,7 +159,7 @@ function AppContent() {
         <Route 
           path="/shifts" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <Shifts />
               </DashboardLayout>
@@ -169,7 +169,7 @@ function AppContent() {
         <Route 
           path="/messages" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <MassMessageCalendar />
               </DashboardLayout>
@@ -181,7 +181,7 @@ function AppContent() {
         <Route 
           path="/analytics" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <Analytics />
               </DashboardLayout>
@@ -205,7 +205,7 @@ function AppContent() {
         <Route 
           path="/strikes" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'demo']}>
               <DashboardLayout>
                 <StrikeTracker />
               </DashboardLayout>
@@ -217,7 +217,7 @@ function AppContent() {
         <Route 
           path="/content-ideas" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <ContentIdeas />
               </DashboardLayout>
@@ -229,7 +229,7 @@ function AppContent() {
         <Route 
           path="/scenarios" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
               <DashboardLayout>
                 <ScenarioBoard />
               </DashboardLayout>
@@ -241,7 +241,7 @@ function AppContent() {
         <Route 
           path="/ltv" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <LtvTracker />
               </DashboardLayout>
@@ -253,7 +253,7 @@ function AppContent() {
         <Route 
           path="/airbnb" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <AirbnbTracker />
               </DashboardLayout>
@@ -265,7 +265,7 @@ function AppContent() {
         <Route 
           path="/airbnb-schedule" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
               <DashboardLayout>
                 <AirbnbSchedule />
               </DashboardLayout>
@@ -277,7 +277,7 @@ function AppContent() {
         <Route 
           path="/scorecards" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'demo']}>
               <DashboardLayout>
                 <ChatterScorecard />
               </DashboardLayout>
@@ -289,7 +289,7 @@ function AppContent() {
         <Route 
           path="/customs" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <Customs />
               </DashboardLayout>
@@ -301,7 +301,7 @@ function AppContent() {
         <Route 
           path="/clients" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <ClientProfiles />
               </DashboardLayout>
@@ -311,7 +311,7 @@ function AppContent() {
         <Route 
           path="/fans" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
               <DashboardLayout>
                 <FanProfiles />
               </DashboardLayout>
@@ -323,7 +323,7 @@ function AppContent() {
         <Route 
           path="/users" 
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin', 'demo']}>
               <DashboardLayout>
                 <UserManagement />
               </DashboardLayout>
@@ -335,7 +335,7 @@ function AppContent() {
         <Route 
           path="/my-day" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <DailyChecklist />
               </DashboardLayout>
@@ -347,7 +347,7 @@ function AppContent() {
         <Route 
           path="/onboarding" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'demo']}>
               <DashboardLayout>
                 <ClientOnboarding />
               </DashboardLayout>

@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { modelColors } from "@/lib/mock-data";
 import { Plus, Trash2, Upload, X, Eye, AlertTriangle, CheckCircle, Loader2, ZoomIn } from "lucide-react";
+import { isDemoUser } from "@/utils/demo";
 import { toast } from "sonner";
 
 // Lightbox component for expanding screenshots
@@ -43,6 +44,7 @@ export default function ChatFeedback() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const canAdd = user?.role === "admin" || user?.role === "supervisor";
+  const isDemo = isDemoUser(user?.role);
 
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -230,11 +232,11 @@ export default function ChatFeedback() {
                 {entry.image_url && (
                 <div className="shrink-0 md:w-[320px] flex flex-col gap-2">
                   {getImages(entry.image_url).map((imgSrc, idx) => (
-                    <div key={idx} className="relative group cursor-pointer" onClick={() => setLightboxImage(imgSrc)}>
+                    <div key={idx} className="relative group cursor-pointer" onClick={() => !isDemo && setLightboxImage(imgSrc)}>
                       <img
                         src={imgSrc}
                         alt={`Chat screenshot ${idx + 1}`}
-                        className="rounded-lg border border-border/50 w-full object-contain max-h-[400px] transition-opacity group-hover:opacity-90"
+                        className={`rounded-lg border border-border/50 w-full object-contain max-h-[400px] transition-opacity group-hover:opacity-90 ${isDemo ? "blur-lg" : ""}`}
                       />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="bg-black/60 rounded-full p-2">
@@ -271,7 +273,7 @@ export default function ChatFeedback() {
                     )}
                   </div>
                   <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
-                    <p className="text-sm whitespace-pre-wrap">{entry.description}</p>
+                    <p className={`text-sm whitespace-pre-wrap ${isDemo ? "blur-sm select-none" : ""}`}>{isDemo ? "Chat content hidden in demo mode" : entry.description}</p>
                   </div>
                   {(isAdmin || user?.role === "supervisor") && (
                     <div className="flex gap-1">

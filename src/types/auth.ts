@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'supervisor' | 'data_entry' | 'chatter';
+export type UserRole = 'admin' | 'supervisor' | 'data_entry' | 'chatter' | 'demo';
 
 export interface User {
   id: string;
@@ -114,5 +114,24 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'view_chatter_tasks',
     'view_knowledge_base',
     'view_own_scores_only'
+  ],
+  demo: [
+    'view_dashboard',
+    'view_team',
+    'view_training',
+    'view_quality',
+    'view_calendar',
+    'view_shift_scheduler',
+    'view_mass_messages',
+    'view_analytics',
+    'view_profiles',
+    'view_fan_profiles',
+    'view_client_profiles',
+    'view_customs',
+    'view_chatter_tasks',
+    'view_knowledge_base',
+    'edit_schedules',
+    'edit_data',
+    'view_all_scores'
   ]
 };

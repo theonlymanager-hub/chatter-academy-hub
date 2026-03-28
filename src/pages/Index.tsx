@@ -13,6 +13,7 @@ import { platformApi, ACCOUNT_IDS, WeeklyEarnings } from "@/services/platformApi
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DailyCheckInBanner from "@/components/DailyCheckInBanner";
+import { isDemoUser } from "@/utils/demo";
 
 // ── constants ──────────────────────────────────────────────────────────────
 const MODELS = [
@@ -56,6 +57,7 @@ const timeAgo = (ts: number) => {
 const Index = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const isDemo = isDemoUser(user?.role);
 
   // ─ state ─
   const [weeklyEarnings, setWeeklyEarnings] = useState<Record<string, WeeklyEarnings>>({});
@@ -224,7 +226,7 @@ const Index = () => {
       {/* ── Quick Stats Row ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
         {[
-          { label: "Avg Weekly/Model", value: revenueLoading ? "…" : (revenueError && avgLtv === 0 ? "API Error" : fmt(avgLtv)), icon: TrendingUp, color: "text-violet-400", bg: "bg-violet-500/10" },
+          { label: "Avg Weekly/Model", value: isDemo ? "—" : (revenueLoading ? "…" : (revenueError && avgLtv === 0 ? "API Error" : fmt(avgLtv))), icon: TrendingUp, color: "text-violet-400", bg: "bg-violet-500/10" },
           { label: "Chatters On Shift", value: `${onlineCount}/${chattersOnly.length}`, icon: Activity, color: "text-amber-400", bg: "bg-amber-500/10" },
         ].map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="glass-card p-4 flex items-center gap-3">
@@ -263,7 +265,7 @@ const Index = () => {
 
               <div>
                 <p className="text-2xl font-bold" style={{ color }}>
-                  {revenueLoading ? "…" : hasError ? "API Error" : (revenue > 0 ? fmt(revenue) : "$0")}
+                  {isDemo ? "—" : (revenueLoading ? "…" : hasError ? "API Error" : (revenue > 0 ? fmt(revenue) : "$0"))}
                 </p>
                 <p className="text-[11px] text-muted-foreground">weekly revenue (gross)</p>
               </div>
@@ -271,13 +273,13 @@ const Index = () => {
               {/* Progress bar */}
               <div>
                 <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                  <span>{pct}% of target</span>
-                  <span>{fmt(WEEKLY_TARGET)}</span>
+                  <span>{isDemo ? "—" : `${pct}% of target`}</span>
+                  <span>{isDemo ? "—" : fmt(WEEKLY_TARGET)}</span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${pct}%`, backgroundColor: color }}
+                    style={{ width: isDemo ? "0%" : `${pct}%`, backgroundColor: color }}
                   />
                 </div>
               </div>
@@ -285,11 +287,11 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div>
                   <p className="text-muted-foreground">Tips</p>
-                  <p className="font-medium">{revenueLoading ? "…" : (tipsRev > 0 ? fmt(tipsRev) : "$0")}</p>
+                  <p className="font-medium">{isDemo ? "—" : (revenueLoading ? "…" : (tipsRev > 0 ? fmt(tipsRev) : "$0"))}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">PPV/Messages</p>
-                  <p className="font-medium">{revenueLoading ? "…" : (messagesRev > 0 ? fmt(messagesRev) : "$0")}</p>
+                  <p className="font-medium">{isDemo ? "—" : (revenueLoading ? "…" : (messagesRev > 0 ? fmt(messagesRev) : "$0"))}</p>
                 </div>
               </div>
             </div>
@@ -346,7 +348,7 @@ const Index = () => {
                       {qs.chatter_name.slice(0, 2).toUpperCase()}
                     </div>
                     <span className="text-sm flex-1 truncate">{qs.chatter_name}</span>
-                    <span className={`text-sm font-bold ${scoreColor}`}>{qs.overall_score.toFixed(1)}</span>
+                    <span className={`text-sm font-bold ${isDemo ? "text-muted-foreground" : scoreColor}`}>{isDemo ? "••••" : qs.overall_score.toFixed(1)}</span>
                     <span className="text-[10px] text-muted-foreground">
                       {new Date(qs.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </span>
@@ -375,7 +377,7 @@ const Index = () => {
       </div>
 
       {/* ── Content Drive Links ─────────────────────────────────────────── */}
-      <div className="glass-card p-5 space-y-3">
+      {!isDemo && <div className="glass-card p-5 space-y-3">
         <div className="flex items-center gap-2">
           <FolderOpen className="h-4 w-4 text-primary" />
           <h2 className="font-semibold text-sm">Content Drives</h2>
@@ -410,7 +412,7 @@ const Index = () => {
             );
           })}
         </div>
-      </div>
+      </div>}
     </div>
   );
 };

@@ -43,72 +43,72 @@ const getAllSections = () => [
   {
     label: "Main",
     items: [
-      { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
     label: "Chatting Operations",
     items: [
-      { title: "Quality Checks", url: "/quality", icon: Star, roles: ['admin', 'supervisor', 'data_entry'] },
-      { title: "Strike Tracker", url: "/strikes", icon: ShieldAlert, roles: ['admin', 'supervisor'] },
-      { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Chat Feedback", url: "/chat-feedback", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Quality Checks", url: "/quality", icon: Star, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
+      { title: "Strike Tracker", url: "/strikes", icon: ShieldAlert, roles: ['admin', 'supervisor', 'demo'] },
+      { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Chat Feedback", url: "/chat-feedback", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
     label: "Ideas & Strategies",
     items: [
-      { title: "Game Strategies", url: "/content-ideas", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Game Strategies", url: "/content-ideas", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
     label: "Scheduling",
     items: [
-      { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Mass Messages / PPV", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "🏠 Airbnb Schedule", url: "/airbnb-schedule", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Mass Messages / PPV", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "🏠 Airbnb Schedule", url: "/airbnb-schedule", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
     label: "Team",
     items: [
-      { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Chatter Tasks", url: "/tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Chatter Tasks", url: "/tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
     label: "Profiles",
     items: [
-      { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry'] },
+      { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
     ],
   },
   {
     label: "Knowledge & Training",
     items: [
-      { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Training Quiz", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Training Videos", url: "/training-videos", icon: Video, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
-      { title: "Training Results", url: "/training-results", icon: Trophy, roles: ['admin', 'supervisor'] },
+      { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Training Quiz", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Training Videos", url: "/training-videos", icon: Video, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Training Results", url: "/training-results", icon: Trophy, roles: ['admin', 'supervisor', 'demo'] },
     ],
   },
   {
     label: "🚀 Operations",
     items: [
-      { title: "Client Onboarding", url: "/onboarding", icon: Rocket, roles: ['admin', 'supervisor'] },
+      { title: "Client Onboarding", url: "/onboarding", icon: Rocket, roles: ['admin', 'supervisor', 'demo'] },
     ],
   },
   {
     label: "Other",
     items: [
-      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
     label: "Management",
     items: [
-      { title: "User Management", url: "/users", icon: Settings, roles: ['admin'] },
+      { title: "User Management", url: "/users", icon: Settings, roles: ['admin', 'demo'] },
     ],
   },
 ];

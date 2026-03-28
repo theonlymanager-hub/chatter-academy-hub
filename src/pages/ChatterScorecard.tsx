@@ -10,6 +10,7 @@ import {
   MessageSquare, DollarSign, Calendar, AlertTriangle,
   ThumbsUp, ThumbsDown, Save, Edit2, X,
 } from "lucide-react";
+import { isDemoUser } from "@/utils/demo";
 
 // ── Chatter definitions ────────────────────────────────────────────────────
 const CHATTERS = [
@@ -66,6 +67,7 @@ function getScoreLabel(score: number): string {
 export default function ChatterScorecard() {
   const { user } = useAuth();
   const canEdit = user?.role === "admin" || user?.role === "supervisor";
+  const isDemo = isDemoUser(user?.role);
 
   const [allScores, setAllScores] = useState<Record<string, QualityRecord[]>>({});
   const [profileData, setProfileData] = useState<Record<string, ProfileData>>({});
@@ -223,18 +225,18 @@ export default function ChatterScorecard() {
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Latest QC Score</p>
                       <div className="flex items-baseline gap-2 mt-1">
-                        <span className={`text-4xl font-extrabold ${latestScore !== null ? getScoreColor(latestScore) : "text-muted-foreground/30"}`}>
-                          {latestScore !== null ? latestScore.toFixed(1) : "—"}
+                        <span className={`text-4xl font-extrabold ${isDemo ? "text-muted-foreground" : latestScore !== null ? getScoreColor(latestScore) : "text-muted-foreground/30"}`}>
+                          {isDemo ? "••••" : (latestScore !== null ? latestScore.toFixed(1) : "—")}
                         </span>
-                        <span className="text-sm text-muted-foreground">/10</span>
-                        {trend !== null && trend !== 0 && (
+                        {!isDemo && <span className="text-sm text-muted-foreground">/10</span>}
+                        {!isDemo && trend !== null && trend !== 0 && (
                           <span className={`flex items-center text-xs ml-1 ${trend > 0 ? "text-emerald-400" : "text-red-400"}`}>
                             {trend > 0 ? <TrendingUp className="h-3 w-3 mr-0.5" /> : <TrendingDown className="h-3 w-3 mr-0.5" />}
                             {trend > 0 ? "+" : ""}{trend.toFixed(1)}
                           </span>
                         )}
                       </div>
-                      {latestScore !== null && (
+                      {!isDemo && latestScore !== null && (
                         <Badge variant="outline" className={`text-[10px] mt-1 ${getScoreColor(latestScore)}`}>
                           {getScoreLabel(latestScore)}
                         </Badge>
@@ -242,8 +244,8 @@ export default function ChatterScorecard() {
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Weekly Avg</p>
-                      <span className={`text-2xl font-bold ${weeklyAvg !== null ? getScoreColor(weeklyAvg) : "text-muted-foreground/30"}`}>
-                        {weeklyAvg !== null ? weeklyAvg.toFixed(1) : "—"}
+                      <span className={`text-2xl font-bold ${isDemo ? "text-muted-foreground" : weeklyAvg !== null ? getScoreColor(weeklyAvg) : "text-muted-foreground/30"}`}>
+                        {isDemo ? "••••" : (weeklyAvg !== null ? weeklyAvg.toFixed(1) : "—")}
                       </span>
                     </div>
                   </div>
@@ -306,15 +308,16 @@ export default function ChatterScorecard() {
                             <div
                               className="h-full rounded-full transition-all"
                               style={{
-                                width: val != null ? `${val * 10}%` : "0%",
-                                backgroundColor: val != null
+                                width: isDemo ? "50%" : (val != null ? `${val * 10}%` : "0%"),
+                                backgroundColor: isDemo ? "#666"
+                                  : val != null
                                   ? val >= 8 ? "#34d399" : val >= 6 ? "#fbbf24" : val >= 4 ? "#fb923c" : "#f87171"
                                   : "#666",
                               }}
                             />
                           </div>
-                          <span className={`text-xs font-bold w-6 text-right ${val != null ? getScoreColor(val) : "text-muted-foreground"}`}>
-                            {val ?? "—"}
+                          <span className={`text-xs font-bold w-6 text-right ${isDemo ? "text-muted-foreground" : val != null ? getScoreColor(val) : "text-muted-foreground"}`}>
+                            {isDemo ? "••••" : (val ?? "—")}
                           </span>
                         </div>
                       );
