@@ -33,7 +33,6 @@ const initialTasks: WeeklyTask[] = [
   { id: "wt12", title: "Complete Willow mass message script", assignee: "KC", completed: false, category: "Script" },
   { id: "wt13", title: "Review and update whale profiles", assignee: "KC", completed: false, category: "Script" },
   { id: "wt14", title: "Hit $400 daily revenue target", assignee: "KC", completed: false, category: "Revenue" },
-  { id: "wt15", title: "Complete Lucinda upsell script", assignee: "KC", completed: true, category: "Script" },
 ];
 
 const categoryColors: Record<string, string> = {

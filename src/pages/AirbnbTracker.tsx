@@ -31,7 +31,7 @@ interface AirbnbBooking {
 }
 
 const STORAGE_KEY = "airbnb-tracker-v1";
-const MODELS = ["Ashley Morris", "Lucinda Bleu", "Izzy", "Willow"];
+const MODELS = ["Ashley Morris", "Izzy", "Willow"];
 const ITEM_TYPES = [
   { value: "custom", label: "Custom Order", emoji: "🎯" },
   { value: "feed", label: "Feed Post", emoji: "📸" },

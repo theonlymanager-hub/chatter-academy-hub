@@ -12,7 +12,6 @@ export const config = {
   // Connected model accounts
   models: [
     { id: 'izzie', name: 'Izzie', handle: '@myizzyreal', type: '' },
-    { id: 'lucinda', name: 'Lucinda', handle: '@lucibleu', type: '' },
     { id: 'willow', name: 'Willow', handle: '@ginger5foot', type: '' },
     { id: 'ashley', name: 'Ashley Morris', handle: '@ashleymorris', type: '' },
   ],

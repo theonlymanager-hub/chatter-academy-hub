@@ -9,7 +9,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { teamMembers, shiftSchedule, chatterColors, modelColors, chattersOnLeave } from "@/lib/mock-data";
-import { platformApi, ACCOUNT_IDS, EarningStats } from "@/services/platformApi";
+import { platformApi, ACCOUNT_IDS, WeeklyEarnings } from "@/services/platformApi";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DailyCheckInBanner from "@/components/DailyCheckInBanner";
@@ -19,14 +19,12 @@ const MODELS = [
   { key: "ashley", name: "Ashley", color: "#f472b6", gradient: "from-pink-500/20 to-pink-900/10", border: "border-pink-500/30" },
   { key: "izzie", name: "Izzy", color: "#a78bfa", gradient: "from-violet-500/20 to-violet-900/10", border: "border-violet-500/30" },
   { key: "willow", name: "Willow", color: "#34d399", gradient: "from-emerald-500/20 to-emerald-900/10", border: "border-emerald-500/30" },
-  { key: "lucinda", name: "Lucinda", color: "#fbbf24", gradient: "from-amber-500/20 to-amber-900/10", border: "border-amber-500/30" },
 ] as const;
 
 const DRIVE_LINKS: Record<string, string | null> = {
   Izzy: "https://drive.google.com/drive/folders/1gsSiL3gOO4XVU7OgAjDK710qb6A5zrJ4",
   Ashley: "https://drive.google.com/drive/folders/1qkJvhJCEoN9Zu0_TFlwsITiDpDchl7WS",
   Willow: "https://drive.google.com/drive/folders/1gFzP99TBks2RiJIwGaLwsiDyxuUHPpzP",
-  Lucinda: null, // coming next week
 };
 
 const WEEKLY_TARGET = 5000; // revenue target per model
@@ -60,8 +58,9 @@ const Index = () => {
   const isAdmin = user?.role === "admin";
 
   // ─ state ─
-  const [earningStats, setEarningStats] = useState<Record<string, EarningStats | null>>({});
+  const [weeklyEarnings, setWeeklyEarnings] = useState<Record<string, WeeklyEarnings>>({});
   const [revenueLoading, setRevenueLoading] = useState(true);
+  const [revenueError, setRevenueError] = useState<string | null>(null);
   const [qualityScores, setQualityScores] = useState<QualityScore[]>([]);
   const [pendingCustoms, setPendingCustoms] = useState(0);
   const [teamActivity, setTeamActivity] = useState<TeamActivityEntry[]>([]);
@@ -124,16 +123,27 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [user]);
 
-  // ─ fetch earnings ─
+  // ─ fetch weekly earnings ─
   useEffect(() => {
     (async () => {
       const apiKey = platformApi.getApiKey();
-      if (!apiKey) { setRevenueLoading(false); return; }
+      if (!apiKey) { setRevenueLoading(false); setRevenueError("No API key"); return; }
       try {
-        const stats = await platformApi.getAllEarningStats();
-        setEarningStats(stats);
-      } catch (e) { console.error("Failed to fetch earnings:", e); }
-      finally { setRevenueLoading(false); }
+        console.log("[Dashboard] Fetching weekly earnings...");
+        const weekly = await platformApi.getAllWeeklyEarnings();
+        setWeeklyEarnings(weekly);
+        // Check if any had errors
+        const errors = Object.entries(weekly).filter(([, w]) => w.error);
+        if (errors.length > 0) {
+          setRevenueError(`API errors: ${errors.map(([n, w]) => `${n}: ${w.error}`).join(", ")}`);
+        }
+        console.log("[Dashboard] Weekly earnings loaded:", weekly);
+      } catch (e) {
+        console.error("Failed to fetch earnings:", e);
+        setRevenueError(String(e));
+      } finally {
+        setRevenueLoading(false);
+      }
     })();
   }, []);
 
@@ -192,16 +202,13 @@ const Index = () => {
   }, []);
 
   // ─ derived ─
-  const totalRevenue = Object.values(earningStats).reduce((s, e) => s + (e?.total || 0), 0);
+  const totalWeeklyGross = Object.values(weeklyEarnings).reduce((s, w) => s + (w?.grossTotal || 0), 0);
   const chattersOnly = teamMembers.filter((m) => m.category === "chatter");
   const onlineCount = liveAttendance.length;
 
-  // Average LTV placeholder — subscriptions / subscribers count (rough)
-  const subscriberCount = Object.values(earningStats).reduce((s, e) => {
-    // Use subscriptions as proxy until subscriber counts are fetched
-    return s + (e ? Math.max(1, Math.round(e.subscriptions / 10)) : 0);
-  }, 0);
-  const avgLtv = subscriberCount > 0 ? totalRevenue / subscriberCount : 0;
+  // Average LTV — total weekly gross / number of models as a rough per-model average
+  const activeModels = Object.values(weeklyEarnings).filter(w => w && w.grossTotal > 0).length;
+  const avgLtv = activeModels > 0 ? totalWeeklyGross / activeModels : 0;
 
   // ── render ───────────────────────────────────────────────────────────────
   return (
@@ -217,7 +224,7 @@ const Index = () => {
       {/* ── Quick Stats Row ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
         {[
-          { label: "Average LTV", value: revenueLoading ? "…" : fmt(avgLtv), icon: TrendingUp, color: "text-violet-400", bg: "bg-violet-500/10" },
+          { label: "Avg Weekly/Model", value: revenueLoading ? "…" : (revenueError && avgLtv === 0 ? "API Error" : fmt(avgLtv)), icon: TrendingUp, color: "text-violet-400", bg: "bg-violet-500/10" },
           { label: "Chatters On Shift", value: `${onlineCount}/${chattersOnly.length}`, icon: Activity, color: "text-amber-400", bg: "bg-amber-500/10" },
         ].map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="glass-card p-4 flex items-center gap-3">
@@ -235,9 +242,11 @@ const Index = () => {
       {/* ── Model Revenue Cards ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {MODELS.map(({ key, name, color, gradient, border }) => {
-          const stats = earningStats[key];
-          const revenue = stats?.total || 0;
-          const subs = stats?.subscriptions || 0;
+          const weekly = weeklyEarnings[key];
+          const revenue = weekly?.grossTotal || 0;
+          const tipsRev = weekly?.tips || 0;
+          const messagesRev = weekly?.messages || 0;
+          const hasError = weekly?.error;
           const pct = Math.min(100, Math.round((revenue / WEEKLY_TARGET) * 100));
           return (
             <div key={key} className={`rounded-xl border ${border} bg-gradient-to-br ${gradient} p-5 space-y-3`}>
@@ -249,11 +258,14 @@ const Index = () => {
                   {name.slice(0, 2).toUpperCase()}
                 </div>
                 <span className="font-semibold text-sm">{name}</span>
+                {hasError && <AlertCircle className="h-3.5 w-3.5 text-red-400" title={hasError} />}
               </div>
 
               <div>
-                <p className="text-2xl font-bold" style={{ color }}>{revenueLoading ? "…" : (revenue > 0 ? fmt(revenue) : "$0")}</p>
-                <p className="text-[11px] text-muted-foreground">weekly revenue</p>
+                <p className="text-2xl font-bold" style={{ color }}>
+                  {revenueLoading ? "…" : hasError ? "API Error" : (revenue > 0 ? fmt(revenue) : "$0")}
+                </p>
+                <p className="text-[11px] text-muted-foreground">weekly revenue (gross)</p>
               </div>
 
               {/* Progress bar */}
@@ -272,12 +284,12 @@ const Index = () => {
 
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div>
-                  <p className="text-muted-foreground">Subs Rev</p>
-                  <p className="font-medium">{revenueLoading ? "…" : (subs > 0 ? fmt(subs) : "$0")}</p>
+                  <p className="text-muted-foreground">Tips</p>
+                  <p className="font-medium">{revenueLoading ? "…" : (tipsRev > 0 ? fmt(tipsRev) : "$0")}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">LTV</p>
-                  <p className="font-medium">{revenueLoading ? "…" : (stats && stats.total > 0 ? fmt(stats.total / Math.max(1, Math.round(stats.subscriptions / 10))) : "$0")}</p>
+                  <p className="text-muted-foreground">PPV/Messages</p>
+                  <p className="font-medium">{revenueLoading ? "…" : (messagesRev > 0 ? fmt(messagesRev) : "$0")}</p>
                 </div>
               </div>
             </div>

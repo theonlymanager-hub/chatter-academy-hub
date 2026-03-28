@@ -8,7 +8,7 @@ export const ACCOUNT_IDS = {
   ashley: 'acct_71750a6057e34776b9b6ca0903b5ee1a',
   izzie: 'acct_6140bb9805e9416a928d4d7a788f3939',
   willow: 'acct_f968a6be8f2041dcb9d52f8113f2d258',
-  lucinda: 'acct_62e65e4c2c0740b386cde14811762f4d',
+
 } as const;
 
 // API key - fallback to built-in key if not set in localStorage
@@ -70,6 +70,56 @@ export interface EarningStats {
   posts: number;
   referrals: number;
   streams: number;
+}
+
+// Parsed weekly earnings from the earning-statistics endpoint
+export interface WeeklyEarnings {
+  grossTotal: number;
+  netTotal: number;
+  tips: number;       // gross
+  messages: number;   // gross (chat_messages / PPV)
+  error?: string;
+}
+
+// Helper: get the start of the current week (Monday 00:00 UTC)
+function getWeekStartTimestamp(): number {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sun, 1=Mon, ...
+  const diff = day === 0 ? 6 : day - 1; // days since Monday
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - diff));
+  return Math.floor(monday.getTime() / 1000);
+}
+
+// Parse the raw earning-statistics response into weekly earnings
+function parseWeeklyEarnings(raw: any): WeeklyEarnings {
+  const data = raw?.data || raw;
+  const months = data?.list?.months || {};
+  const weekStart = getWeekStartTimestamp();
+
+  let grossTotal = 0;
+  let netTotal = 0;
+  let tips = 0;
+  let messages = 0;
+
+  for (const [, categories] of Object.entries(months)) {
+    const cats = categories as Record<string, any>;
+    for (const [catName, entries] of Object.entries(cats)) {
+      if (!Array.isArray(entries)) continue;
+      for (const entry of entries) {
+        if (entry.time >= weekStart) {
+          grossTotal += entry.gross || 0;
+          netTotal += entry.net || 0;
+          if (catName === 'tips') {
+            tips += entry.gross || 0;
+          } else if (catName === 'chat_messages') {
+            messages += entry.gross || 0;
+          }
+        }
+      }
+    }
+  }
+
+  return { grossTotal, netTotal, tips, messages };
 }
 
 export interface Fan {
@@ -213,13 +263,16 @@ export const platformApi = {
     return results;
   },
 
-  // Earning Statistics
+  // Earning Statistics (raw — returns the full API response)
   async getEarningStats(accountId: string): Promise<EarningStats | null> {
     try {
       const response = await fetch(`${API_BASE}/${accountId}/payouts/earning-statistics`, {
         headers: getHeaders(),
       });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.error(`[OF API] earning-statistics ${accountId} HTTP ${response.status}`);
+        return null;
+      }
       return response.json();
     } catch (e) {
       console.error('Failed to fetch earning stats:', e);
@@ -233,6 +286,37 @@ export const platformApi = {
     for (const [name, id] of Object.entries(ACCOUNT_IDS)) {
       results[name] = await this.getEarningStats(id);
     }
+    return results;
+  },
+
+  // Weekly Earnings — parsed from earning-statistics
+  async getWeeklyEarnings(accountId: string): Promise<WeeklyEarnings> {
+    try {
+      const response = await fetch(`${API_BASE}/${accountId}/payouts/earning-statistics`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) {
+        console.error(`[OF API] weekly earnings ${accountId} HTTP ${response.status}`);
+        return { grossTotal: 0, netTotal: 0, tips: 0, messages: 0, error: `HTTP ${response.status}` };
+      }
+      const raw = await response.json();
+      console.log(`[OF API] Raw earning-statistics for ${accountId}:`, JSON.stringify(raw).slice(0, 500));
+      const weekly = parseWeeklyEarnings(raw);
+      console.log(`[OF API] Parsed weekly for ${accountId}:`, weekly);
+      return weekly;
+    } catch (e) {
+      console.error(`[OF API] Failed weekly earnings ${accountId}:`, e);
+      return { grossTotal: 0, netTotal: 0, tips: 0, messages: 0, error: String(e) };
+    }
+  },
+
+  // Get weekly earnings for all accounts
+  async getAllWeeklyEarnings(): Promise<Record<string, WeeklyEarnings>> {
+    const results: Record<string, WeeklyEarnings> = {};
+    for (const [name, id] of Object.entries(ACCOUNT_IDS)) {
+      results[name] = await this.getWeeklyEarnings(id);
+    }
+    console.log('[OF API] All weekly earnings:', results);
     return results;
   },
 

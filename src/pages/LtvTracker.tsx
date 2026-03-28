@@ -27,7 +27,7 @@ interface OverallEntry {
 }
 
 const STORAGE_KEY = "ltv-tracker-v1";
-const MODELS = ["Ashley Morris", "Lucinda Bleu", "Izzy", "Willow"];
+const MODELS = ["Ashley Morris", "Izzy", "Willow"];
 const LTV_TARGET = 7.5; // $7-8 target, use midpoint
 
 export default function LtvTracker() {

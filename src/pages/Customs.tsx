@@ -25,13 +25,12 @@ interface CustomOrder {
 
 type FilterStatus = "all" | "pending" | "complete";
 
-const MODELS = ["Ashley", "Willow", "Izzie", "Lucinda"];
+const MODELS = ["Ashley", "Willow", "Izzie"];
 
 const modelColorMap: Record<string, string> = {
   "Ashley": modelColors["Ashley Morris"] || "330 70% 60%",
   "Willow": modelColors["Willow"] || "160 84% 39%",
   "Izzie": modelColors["Izzy"] || "0 72% 55%",
-  "Lucinda": modelColors["Lucinda Bleu"] || "270 60% 60%",
 };
 
 const statusColors: Record<string, string> = {

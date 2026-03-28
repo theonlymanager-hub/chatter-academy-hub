@@ -41,12 +41,11 @@ const CHATTERS = {
 };
 
 // Models
-const MODELS = ['Izzie', 'Lucinda', 'Willow', 'Ashley'];
+const MODELS = ['Izzie', 'Willow', 'Ashley'];
 
 // Today's shifts - 1 chatter per model per shift for attribution
 const mockShifts: ChatterShift[] = [
   { chatterId: CHATTERS.marc.id, chatterName: CHATTERS.marc.name, model: 'Izzie', startTime: '2026-03-09T06:00:00', endTime: '2026-03-09T14:00:00', messageRevenue: 245.50, messageCount: 42, conversionRate: 12.5 },
-  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, model: 'Lucinda', startTime: '2026-03-09T14:00:00', endTime: '2026-03-09T22:00:00', messageRevenue: 189.20, messageCount: 38, conversionRate: 10.2 },
   { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, model: 'Willow', startTime: '2026-03-09T06:00:00', endTime: '2026-03-09T14:00:00', messageRevenue: 312.00, messageCount: 56, conversionRate: 15.8 },
   { chatterId: CHATTERS.kc.id, chatterName: CHATTERS.kc.name, model: 'Ashley', startTime: '2026-03-09T22:00:00', endTime: '2026-03-10T06:00:00', messageRevenue: 178.90, messageCount: 31, conversionRate: 9.4 },
 ];
@@ -54,7 +53,7 @@ const mockShifts: ChatterShift[] = [
 // Monthly performance data
 const mockPerformance: ChatterPerformance[] = [
   { chatterId: CHATTERS.marc.id, chatterName: CHATTERS.marc.name, totalRevenue: 4520.00, avgRevenuePerShift: 301.33, shiftsWorked: 15, qualityScore: 92, topModel: 'Izzie' },
-  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, totalRevenue: 3890.50, avgRevenuePerShift: 259.37, shiftsWorked: 15, qualityScore: 88, topModel: 'Lucinda' },
+  { chatterId: CHATTERS.jemimah.id, chatterName: CHATTERS.jemimah.name, totalRevenue: 3890.50, avgRevenuePerShift: 259.37, shiftsWorked: 15, qualityScore: 88, topModel: 'Izzie' },
   { chatterId: CHATTERS.jane.id, chatterName: CHATTERS.jane.name, totalRevenue: 3245.20, avgRevenuePerShift: 216.35, shiftsWorked: 15, qualityScore: 82, topModel: 'Willow' },
   { chatterId: CHATTERS.kc.id, chatterName: CHATTERS.kc.name, totalRevenue: 2890.00, avgRevenuePerShift: 192.67, shiftsWorked: 15, qualityScore: 78, topModel: 'Ashley' },
   { chatterId: CHATTERS.kenneth.id, chatterName: CHATTERS.kenneth.name, totalRevenue: 2650.00, avgRevenuePerShift: 176.67, shiftsWorked: 15, qualityScore: 75, topModel: 'Izzie' },

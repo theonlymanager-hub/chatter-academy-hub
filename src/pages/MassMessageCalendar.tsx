@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-const modelNames = ["Izzy", "Willow", "Lucinda Bleu", "Ashley Morris"];
+const modelNames = ["Izzy", "Willow", "Ashley Morris"];
 const messageTypes = ["Mass Message", "PPV", "Prompt"] as const;
 const fanSegments = ["All Fans", "New Subs (< 7 days)", "High Spenders ($100+)", "Inactive (no msg 7+ days)", "Whales Only", "Engaged (5+ replies)"] as const;
 const ppvPricePoints = ["", "$3", "$5", "$7", "$10", "$15", "$20", "$25", "$35", "$50"] as const;

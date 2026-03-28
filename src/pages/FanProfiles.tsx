@@ -61,13 +61,12 @@ function dbToFan(row: any): Fan {
   };
 }
 
-const MODELS = ["Ashley", "Willow", "Izzie", "Lucinda"];
+const MODELS = ["Ashley", "Willow", "Izzie"];
 
 const MODEL_COLORS: Record<string, string> = {
   Ashley: "hsl(330, 70%, 60%)",
   Willow: "hsl(160, 84%, 39%)",
   Izzie: "hsl(0, 72%, 55%)",
-  Lucinda: "hsl(270, 60%, 60%)",
 };
 
 const FAN_TYPES = ["Unknown", "Submissive", "Dominant", "Switch", "Vanilla", "Roleplay", "Voyeur", "Generous Tipper", "Whale Potential"];

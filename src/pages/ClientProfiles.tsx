@@ -72,27 +72,6 @@ const models: ModelProfile[] = [
       "Rainy day vibes",
     ],
   },
-  {
-    id: "4",
-    name: "Lucinda Bleu",
-    username: "lucibleu",
-    perceivedAge: 18,
-    location: "Denver, Colorado",
-    niche: "Goth / alternative",
-    background:
-      "Dark aesthetic girl in Denver. Vinyl collector, lives for live music and late nights. Sketches, vintage shops, dark bars. Alt fashion, piercings, moody energy.",
-    contentStyle: "Dark/moody, alternative fashion",
-    keyFacts: [
-      "Lives in Denver, Colorado",
-      "Into The Cure, Bauhaus, Siouxsie",
-      "Gets piercings regularly",
-      "Goes to gigs on Colfax / RiNo district",
-      "Sketches by candlelight",
-      "Vintage shopping in thrift stores",
-      "Dark bars and dive bars",
-      "Has a nose ring and multiple ear piercings",
-    ],
-  },
 ];
 
 export default function ClientProfiles() {

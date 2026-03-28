@@ -27,7 +27,7 @@ interface Scenario {
 }
 
 const STORAGE_KEY = "scenario-board-v5";
-const MODELS = ["Ashley Morris", "Lucinda Bleu", "Izzy", "Willow"];
+const MODELS = ["Ashley Morris", "Izzy", "Willow"];
 const CATEGORIES = [
   { value: "casual", label: "Casual/Daytime", emoji: "☀️" },
   { value: "flirty", label: "Flirty", emoji: "😏" },

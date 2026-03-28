@@ -494,7 +494,6 @@ export default function KnowledgeBase() {
               <div className="space-y-2">
                 {[
                   { model: "Ashley 🎓", persona: "College/Shy", tone: "Tone DOWN forward messages — she's shy, not aggressive" },
-                  { model: "Lucinda 🖤", persona: "Goth", tone: "Low, slow, mysterious" },
                   { model: "Willow/Mia 🔥", persona: "Redhead", tone: "Breathy, teasing, slight rasp" },
                   { model: "Izzy 🎖️", persona: "Military", tone: "Tough, confident, commanding" },
                   { model: "Olivia 🍳", persona: "Cooking/Homey", tone: "Warm, soft, friendly" },

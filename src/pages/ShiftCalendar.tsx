@@ -16,7 +16,6 @@ const modelAccounts = [
   { code: "AS", name: "Ashley Morris", color: modelColors["Ashley Morris"] || "330 70% 60%" },
   { code: "WI", name: "Willow", color: modelColors["Willow"] || "160 84% 39%" },
   { code: "IZ", name: "Izzy", color: modelColors["Izzy"] || "0 72% 55%" },
-  { code: "LU", name: "Lucinda Bleu", color: modelColors["Lucinda Bleu"] || "270 60% 60%" },
 ];
 
 const ModelBadges = () => (

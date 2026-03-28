@@ -88,7 +88,6 @@ export const chatterColors: Record<string, string> = {
 export const modelColors: Record<string, string> = {
   "Izzy": "0 72% 55%",          // red
   "Willow": "160 84% 39%",      // emerald
-  "Lucinda Bleu": "270 60% 60%", // purple
   "Ashley Morris": "330 70% 60%", // pink
 };
 
@@ -173,7 +172,7 @@ export const tasks: Task[] = [
   // Add real tasks here
 ];
 
-// Chatter shift schedule — all chatters handle all 4 models (Izzie, Lucinda, Willow, Ashley)
+// Chatter shift schedule — all chatters handle all 3 models (Izzie, Willow, Ashley)
 // Shifts: Morning 6AM-2PM, Afternoon 2PM-10PM, Night 10PM-6AM (all UK time)
 // Generate for all 7 days (same schedule daily, no formal day-offs)
 // Shift schedule — confirmed with Zar 2026-03-11
@@ -198,7 +197,7 @@ export const massMessages: MassMessage[] = [
   
   // TUESDAY March 10
   { id: "3", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-10", dayOfWeek: "Tuesday", messagePreview: "Woke up feeling extra playful today...", ppvTitle: "Morning stretch", ppvPrice: 12 },
-  { id: "4", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-10", dayOfWeek: "Tuesday", messagePreview: "The darkness calls...", ppvTitle: "Candlelit session", ppvPrice: 15 },
+
   
   // WEDNESDAY March 11
   { id: "5", modelName: "Izzy", theme: "Military", date: "2026-03-11", dayOfWeek: "Wednesday", messagePreview: "Post-workout shower time...", ppvTitle: "Shower clean-up", ppvPrice: 15 },
@@ -206,13 +205,13 @@ export const massMessages: MassMessage[] = [
   
   // THURSDAY March 12
   { id: "7", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-12", dayOfWeek: "Thursday", messagePreview: "New lingerie just arrived...", ppvTitle: "Try-on session", ppvPrice: 15 },
-  { id: "8", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-12", dayOfWeek: "Thursday", messagePreview: "Late night thoughts...", ppvTitle: "Moonlit reveal", ppvPrice: 12 },
+
   
   // FRIDAY March 13
   { id: "9", modelName: "Izzy", theme: "Military", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "At ease soldier... time to relax", ppvTitle: "Off-duty special", ppvPrice: 18 },
   { id: "10", modelName: "Ashley Morris", theme: "College", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "TGIF! No classes tomorrow...", ppvTitle: "Weekend kickoff", ppvPrice: 15 },
   { id: "11", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "Friday vibes hitting different...", ppvTitle: "Happy hour tease", ppvPrice: 12 },
-  { id: "12", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-13", dayOfWeek: "Friday", messagePreview: "Friday the 13th special...", ppvTitle: "Unlucky for you", ppvPrice: 13 },
+
   
   // SATURDAY March 14
   { id: "13", modelName: "Izzy", theme: "Military", date: "2026-03-14", dayOfWeek: "Saturday", messagePreview: "Weekend warrior mode...", ppvTitle: "Training montage", ppvPrice: 15 },
@@ -220,5 +219,5 @@ export const massMessages: MassMessage[] = [
   
   // SUNDAY March 15
   { id: "15", modelName: "Willow", theme: "Playful Redhead", date: "2026-03-15", dayOfWeek: "Sunday", messagePreview: "Sunday funday...", ppvTitle: "Rest day relaxation", ppvPrice: 12 },
-  { id: "16", modelName: "Lucinda Bleu", theme: "Goth Aesthetic", date: "2026-03-15", dayOfWeek: "Sunday", messagePreview: "Sundays are for self-care...", ppvTitle: "Bath time ritual", ppvPrice: 15 },
+
 ];

@@ -54,25 +54,22 @@ interface AirbnbBooking {
 
 const STORAGE_KEY = "airbnb-schedule-v2";
 
-const MODELS = ["Ashley Morris", "Lucinda Bleu", "Izzy", "Willow"];
+const MODELS = ["Ashley Morris", "Izzy", "Willow"];
 
 const MODEL_COLORS: Record<string, string> = {
   "Ashley Morris": "border-l-pink-500",
-  "Lucinda Bleu": "border-l-blue-500",
   "Izzy": "border-l-purple-500",
   "Willow": "border-l-emerald-500",
 };
 
 const MODEL_BG: Record<string, string> = {
   "Ashley Morris": "from-pink-500/10 to-transparent",
-  "Lucinda Bleu": "from-blue-500/10 to-transparent",
   "Izzy": "from-purple-500/10 to-transparent",
   "Willow": "from-emerald-500/10 to-transparent",
 };
 
 const MODEL_ACCENT: Record<string, string> = {
   "Ashley Morris": "text-pink-400",
-  "Lucinda Bleu": "text-blue-400",
   "Izzy": "text-purple-400",
   "Willow": "text-emerald-400",
 };
@@ -93,7 +90,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; emoji: string }> = {
 
 const CATEGORY_ORDER: ContentItem["category"][] = ["feed", "ppv", "custom", "scenario", "content_bank"];
 
-const ASSIGNEES = ["Elle", "Ashley Morris", "Lucinda Bleu", "Izzy", "Willow", "Luke"];
+const ASSIGNEES = ["Elle", "Ashley Morris", "Izzy", "Willow", "Luke"];
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
