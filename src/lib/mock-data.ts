@@ -175,16 +175,15 @@ export const tasks: Task[] = [
 // Chatter shift schedule — all chatters handle all 3 models (Izzie, Willow, Ashley)
 // Shifts: Morning 6AM-2PM, Afternoon 2PM-10PM, Night 10PM-6AM (all UK time)
 // Generate for all 7 days (same schedule daily, no formal day-offs)
-// Shift schedule — confirmed with Zar 2026-03-11
-// 6AM PH = 10PM UK, 2PM PH = 6AM UK, 10PM PH = 2PM UK (but using UK labels)
-// Marc + KC + Jane: 6AM-2PM UK (morning), JD: 2PM-10PM UK (afternoon), Jemimah: 10PM-6AM UK (night)
+// Shift schedule — updated 2026-03-28
+// Marc: 6AM-2PM (morning), JD+Jemimah: 2PM-10PM (afternoon), KC+Jane: 10PM-6AM (night)
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const shiftSchedule: ShiftEntry[] = days.flatMap((day, di) => [
   { id: `m1-${di}`, memberId: "1", memberName: "Marc", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: `m2-${di}`, memberId: "4", memberName: "KC", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: `m3-${di}`, memberId: "3", memberName: "Jane", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
   { id: `a1-${di}`, memberId: "5", memberName: "Jaydee", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: `n1-${di}`, memberId: "2", memberName: "Jemimah", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+  { id: `a2-${di}`, memberId: "2", memberName: "Jemimah", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
+  { id: `n1-${di}`, memberId: "4", memberName: "KC", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+  { id: `n2-${di}`, memberId: "3", memberName: "Jane", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
 ]);
 
 // Mass messages - Week of March 9-15, 2026

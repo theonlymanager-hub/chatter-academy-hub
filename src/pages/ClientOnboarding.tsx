@@ -77,6 +77,13 @@ const DEFAULT_CHECKLIST_TEMPLATES: { label: string; defaultAssignee: string }[] 
 
 const STORAGE_KEY = "onlyboard_client_onboarding";
 
+// ── Seed data: existing onboarded clients ──────────────────────────────
+const SEED_CLIENTS: { name: string; date: string }[] = [
+  { name: "Ashley", date: "2025-12-01" },
+  { name: "Izzy", date: "2026-01-10" },
+  { name: "Willow", date: "2026-01-22" },
+];
+
 // ── Helpers ────────────────────────────────────────────────────────────
 
 function generateId() {
@@ -91,6 +98,26 @@ function buildChecklist(): ChecklistItem[] {
     assignee: t.defaultAssignee,
     completedDate: null,
     notes: "",
+  }));
+}
+
+function buildCompletedChecklist(completedDate: string): ChecklistItem[] {
+  return DEFAULT_CHECKLIST_TEMPLATES.map((t, i) => ({
+    id: `item-${i}-${generateId()}`,
+    label: t.label,
+    status: "done" as ItemStatus,
+    assignee: t.defaultAssignee,
+    completedDate,
+    notes: "",
+  }));
+}
+
+function buildSeedClients(): OnboardingClient[] {
+  return SEED_CLIENTS.map((sc) => ({
+    id: generateId(),
+    name: sc.name,
+    createdAt: new Date(sc.date).toISOString(),
+    checklist: buildCompletedChecklist(sc.date),
   }));
 }
 
@@ -136,14 +163,24 @@ export default function ClientOnboarding() {
   const [newClientName, setNewClientName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage — seed existing clients if empty
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setClients(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.length > 0) {
+          setClients(parsed);
+          return;
+        }
+      }
     } catch {
       /* ignore */
     }
+    // No saved data — seed with existing onboarded clients
+    const seeded = buildSeedClients();
+    setClients(seeded);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
   }, []);
 
   // Persist to localStorage
