@@ -20,7 +20,7 @@ const models: ModelProfile[] = [
     id: "1",
     name: "Ashley Morris",
     username: "ashleymorris",
-    perceivedAge: 21,
+    perceivedAge: 18,
     location: "Arizona, USA",
     niche: "College girl",
     background:
@@ -39,7 +39,7 @@ const models: ModelProfile[] = [
     id: "2",
     name: "Izzy",
     username: "myizzyreal",
-    perceivedAge: 23,
+    perceivedAge: 18,
     location: "Texas, USA",
     niche: "Military girl",
     background:
@@ -57,7 +57,7 @@ const models: ModelProfile[] = [
     id: "3",
     name: "Willow",
     username: "ginger5foot",
-    perceivedAge: 22,
+    perceivedAge: 18,
     location: "Portland, Oregon",
     niche: "Redhead / normal girl",
     background:
@@ -76,20 +76,22 @@ const models: ModelProfile[] = [
     id: "4",
     name: "Lucinda Bleu",
     username: "lucibleu",
-    perceivedAge: 24,
-    location: "London, UK",
+    perceivedAge: 18,
+    location: "Brooklyn, New York",
     niche: "Goth / alternative",
     background:
-      "Dark aesthetic, vinyl collector, loves live music, sketching, vintage shopping.",
-    contentStyle: "Dark/moody, alternative fashion",
+      "Dark aesthetic Brooklyn girl. Vinyl collector, lives for live music and late nights. Sketches, vintage shops, dark bars. Alt fashion, piercings, moody energy.",
+    contentStyle: "Dark/moody, alternative fashion, urban Brooklyn vibes",
     keyFacts: [
-      "Into The Cure",
-      "Gets piercings",
-      "Goes to gigs",
+      "Lives in Brooklyn, New York",
+      "Into The Cure, Bauhaus, Siouxsie",
+      "Gets piercings regularly",
+      "Goes to gigs in Williamsburg/Bushwick",
       "Sketches by candlelight",
-      "Vintage shopping",
+      "Vintage shopping in thrift stores",
+      "Dark bars and dive bars",
+      "Has a nose ring and multiple ear piercings",
     ],
-    warning: "May be dropped soon if traffic doesn't improve",
   },
 ];
 
