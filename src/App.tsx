@@ -32,6 +32,7 @@ import ContentIdeas from "./pages/ContentIdeas";
 import ScenarioBoard from "./pages/ScenarioBoard";
 import LtvTracker from "./pages/LtvTracker";
 import AirbnbTracker from "./pages/AirbnbTracker";
+import AirbnbSchedule from "./pages/AirbnbSchedule";
 import ShootChecklist from "./pages/ShootChecklist";
 import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
@@ -254,6 +255,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry']}>
               <DashboardLayout>
                 <AirbnbTracker />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Airbnb Schedule - All roles (chatters view-only) */}
+        <Route 
+          path="/airbnb-schedule" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter']}>
+              <DashboardLayout>
+                <AirbnbSchedule />
               </DashboardLayout>
             </ProtectedRoute>
           } 

@@ -66,6 +66,7 @@ const getAllSections = () => [
     items: [
       { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
       { title: "Mass Messages / PPV", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
+      { title: "🏠 Airbnb Schedule", url: "/airbnb-schedule", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter'] },
     ],
   },
   {
