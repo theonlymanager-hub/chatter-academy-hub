@@ -137,15 +137,27 @@ const Index = () => {
     })();
   }, []);
 
-  // ─ fetch last 5 quality scores ─
+  // ─ fetch latest quality score per chatter ─
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("quality_scores")
         .select("chatter_name, overall_score, created_at")
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (data) setQualityScores(data as QualityScore[]);
+        .order("created_at", { ascending: false });
+      if (data) {
+        // Group by chatter_name, keep only the most recent entry per chatter
+        const latestByChatter: Record<string, QualityScore> = {};
+        for (const row of data as QualityScore[]) {
+          if (!latestByChatter[row.chatter_name]) {
+            latestByChatter[row.chatter_name] = row;
+          }
+        }
+        // Return all unique chatters, sorted by most recent first
+        const unique = Object.values(latestByChatter).sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setQualityScores(unique);
+      }
     })();
   }, []);
 
