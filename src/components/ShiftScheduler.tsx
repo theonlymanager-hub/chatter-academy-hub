@@ -91,23 +91,35 @@ export default function ShiftScheduler() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Shift Scheduler</h2>
-          <p className="text-muted-foreground">Assign chatters to models per shift</p>
-          <Badge variant="outline" className="mt-2 text-sm font-medium">
-            🇬🇧 All times are UK time (GMT/BST)
+          <h2 className="text-2xl font-bold tracking-tight">Shift Calendar</h2>
+          <p className="text-muted-foreground text-sm">Who's on which accounts, per shift</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="text-xs">🇬🇧 UK Time</Badge>
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-1.5">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="border-0 bg-transparent text-sm font-medium focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Quick overview: who's on today */}
+      <div className="flex gap-2 flex-wrap">
+        {shifts.map(s => (
+          <Badge key={s.id} variant="secondary" className="text-xs">
+            {s.chatter_name} → {s.models?.join(', ')} ({config.shifts[s.shift_type as 'morning' | 'afternoon' | 'night']?.label || s.shift_type})
           </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="border rounded px-3 py-2 bg-background text-foreground"
-          />
-        </div>
+        ))}
+        {shifts.length === 0 && !loading && (
+          <p className="text-xs text-muted-foreground">No shifts assigned for this date yet.</p>
+        )}
       </div>
 
       {loading ? (
