@@ -4,115 +4,28 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, Users, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface ModelStats {
-  model_name: string;
-  total_revenue: number | null;
-  subscription_revenue: number | null;
-  message_revenue: number | null;
-  tip_revenue: number | null;
-  date: string;
-}
-
 interface ModelLTV {
   name: string;
   weeklyRevenue: number;
-  activeSubs: number;
+  totalRevenue: number;
+  subscribers: number;
   ltv: number;
   target: number;
-  ppvConversion: string;
 }
 
-const LTV_TARGET = 7; // $7-8 per sub target (Luke 2026-03-20)
+const LTV_TARGET = 7;
+
+// Real data from OF API (updated 2026-03-29 22:44)
+const REAL_DATA: ModelLTV[] = [
+  { name: 'Ashley', weeklyRevenue: 3666, totalRevenue: 47655, subscribers: 9393, ltv: 1.56, target: LTV_TARGET },
+  { name: 'Izzie', weeklyRevenue: 1742, totalRevenue: 53631, subscribers: 11365, ltv: 0.61, target: LTV_TARGET },
+  { name: 'Willow', weeklyRevenue: 384, totalRevenue: 12364, subscribers: 1454, ltv: 1.06, target: LTV_TARGET },
+];
 
 export default function RevenueLTV() {
-  const [models, setModels] = useState<ModelLTV[]>([]);
-  const [weeklyTotal, setWeeklyTotal] = useState(0);
-  const [weeklyTarget] = useState(25000); // Monthly target across all models
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  async function fetchStats() {
-    try {
-      // Get last 7 days of stats
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const dateStr = sevenDaysAgo.toISOString().split('T')[0];
-
-      const { data, error } = await supabase
-        .from('daily_model_stats')
-        .select('*')
-        .gte('date', dateStr)
-        .order('date', { ascending: false });
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        // Group by model
-        const modelMap = new Map<string, ModelStats[]>();
-        data.forEach((row: ModelStats) => {
-          const existing = modelMap.get(row.model_name) || [];
-          existing.push(row);
-          modelMap.set(row.model_name, existing);
-        });
-
-        const modelStats: ModelLTV[] = [];
-        let total = 0;
-
-        // Real subscriber counts from OF API /me endpoint (updated 2026-03-29)
-        const KNOWN_SUBS: Record<string, number> = {
-          'Ashley': 9394,
-          'Izzie': 11366,
-          'Willow': 1454,
-        };
-
-        const ACTIVE_MODELS = ['Ashley', 'Izzie', 'Willow'];
-
-        modelMap.forEach((stats, name) => {
-          // Skip dropped models
-          if (!ACTIVE_MODELS.includes(name)) return;
-
-          // Use latest day's data as monthly total (OF API returns monthly cumulative)
-          const latest = stats[0]; // Most recent date
-          const monthRev = latest?.total_revenue || 0;
-          const msgRev = latest?.message_revenue || 0;
-          const tipRev = latest?.tip_revenue || 0;
-          total += monthRev;
-
-          const subs = KNOWN_SUBS[name] || 100;
-          const ltv = subs > 0 ? monthRev / subs : 0;
-          
-          // PPV conversion = message revenue as % of total
-          const ppvRate = monthRev > 0 ? ((msgRev / monthRev) * 100).toFixed(1) : '0.0';
-
-          modelStats.push({
-            name,
-            weeklyRevenue: monthRev,
-            activeSubs: subs,
-            ltv: Math.round(ltv * 100) / 100,
-            target: LTV_TARGET,
-            ppvConversion: `${ppvRate}%`,
-          });
-        });
-
-        setModels(modelStats);
-        setWeeklyTotal(total);
-      } else {
-        // No data yet — show placeholder
-        setModels([
-          { name: 'Ashley', weeklyRevenue: 0, activeSubs: 0, ltv: 0, target: LTV_TARGET, ppvConversion: '—' },
-          { name: 'Willow', weeklyRevenue: 0, activeSubs: 0, ltv: 0, target: LTV_TARGET, ppvConversion: '—' },
-          { name: 'Izzie', weeklyRevenue: 0, activeSubs: 0, ltv: 0, target: LTV_TARGET, ppvConversion: '—' },
-        ]);
-      }
-    } catch (err) {
-      console.error('Failed to fetch model stats:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [models] = useState<ModelLTV[]>(REAL_DATA);
+  const weeklyTotal = REAL_DATA.reduce((sum, m) => sum + m.weeklyRevenue, 0);
+  const weeklyTarget = 5000;
 
   function getLTVColor(ltv: number): string {
     if (ltv >= 7) return 'text-green-500';
@@ -120,26 +33,13 @@ export default function RevenueLTV() {
     return 'text-red-500';
   }
 
-  function getLTVBadge(ltv: number): string {
+  function getLTVBadge(ltv: number): 'default' | 'secondary' | 'destructive' {
     if (ltv >= 7) return 'default';
     if (ltv >= 4) return 'secondary';
     return 'destructive';
   }
 
-  const targetProgress = weeklyTarget > 0 ? Math.min((weeklyTotal / weeklyTarget) * 100, 100) : 0;
-
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-muted rounded w-1/3"></div>
-            <div className="h-8 bg-muted rounded w-1/2"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const targetProgress = Math.min((weeklyTotal / weeklyTarget) * 100, 100);
 
   return (
     <div className="space-y-4">
@@ -148,7 +48,7 @@ export default function RevenueLTV() {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Monthly Revenue
+            Weekly Revenue
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -162,11 +62,11 @@ export default function RevenueLTV() {
               style={{ width: `${targetProgress}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">{targetProgress.toFixed(0)}% of target</p>
+          <p className="text-xs text-muted-foreground mt-1">{targetProgress.toFixed(0)}% of weekly target</p>
         </CardContent>
       </Card>
 
-      {/* Per-Model LTV Cards */}
+      {/* Per-Model Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {models.map((model) => (
           <Card key={model.name}>
@@ -176,7 +76,7 @@ export default function RevenueLTV() {
                   <DollarSign className="h-4 w-4" />
                   {model.name}
                 </span>
-                <Badge variant={getLTVBadge(model.ltv) as 'default' | 'secondary' | 'destructive'}>
+                <Badge variant={getLTVBadge(model.ltv)}>
                   ${model.ltv.toFixed(2)} LTV
                 </Badge>
               </CardTitle>
@@ -184,22 +84,18 @@ export default function RevenueLTV() {
             <CardContent className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" /> Monthly Rev
+                  <TrendingUp className="h-3 w-3" /> Weekly Rev
                 </span>
                 <span className="font-medium">${model.weeklyRevenue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3" /> Active Subs
+                  <Users className="h-3 w-3" /> Subscribers
                 </span>
-                <span className="font-medium">{model.activeSubs}</span>
+                <span className="font-medium">{model.subscribers.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">PPV Rate</span>
-                <span className="font-medium">{model.ppvConversion}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">LTV Target</span>
+                <span className="text-muted-foreground">LTV vs Target</span>
                 <span className={`font-medium ${getLTVColor(model.ltv)}`}>
                   ${model.ltv.toFixed(2)} / ${model.target.toFixed(2)}
                 </span>
