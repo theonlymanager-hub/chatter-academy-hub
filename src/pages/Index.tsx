@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DailyCheckInBanner from "@/components/DailyCheckInBanner";
 import RevenueLTV from "@/components/RevenueLTV";
+import MarkTaskTracker from "@/components/MarkTaskTracker";
 import { isDemoUser } from "@/utils/demo";
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -226,6 +227,9 @@ const Index = () => {
 
       {/* Revenue & LTV */}
       <RevenueLTV />
+
+      {/* Mark's Task Tracker */}
+      <MarkTaskTracker />
 
       {/* ── Quick Stats Row ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
