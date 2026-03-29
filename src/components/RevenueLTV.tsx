@@ -15,9 +15,12 @@ interface ModelLTV {
 
 const LTV_TARGET = 7;
 
-// Real data from OF API (updated 2026-03-29 22:44)
+// Real data from OF API (updated 2026-03-29 23:30)
+// This week = last 7 days from OF API earning-statistics
+// Total subs = subscribersCount from OF API accounts endpoint
+// LTV = this week rev × 4 (monthly estimate) / total subs
 const REAL_DATA: ModelLTV[] = [
-  { name: 'Ashley', weeklyRevenue: 3666, totalRevenue: 47655, subscribers: 9393, ltv: 1.56, target: LTV_TARGET },
+  { name: 'Ashley', weeklyRevenue: 4916, totalRevenue: 47655, subscribers: 9393, ltv: 2.09, target: LTV_TARGET },
   { name: 'Izzie', weeklyRevenue: 1742, totalRevenue: 53631, subscribers: 11365, ltv: 0.61, target: LTV_TARGET },
   { name: 'Willow', weeklyRevenue: 384, totalRevenue: 12364, subscribers: 1454, ltv: 1.06, target: LTV_TARGET },
 ];
@@ -90,13 +93,13 @@ export default function RevenueLTV() {
             <CardContent className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" /> Weekly Rev
+                  <TrendingUp className="h-3 w-3" /> This Week
                 </span>
                 <span className="font-medium">${model.weeklyRevenue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3" /> Subscribers
+                  <Users className="h-3 w-3" /> Total Subs
                 </span>
                 <span className="font-medium">{model.subscribers.toLocaleString()}</span>
               </div>
