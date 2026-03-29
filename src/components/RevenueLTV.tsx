@@ -61,11 +61,11 @@ export default function RevenueLTV() {
         const modelStats: ModelLTV[] = [];
         let total = 0;
 
-        // Known active sub counts (from end-of-shift logs + OF dashboard)
+        // Real subscriber counts from OF API /me endpoint (updated 2026-03-29)
         const KNOWN_SUBS: Record<string, number> = {
-          'Ashley': 250,
-          'Izzie': 120,
-          'Willow': 85,
+          'Ashley': 9394,
+          'Izzie': 11366,
+          'Willow': 1454,
         };
 
         const ACTIVE_MODELS = ['Ashley', 'Izzie', 'Willow'];
