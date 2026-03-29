@@ -25,7 +25,7 @@ const REAL_DATA: ModelLTV[] = [
 export default function RevenueLTV() {
   const [models] = useState<ModelLTV[]>(REAL_DATA);
   const weeklyTotal = REAL_DATA.reduce((sum, m) => sum + m.weeklyRevenue, 0);
-  const weeklyTarget = 5000;
+  const weeklyTarget = 15000; // $5K per model × 3 models
 
   function getLTVColor(ltv: number): string {
     if (ltv >= 7) return 'text-green-500';
