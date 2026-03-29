@@ -22,6 +22,12 @@ const REAL_DATA: ModelLTV[] = [
   { name: 'Willow', weeklyRevenue: 384, totalRevenue: 12364, subscribers: 1454, ltv: 1.06, target: LTV_TARGET },
 ];
 
+// Historical weekly LTV for trend tracking
+const WEEKLY_HISTORY = [
+  { week: 'Mar 23-29', ashley: 1.56, izzie: 0.61, willow: 1.06 },
+  // Previous weeks will be populated as data accumulates
+];
+
 export default function RevenueLTV() {
   const [models] = useState<ModelLTV[]>(REAL_DATA);
   const weeklyTotal = REAL_DATA.reduce((sum, m) => sum + m.weeklyRevenue, 0);

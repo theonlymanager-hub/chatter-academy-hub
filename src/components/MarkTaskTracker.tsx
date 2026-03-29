@@ -28,25 +28,26 @@ const STATUS_COLORS = {
 
 // Hardcoded tasks until Supabase table is created
 const STATIC_TASKS: MarkTask[] = [
-  // ACTIVE
-  { id: '1', title: 'OF API integration — revenue + LTV automation', status: 'active', category: 'Dashboard', created_at: '2026-03-29T12:00:00Z', completed_at: null, notes: 'API wrapper built, RevenueLTV component coded, pushed to GitHub' },
-  { id: '2', title: 'Chatting Playbook — upsell techniques, whale handling, VIP packages', status: 'active', category: 'Knowledge Base', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: 'Researching top agency techniques' },
-  { id: '3', title: 'Content filming checklist for Luke', status: 'active', category: 'Content', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: 'Categories and scenarios per model' },
+  // ACTIVE — actually working on RIGHT NOW
+  { id: '1', title: 'Weekly LTV tracking — historical week-over-week data', status: 'active', category: 'Dashboard', created_at: '2026-03-29T23:00:00Z', completed_at: null, notes: 'Luke wants weekly LTV trend, not just snapshot' },
+  { id: '2', title: 'Daily automated OF API revenue pull (cron)', status: 'active', category: 'API', created_at: '2026-03-29T23:00:00Z', completed_at: null, notes: 'So dashboard updates automatically without manual pulls' },
 
-  // QUEUED
-  { id: '4', title: 'Dashboard — strikes system', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
-  { id: '5', title: 'Dashboard — shift calendar cleanup', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
+  // QUEUED — next up
+  { id: '3', title: 'Luke\'s Tasks section on dashboard', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
+  { id: '4', title: 'Smart mass messaging system (exclude active convos + whales)', status: 'queued', category: 'API', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
+  { id: '5', title: 'Scenarios → mass messages → scripts pipeline', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
   { id: '6', title: 'Dashboard — chatter task repetition system (10-15x)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
-  { id: '7', title: 'Client-facing checklist page (no agency branding)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
-  { id: '8', title: 'Dashboard — training results visibility fix', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
+  { id: '7', title: 'Client-facing content checklist page (no agency branding)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
+  { id: '8', title: 'Dashboard — training results visibility (needs Supabase table)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: 'Blocked: quiz_results table doesn\'t exist' },
   { id: '9', title: 'Dashboard — team activity feed fix', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
   { id: '10', title: 'Expired fan re-engagement mass messages', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
-  { id: '11', title: 'Smart PPV timing system', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
-  { id: '12', title: 'Whale detection auto-alerts', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
-  { id: '13', title: 'Airbnb schedule on dashboard + content checklists', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
-  { id: '14', title: 'Fan profiles cleanup', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
-  { id: '15', title: 'Time-off request sync fix (Zar\'s bug)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T07:30:00Z', completed_at: null, notes: null },
-  { id: '16', title: 'Supabase tables (quiz_results + time_off_requests)', status: 'active', category: 'Dashboard', created_at: '2026-03-29T16:30:00Z', completed_at: null, notes: 'Blocked: Lovable content policy + Supabase org access. Need service role key.' },
+  { id: '11', title: 'Whale detection auto-alerts', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
+  { id: '12', title: 'Airbnb schedule on dashboard + content checklists', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
+  { id: '13', title: 'Fan profiles cleanup', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
+  { id: '14', title: 'Time-off request sync (needs Supabase table)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T07:30:00Z', completed_at: null, notes: 'Blocked: time_off_requests table doesn\'t exist' },
+  { id: '15', title: 'Strikes system — move to Supabase from localStorage', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
+  { id: '16', title: 'Smart PPV timing system', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
+  { id: '17', title: 'Content ideas page with weekly targets per client', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
 
   // DONE TODAY
   { id: '100', title: 'Mass message schedule — week of 30 Mar to 5 Apr', status: 'done', category: 'Operations', created_at: '2026-03-29T11:00:00Z', completed_at: '2026-03-29T12:27:00Z', notes: 'Posted to #mass-message-schedule: Ashley, Willow, Izzie. 7 days each.' },
