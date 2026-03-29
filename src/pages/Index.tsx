@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import DailyCheckInBanner from "@/components/DailyCheckInBanner";
 import RevenueLTV from "@/components/RevenueLTV";
 import MarkTaskTracker from "@/components/MarkTaskTracker";
+import LukeTaskTracker from "@/components/LukeTaskTracker";
 import { isDemoUser } from "@/utils/demo";
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -228,8 +229,11 @@ const Index = () => {
       {/* Revenue & LTV */}
       <RevenueLTV />
 
-      {/* Mark's Task Tracker */}
-      <MarkTaskTracker />
+      {/* Task Trackers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <LukeTaskTracker />
+        <MarkTaskTracker />
+      </div>
 
       {/* ── Quick Stats Row ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
