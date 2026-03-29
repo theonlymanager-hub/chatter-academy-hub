@@ -46,7 +46,7 @@ const STATIC_TASKS: MarkTask[] = [
   { id: '13', title: 'Airbnb schedule on dashboard + content checklists', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
   { id: '14', title: 'Fan profiles cleanup', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
   { id: '15', title: 'Time-off request sync fix (Zar\'s bug)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T07:30:00Z', completed_at: null, notes: null },
-  { id: '16', title: 'Mark task tracker on dashboard (this!)', status: 'active', category: 'Dashboard', created_at: '2026-03-29T14:45:00Z', completed_at: null, notes: null },
+  { id: '16', title: 'Supabase tables (quiz_results + time_off_requests)', status: 'active', category: 'Dashboard', created_at: '2026-03-29T16:30:00Z', completed_at: null, notes: 'Blocked: Lovable content policy + Supabase org access. Need service role key.' },
 
   // DONE TODAY
   { id: '100', title: 'Mass message schedule — week of 30 Mar to 5 Apr', status: 'done', category: 'Operations', created_at: '2026-03-29T11:00:00Z', completed_at: '2026-03-29T12:27:00Z', notes: 'Posted to #mass-message-schedule: Ashley, Willow, Izzie. 7 days each.' },
@@ -55,6 +55,11 @@ const STATIC_TASKS: MarkTask[] = [
   { id: '103', title: 'Sunday push message to chatters', status: 'done', category: 'Operations', created_at: '2026-03-29T13:00:00Z', completed_at: '2026-03-29T13:01:00Z', notes: 'Focus on whale follow-ups, re-engage quiet fans' },
   { id: '104', title: 'OF API wrapper (ofapi.ts)', status: 'done', category: 'Dashboard', created_at: '2026-03-29T13:30:00Z', completed_at: '2026-03-29T14:30:00Z', notes: 'Full wrapper: earnings, fans, transactions, chats, mass messaging, vault. Pushed to GitHub.' },
   { id: '105', title: 'RevenueLTV dashboard component', status: 'done', category: 'Dashboard', created_at: '2026-03-29T14:00:00Z', completed_at: '2026-03-29T14:30:00Z', notes: 'Weekly revenue target bar, per-model LTV cards, PPV rate. Pushed to GitHub.' },
+  { id: '106', title: 'Mark Task Tracker on dashboard', status: 'done', category: 'Dashboard', created_at: '2026-03-29T14:45:00Z', completed_at: '2026-03-29T14:55:00Z', notes: 'Active/queued/done with filters. Luke can see what Mark is working on.' },
+  { id: '107', title: 'Chat Feedback Board populated (2 → 12 entries)', status: 'done', category: 'Dashboard', created_at: '2026-03-29T16:00:00Z', completed_at: '2026-03-29T16:45:00Z', notes: '10 new QC-based entries: dead responses, premature PPVs, copy-paste, panic responses, good examples.' },
+  { id: '108', title: 'Shift Calendar cleanup', status: 'done', category: 'Dashboard', created_at: '2026-03-29T16:30:00Z', completed_at: '2026-03-29T16:45:00Z', notes: 'Cleaner header, quick overview badges showing today\'s assignments.' },
+  { id: '109', title: 'Chatting Playbook — full page', status: 'done', category: 'Knowledge Base', created_at: '2026-03-29T16:45:00Z', completed_at: '2026-03-29T17:30:00Z', notes: '6 sections, 30+ techniques: Conversation Flow, PPV Timing, Whale Handling, Upsell Ladder, Sexting Flow, Common Mistakes.' },
+  { id: '110', title: 'Content filming checklist for Luke', status: 'done', category: 'Content', created_at: '2026-03-29T17:00:00Z', completed_at: '2026-03-29T17:15:00Z', notes: 'Per-model breakdown: categories, scenarios, quantities. ~60-75 content pieces/week across 3 models.' },
 ];
 
 export default function MarkTaskTracker() {
