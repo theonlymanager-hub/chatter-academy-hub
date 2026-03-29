@@ -27,7 +27,7 @@ const LTV_TARGET = 7; // $7-8 per sub target (Luke 2026-03-20)
 export default function RevenueLTV() {
   const [models, setModels] = useState<ModelLTV[]>([]);
   const [weeklyTotal, setWeeklyTotal] = useState(0);
-  const [weeklyTarget] = useState(5000);
+  const [weeklyTarget] = useState(25000); // Monthly target across all models
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,23 +61,36 @@ export default function RevenueLTV() {
         const modelStats: ModelLTV[] = [];
         let total = 0;
 
-        modelMap.forEach((stats, name) => {
-          const weekRev = stats.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
-          const msgRev = stats.reduce((sum, s) => sum + (s.message_revenue || 0), 0);
-          total += weekRev;
+        // Known active sub counts (from end-of-shift logs + OF dashboard)
+        const KNOWN_SUBS: Record<string, number> = {
+          'Ashley': 250,
+          'Izzie': 120,
+          'Willow': 85,
+        };
 
-          // Estimate subs from subscription revenue (average sub price ~$5-10)
-          const subRev = stats.reduce((sum, s) => sum + (s.subscription_revenue || 0), 0);
-          const estimatedSubs = subRev > 0 ? Math.round(subRev / 7) : 0;
-          const ltv = estimatedSubs > 0 ? weekRev / estimatedSubs : 0;
+        const ACTIVE_MODELS = ['Ashley', 'Izzie', 'Willow'];
+
+        modelMap.forEach((stats, name) => {
+          // Skip dropped models
+          if (!ACTIVE_MODELS.includes(name)) return;
+
+          // Use latest day's data as monthly total (OF API returns monthly cumulative)
+          const latest = stats[0]; // Most recent date
+          const monthRev = latest?.total_revenue || 0;
+          const msgRev = latest?.message_revenue || 0;
+          const tipRev = latest?.tip_revenue || 0;
+          total += monthRev;
+
+          const subs = KNOWN_SUBS[name] || 100;
+          const ltv = subs > 0 ? monthRev / subs : 0;
           
-          // PPV conversion = message revenue as % of total (rough proxy)
-          const ppvRate = weekRev > 0 ? ((msgRev / weekRev) * 100).toFixed(1) : '0.0';
+          // PPV conversion = message revenue as % of total
+          const ppvRate = monthRev > 0 ? ((msgRev / monthRev) * 100).toFixed(1) : '0.0';
 
           modelStats.push({
             name,
-            weeklyRevenue: weekRev,
-            activeSubs: estimatedSubs,
+            weeklyRevenue: monthRev,
+            activeSubs: subs,
             ltv: Math.round(ltv * 100) / 100,
             target: LTV_TARGET,
             ppvConversion: `${ppvRate}%`,
@@ -135,7 +148,7 @@ export default function RevenueLTV() {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Weekly Revenue
+            Monthly Revenue
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -171,7 +184,7 @@ export default function RevenueLTV() {
             <CardContent className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" /> Weekly Rev
+                  <TrendingUp className="h-3 w-3" /> Monthly Rev
                 </span>
                 <span className="font-medium">${model.weeklyRevenue.toLocaleString()}</span>
               </div>
