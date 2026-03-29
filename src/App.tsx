@@ -38,6 +38,7 @@ import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
 import DailyChecklist from "./pages/DailyChecklist";
 import ClientOnboarding from "./pages/ClientOnboarding";
+import ChattingPlaybook from "./pages/ChattingPlaybook";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -118,6 +119,16 @@ function AppContent() {
             <ProtectedRoute>
               <DashboardLayout>
                 <TrainingResults />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chatting-playbook" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
+              <DashboardLayout>
+                <ChattingPlaybook />
               </DashboardLayout>
             </ProtectedRoute>
           } 

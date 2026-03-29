@@ -87,6 +87,7 @@ const getAllSections = () => [
   {
     label: "Knowledge & Training",
     items: [
+      { title: "Chatting Playbook", url: "/chatting-playbook", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Training Quiz", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Training Videos", url: "/training-videos", icon: Video, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
