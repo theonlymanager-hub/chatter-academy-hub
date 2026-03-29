@@ -13,6 +13,7 @@ import { platformApi, ACCOUNT_IDS, WeeklyEarnings } from "@/services/platformApi
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DailyCheckInBanner from "@/components/DailyCheckInBanner";
+import RevenueLTV from "@/components/RevenueLTV";
 import { isDemoUser } from "@/utils/demo";
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -222,6 +223,9 @@ const Index = () => {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Account operations overview</p>
       </div>
+
+      {/* Revenue & LTV */}
+      <RevenueLTV />
 
       {/* ── Quick Stats Row ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
