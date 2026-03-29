@@ -1,40 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, Users, Target } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
-interface ModelLTV {
+interface ModelData {
   name: string;
-  weeklyRevenue: number;
-  totalRevenue: number;
-  subscribers: number;
-  ltv: number;
+  thisWeekRev: number;
+  allTimeRev: number;
+  totalSubs: number;
+  thisWeekLTV: number;
+  allTimeLTV: number;
   target: number;
 }
 
 const LTV_TARGET = 7;
 
-// Real data from OF API (updated 2026-03-29 23:30)
-// This week = last 7 days from OF API earning-statistics
-// Total subs = subscribersCount from OF API accounts endpoint
-// LTV = this week rev × 4 (monthly estimate) / total subs
-const REAL_DATA: ModelLTV[] = [
-  { name: 'Ashley', weeklyRevenue: 4916, totalRevenue: 47655, subscribers: 9393, ltv: 2.09, target: LTV_TARGET },
-  { name: 'Izzie', weeklyRevenue: 1742, totalRevenue: 53631, subscribers: 11365, ltv: 0.61, target: LTV_TARGET },
-  { name: 'Willow', weeklyRevenue: 384, totalRevenue: 12364, subscribers: 1454, ltv: 1.06, target: LTV_TARGET },
+// Real data from OF API (updated 2026-03-30 00:05 — GROSS figures, what Luke sees)
+const MODELS: ModelData[] = [
+  { name: 'Ashley', thisWeekRev: 4583, allTimeRev: 59568, totalSubs: 9393, thisWeekLTV: 0, allTimeLTV: 0, target: LTV_TARGET },
+  { name: 'Izzie', thisWeekRev: 2178, allTimeRev: 67039, totalSubs: 11365, thisWeekLTV: 0, allTimeLTV: 0, target: LTV_TARGET },
+  { name: 'Willow', thisWeekRev: 480, allTimeRev: 15456, totalSubs: 1454, thisWeekLTV: 0, allTimeLTV: 0, target: LTV_TARGET },
 ];
 
-// Historical weekly LTV for trend tracking
-const WEEKLY_HISTORY = [
-  { week: 'Mar 23-29', ashley: 1.56, izzie: 0.61, willow: 1.06 },
-  // Previous weeks will be populated as data accumulates
-];
+// Calculate LTVs
+MODELS.forEach(m => {
+  // This week LTV = this week rev / total subs (rough — ideally weekly new subs)
+  m.thisWeekLTV = m.totalSubs > 0 ? Math.round((m.thisWeekRev / m.totalSubs) * 100) / 100 : 0;
+  // All-time LTV = total rev / total subs
+  m.allTimeLTV = m.totalSubs > 0 ? Math.round((m.allTimeRev / m.totalSubs) * 100) / 100 : 0;
+});
 
 export default function RevenueLTV() {
-  const [models] = useState<ModelLTV[]>(REAL_DATA);
-  const weeklyTotal = REAL_DATA.reduce((sum, m) => sum + m.weeklyRevenue, 0);
-  const weeklyTarget = 15000; // $5K per model × 3 models
+  const weeklyTotal = MODELS.reduce((sum, m) => sum + m.thisWeekRev, 0);
+  const weeklyTarget = 15000; // $5K per model × 3
 
   function getLTVColor(ltv: number): string {
     if (ltv >= 7) return 'text-green-500';
@@ -57,7 +55,7 @@ export default function RevenueLTV() {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Weekly Revenue
+            This Week's Revenue
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -71,13 +69,13 @@ export default function RevenueLTV() {
               style={{ width: `${targetProgress}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">{targetProgress.toFixed(0)}% of weekly target</p>
+          <p className="text-xs text-muted-foreground mt-1">{targetProgress.toFixed(0)}% of weekly target ($5K per model)</p>
         </CardContent>
       </Card>
 
       {/* Per-Model Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {models.map((model) => (
+        {MODELS.map((model) => (
           <Card key={model.name}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center justify-between">
@@ -85,8 +83,8 @@ export default function RevenueLTV() {
                   <DollarSign className="h-4 w-4" />
                   {model.name}
                 </span>
-                <Badge variant={getLTVBadge(model.ltv)}>
-                  ${model.ltv.toFixed(2)} LTV
+                <Badge variant={getLTVBadge(model.thisWeekLTV)}>
+                  ${model.thisWeekLTV.toFixed(2)} LTV
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -95,18 +93,24 @@ export default function RevenueLTV() {
                 <span className="text-muted-foreground flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" /> This Week
                 </span>
-                <span className="font-medium">${model.weeklyRevenue.toLocaleString()}</span>
+                <span className="font-medium">${model.thisWeekRev.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <Users className="h-3 w-3" /> Total Subs
                 </span>
-                <span className="font-medium">{model.subscribers.toLocaleString()}</span>
+                <span className="font-medium">{model.totalSubs.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">LTV vs Target</span>
-                <span className={`font-medium ${getLTVColor(model.ltv)}`}>
-                  ${model.ltv.toFixed(2)} / ${model.target.toFixed(2)}
+                <span className="text-muted-foreground">This Week LTV</span>
+                <span className={`font-medium ${getLTVColor(model.thisWeekLTV)}`}>
+                  ${model.thisWeekLTV.toFixed(2)} / ${model.target.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">All-Time LTV</span>
+                <span className={`font-medium ${getLTVColor(model.allTimeLTV)}`}>
+                  ${model.allTimeLTV.toFixed(2)}
                 </span>
               </div>
             </CardContent>
