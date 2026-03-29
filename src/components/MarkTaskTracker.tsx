@@ -33,7 +33,7 @@ const STATIC_TASKS: MarkTask[] = [
   { id: '2', title: 'Daily automated OF API revenue pull (cron)', status: 'active', category: 'API', created_at: '2026-03-29T23:00:00Z', completed_at: null, notes: 'So dashboard updates automatically without manual pulls' },
 
   // QUEUED — next up
-  { id: '3', title: 'Luke\'s Tasks section on dashboard', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
+  { id: '3', title: 'Luke\'s Tasks section on dashboard', status: 'done', category: 'Dashboard', created_at: '2026-03-29T18:00:00Z', completed_at: '2026-03-30T00:30:00Z', notes: 'Crown icon, priority badges, 10 tasks listed.' },
   { id: '4', title: 'Smart mass messaging system (exclude active convos + whales)', status: 'queued', category: 'API', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
   { id: '5', title: 'Scenarios → mass messages → scripts pipeline', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
   { id: '6', title: 'Dashboard — chatter task repetition system (10-15x)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },

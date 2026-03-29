@@ -16,6 +16,7 @@ import DailyCheckInBanner from "@/components/DailyCheckInBanner";
 import RevenueLTV from "@/components/RevenueLTV";
 import MarkTaskTracker from "@/components/MarkTaskTracker";
 import LukeTaskTracker from "@/components/LukeTaskTracker";
+import LukeTaskTracker from "@/components/LukeTaskTracker";
 import { isDemoUser } from "@/utils/demo";
 
 // ── constants ──────────────────────────────────────────────────────────────
