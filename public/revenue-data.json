@@ -1,0 +1,24 @@
+{
+  "updated_at": "2026-03-30T15:01:56Z",
+  "date": "2026-03-30",
+  "models": {
+    "Ashley": {
+      "today_gross": 594.0,
+      "total_subs": 10188,
+      "new_subs_today": 0,
+      "ltv_today": 0
+    },
+    "Izzie": {
+      "today_gross": 172.0,
+      "total_subs": 12623,
+      "new_subs_today": 0,
+      "ltv_today": 0
+    },
+    "Willow": {
+      "today_gross": 0.0,
+      "total_subs": 6889,
+      "new_subs_today": 0,
+      "ltv_today": 0
+    }
+  }
+}

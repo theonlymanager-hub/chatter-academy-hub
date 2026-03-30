@@ -1,53 +1,39 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, Users, Target, Loader2, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { DollarSign, Target, Users, TrendingUp, Loader2, RefreshCw } from 'lucide-react';
 
-interface ModelData {
-  name: string;
-  todayRev: number;
-  todaySubs: number;
-  todayLTV: number;
-  target: number;
+interface ModelRevenue {
+  today_gross: number;
+  total_subs: number;
+  new_subs_today: number;
+  ltv_today: number;
 }
 
-const LTV_TARGET = 7;
-const WEEKLY_TARGET_PER_MODEL = 5000;
-const MODELS_LIST = ['Ashley', 'Izzie', 'Willow'];
+interface RevenueData {
+  updated_at: string;
+  date: string;
+  models: Record<string, ModelRevenue>;
+}
+
+const MODELS = ['Ashley', 'Izzie', 'Willow'];
 
 export default function RevenueLTV() {
-  const [models, setModels] = useState<ModelData[]>([]);
+  const [data, setData] = useState<RevenueData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState('');
 
   async function fetchData() {
     setLoading(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
-
-      // Get today's revenue from Supabase
-      const { data: todayStats } = await supabase
-        .from('daily_model_stats')
-        .select('*')
-        .eq('date', today)
-        .in('model_name', MODELS_LIST);
-
-      const result: ModelData[] = MODELS_LIST.map(name => {
-        const row = (todayStats || []).find(r => r.model_name === name);
-        const rev = row?.total_revenue || 0;
-        // We don't have today's new subs from the API easily
-        // For now show revenue and note subs need manual check
-        return {
-          name,
-          todayRev: rev,
-          todaySubs: 0, // Will need webhook or periodic delta tracking
-          todayLTV: 0,
-          target: LTV_TARGET,
-        };
-      });
-
-      setModels(result);
-      setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+      const resp = await fetch('/revenue-data.json?t=' + Date.now());
+      if (resp.ok) {
+        const d: RevenueData = await resp.json();
+        setData(d);
+        if (d.updated_at) {
+          const t = new Date(d.updated_at);
+          setLastUpdated(t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+        }
+      }
     } catch (err) {
       console.error('Error fetching revenue:', err);
     }
@@ -56,8 +42,6 @@ export default function RevenueLTV() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const totalToday = models.reduce((s, m) => s + m.todayRev, 0);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -65,6 +49,18 @@ export default function RevenueLTV() {
       </div>
     );
   }
+
+  if (!data) {
+    return (
+      <Card>
+        <CardContent className="py-6 text-center text-muted-foreground text-sm">
+          Revenue data not available yet. Cron updates every 3 hours.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const totalToday = MODELS.reduce((s, n) => s + (data.models[n]?.today_gross || 0), 0);
 
   return (
     <div className="space-y-4">
@@ -77,36 +73,52 @@ export default function RevenueLTV() {
               Today's Revenue (Gross)
             </CardTitle>
             <button onClick={fetchData} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-              <RefreshCw className="h-3 w-3" /> {lastUpdated}
+              <RefreshCw className="h-3 w-3" /> Updated {lastUpdated}
             </button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold">${totalToday.toLocaleString()}</span>
-            <span className="text-muted-foreground text-sm">today across all models</span>
-          </div>
+          <span className="text-2xl font-bold">${totalToday.toLocaleString()}</span>
+          <span className="text-muted-foreground text-sm ml-2">today across all models</span>
         </CardContent>
       </Card>
 
       {/* Per-Model Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {models.map((model) => (
-          <Card key={model.name}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">{model.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-baseline gap-2">
-                <DollarSign className="h-4 w-4 text-green-400" />
-                <span className="text-xl font-bold text-green-400">
-                  ${model.todayRev.toLocaleString()}
-                </span>
-                <span className="text-xs text-muted-foreground">today</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {MODELS.map((name) => {
+          const m = data.models[name] || { today_gross: 0, total_subs: 0, new_subs_today: 0, ltv_today: 0 };
+          return (
+            <Card key={name}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">{name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-baseline gap-2">
+                  <DollarSign className="h-4 w-4 text-green-400" />
+                  <span className="text-xl font-bold text-green-400">${m.today_gross.toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">today</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">New subs:</span>
+                    <span className="font-medium">{m.new_subs_today || '—'}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">LTV:</span>
+                    <span className={`font-medium ${m.ltv_today >= 7 ? 'text-green-400' : m.ltv_today >= 4 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {m.ltv_today > 0 ? `$${m.ltv_today}` : '—'}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  {m.total_subs.toLocaleString()} total subs
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
