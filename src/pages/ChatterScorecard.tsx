@@ -39,11 +39,11 @@ interface ScorecardEntry {
 
 // ── Chatter definitions ────────────────────────────────────────────────
 const CHATTERS = [
-  { name: "Marc", role: "Chatter", shift: "6AM – 2PM", shiftLabel: "Morning", shiftColor: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  { name: "Jaydee", role: "Chatter", shift: "2PM – 10PM", shiftLabel: "Afternoon", shiftColor: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-  { name: "Jemimah", role: "Chatter", shift: "10PM – 6AM", shiftLabel: "Night", shiftColor: "bg-violet-500/20 text-violet-400 border-violet-500/30" },
-  { name: "KC", role: "Chatter", shift: "6AM – 2PM", shiftLabel: "Morning", shiftColor: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  { name: "Jane", role: "Chatter", shift: "6AM – 2PM", shiftLabel: "Morning", shiftColor: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
+  { name: "Marc", role: "Chatter", shift: "6AM – 2PM", shiftLabel: "Morning", shiftColor: "bg-muted/50 text-foreground border-border/30" },
+  { name: "Jaydee", role: "Chatter", shift: "2PM – 10PM", shiftLabel: "Afternoon", shiftColor: "bg-muted/50 text-foreground border-border/30" },
+  { name: "Jemimah", role: "Chatter", shift: "2PM – 10PM", shiftLabel: "Afternoon", shiftColor: "bg-muted/50 text-foreground border-border/30" },
+  { name: "KC", role: "Chatter", shift: "10PM – 6AM", shiftLabel: "Night", shiftColor: "bg-muted/50 text-foreground border-border/30" },
+  { name: "Jane", role: "Chatter", shift: "10PM – 6AM", shiftLabel: "Night", shiftColor: "bg-muted/50 text-foreground border-border/30" },
 ] as const;
 
 const SCORECARD_KEY = "chatter_scorecards";
@@ -89,17 +89,17 @@ const SEED_DATA: ScorecardEntry[] = [
   {
     id: uuid(),
     chatter_name: "Jaydee",
-    week_of: "2026-03-24",
-    overall_score: 0,
+    week_of: "2026-03-17",
+    overall_score: 4,
     categories: {
-      response_time: { score: 0, note: "On leave — no shifts this week" },
-      personalisation: { score: 0, note: "On leave — no data" },
-      conversation_flow: { score: 0, note: "On leave — no data" },
-      ppv_timing: { score: 0, note: "On leave — no data" },
-      energy_tone: { score: 0, note: "On leave — no data" },
-      aftercare: { score: 0, note: "On leave — no data" },
+      response_time: { score: 5, note: "Generally quick but inconsistent during peak" },
+      personalisation: { score: 4, note: "Some fan name usage, needs more profile references" },
+      conversation_flow: { score: 4, note: "Decent flow but drops off after PPV send" },
+      ppv_timing: { score: 3, note: "Sends PPV too early in conversations" },
+      energy_tone: { score: 4, note: "Reasonable energy, could be warmer" },
+      aftercare: { score: 3, note: "Inconsistent — sometimes good, sometimes nothing" },
     },
-    feedback_bullets: ["Currently on leave — no recent QC review"],
+    feedback_bullets: ["Wait for 5+ fan replies before PPV", "Keep conversation going after PPV purchase", "Currently on approved leave — scores from last active week"],
     reviewed_by: "Mark",
     trend: "flat",
   },
