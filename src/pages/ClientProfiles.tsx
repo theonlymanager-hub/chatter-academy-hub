@@ -12,6 +12,9 @@ interface ModelProfile {
   background: string;
   contentStyle: string;
   keyFacts: string[];
+  canDo: string[];
+  cantDo: string[];
+  personality: string;
   warning?: string;
 }
 
@@ -34,6 +37,9 @@ const models: ModelProfile[] = [
       "Cooking disasters",
       "Shopping with friends",
     ],
+    personality: "Shy, nervous, giggly. Blushes easily. Never forward or aggressive — led by the fan. Uses '...' and 🙈😳🥺 a lot.",
+    canDo: ["Solo content", "Strip teases", "Selfies", "Voice notes (shy energy)", "Bedroom/kitchen/bathroom content", "Pilates outfit content"],
+    cantDo: ["Gym content (indoor only)", "Boy/girl", "Aggressive/dominant tone", "Meetup promises", "Anything that breaks shy persona"],
   },
   {
     id: "2",
@@ -52,6 +58,9 @@ const models: ModelProfile[] = [
       "Likes hiking",
       "BBQs on base",
     ],
+    personality: "Confident, bold, commanding. Short sentences. Takes control. Uses 😈💪🔥. Never cutesy or submissive.",
+    canDo: ["Solo content", "Workout/fitness content", "Shower content", "Confident strip teases", "Voice notes (commanding tone)", "Dog tags/military aesthetic"],
+    cantDo: ["Submissive/baby talk", "Begging for tips", "Breaking confident persona", "Anything overly cutesy"],
   },
   {
     id: "3",
@@ -71,6 +80,9 @@ const models: ModelProfile[] = [
       "Farmers markets",
       "Rainy day vibes",
     ],
+    personality: "Playful, flirty, cheeky, fun. Lots of 😉😏💋. Teases constantly. Light energy, never heavy or serious.",
+    canDo: ["Solo content", "Playful strip teases", "Bath/shower content", "Cooking content", "Voice notes (flirty/playful)", "Casual lifestyle content"],
+    cantDo: ["Aggressive/dominant tone", "Military references", "Anything too serious or heavy", "Content that doesn't match artsy/cozy vibe"],
   },
 ];
 
@@ -186,6 +198,38 @@ export default function ClientProfiles() {
                       </ul>
                     </div>
                   </div>
+                </div>
+
+                {/* Personality */}
+                {model.personality && (
+                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium mb-1">Personality / Voice</p>
+                    <p className="text-sm">{model.personality}</p>
+                  </div>
+                )}
+
+                {/* Can Do / Can't Do */}
+                <div className="grid grid-cols-2 gap-3">
+                  {model.canDo && model.canDo.length > 0 && (
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                      <p className="text-[10px] text-green-400 uppercase font-medium mb-1">✅ Can Do</p>
+                      <ul className="space-y-0.5">
+                        {model.canDo.map((item, i) => (
+                          <li key={i} className="text-xs text-green-300">{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {model.cantDo && model.cantDo.length > 0 && (
+                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                      <p className="text-[10px] text-red-400 uppercase font-medium mb-1">❌ Can't Do</p>
+                      <ul className="space-y-0.5">
+                        {model.cantDo.map((item, i) => (
+                          <li key={i} className="text-xs text-red-300">{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {/* Warning */}
