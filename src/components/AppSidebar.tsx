@@ -49,36 +49,21 @@ const getAllSections = () => [
     ],
   },
   {
-    label: "Chatting Operations",
+    label: "Chatting",
     items: [
-      { title: "Quality Checks", url: "/quality", icon: Star, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
-      { title: "Strike Tracker", url: "/strikes", icon: ShieldAlert, roles: ['admin', 'supervisor', 'demo'] },
       { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Chat Feedback", url: "/chat-feedback", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-      { title: "Task Repetition", url: "/chatter-tasks", icon: ListChecks, roles: ['admin', 'supervisor', 'demo'] },
+      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
-    label: "Ideas & Strategies",
+    label: "Content & Scheduling",
     items: [
       { title: "Content Ideas", url: "/content-ideas", icon: Camera, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
-      { title: "Game Strategies", url: "/game-strategies", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-      { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-    ],
-  },
-  {
-    label: "Scheduling",
-    items: [
-      { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Mass Messages / PPV", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-      { title: "🏠 Airbnb Schedule", url: "/airbnb-schedule", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-    ],
-  },
-  {
-    label: "Team",
-    items: [
-      { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-      { title: "Chatter Tasks", url: "/tasks", icon: ClipboardList, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Airbnb Schedule", url: "/airbnb-schedule", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
     ],
   },
   {
@@ -86,28 +71,15 @@ const getAllSections = () => [
     items: [
       { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
+      { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
     label: "Knowledge & Training",
     items: [
-      { title: "Chatting Playbook", url: "/chatting-playbook", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-      { title: "Training Quiz", url: "/training", icon: GraduationCap, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Chatting Playbook", url: "/chatting-playbook", icon: BookOpen, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Training Videos", url: "/training-videos", icon: Video, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
-      { title: "Training Results", url: "/training-results", icon: Trophy, roles: ['admin', 'supervisor', 'demo'] },
-    ],
-  },
-  {
-    label: "🚀 Operations",
-    items: [
-      { title: "Client Onboarding", url: "/onboarding", icon: Rocket, roles: ['admin', 'supervisor', 'demo'] },
-    ],
-  },
-  {
-    label: "Other",
-    items: [
-      { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
