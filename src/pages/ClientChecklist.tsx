@@ -1,186 +1,472 @@
-import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CheckSquare, Square, Camera, Upload, Link, ExternalLink } from "lucide-react";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Trash2, Plus, Pencil, Check, X, Camera, Video, Lock, FileText } from 'lucide-react';
 
-// This page is client-facing — NO agency branding, NO admin features
-// Accessed via: /client-checklist?model=ashley (or willow, izzie)
+// --- Types ---
 
-interface ChecklistItem {
-  id: string;
-  category: string;
-  title: string;
-  description: string;
-  example?: string;
-  uploadFolder?: string;
-  completed: boolean;
+interface CompletedEntry {
+  timestamp: string; // ISO string
 }
 
-const STORAGE_KEY = "client-checklist-data";
+interface RecurringItem {
+  target: number;
+  completed: CompletedEntry[];
+}
 
-const DEFAULT_ITEMS: Record<string, ChecklistItem[]> = {
-  ashley: [
-    { id: "a1", category: "PPV Content", title: "Bedroom tease video (30s-1min)", description: "Lying on bed, shy eye contact, slowly teasing. College dorm vibe.", completed: false },
-    { id: "a2", category: "PPV Content", title: "Post-shower towel strip", description: "Coming out of shower in towel, nervous energy, camera on desk/shelf.", completed: false },
-    { id: "a3", category: "PPV Content", title: "Study desk to bedroom transition", description: "Start studying, get distracted, move to bed. Shy progression.", completed: false },
-    { id: "a4", category: "Selfies/Photos", title: "Morning bed selfies (5+)", description: "Just woke up, messy hair, natural light. Cozy and sleepy vibe.", completed: false },
-    { id: "a5", category: "Selfies/Photos", title: "Outfit of the day pics (3+)", description: "Different casual outfits — loungewear, going out, sporty.", completed: false },
-    { id: "a6", category: "Selfies/Photos", title: "Mirror selfies in underwear (3+)", description: "Bedroom mirror, standing or sitting on bed. Shy but cute.", completed: false },
-    { id: "a7", category: "Voice Notes", title: "'Good morning' sleepy voice", description: "30 seconds, just woken up, yawning, sweet and sleepy.", completed: false },
-    { id: "a8", category: "Voice Notes", title: "'Thinking about you' whisper", description: "15-30 seconds, soft voice, like texting someone you like.", completed: false },
-    { id: "a9", category: "Voice Notes", title: "'I can't believe I'm doing this' giggle", description: "Nervous giggle, like she's about to do something naughty.", completed: false },
-    { id: "a10", category: "Lifestyle", title: "Making coffee / cooking clip", description: "In kitchen, casual clothes, natural and relaxed.", completed: false },
-    { id: "a11", category: "Lifestyle", title: "Walking around casually", description: "Just moving through the space in underwear/loungewear. Candid.", completed: false },
-    { id: "a12", category: "Verification", title: "Verification photos (2+)", description: "Clear face, holding today's date on paper. Different angles.", completed: false },
-  ],
-  izzie: [
-    { id: "i1", category: "PPV Content", title: "Post-workout tease (sports bra removal)", description: "Just finished training, sweaty, confident. Remove sports bra slowly.", completed: false },
-    { id: "i2", category: "PPV Content", title: "Shower after training", description: "Stepping into shower, confident energy. Camera on counter.", completed: false },
-    { id: "i3", category: "PPV Content", title: "Confident strip", description: "Standing, direct eye contact, no shyness. Military confidence.", completed: false },
-    { id: "i4", category: "Selfies/Photos", title: "Gym mirror selfies (5+)", description: "Sports bra, leggings, strong poses. Confident, direct eye contact.", completed: false },
-    { id: "i5", category: "Selfies/Photos", title: "Dog tags / military aesthetic (3+)", description: "Dog tags visible, tough but sexy. Tank top or sports bra.", completed: false },
-    { id: "i6", category: "Selfies/Photos", title: "Post-workout sweaty selfies (3+)", description: "Flushed, sweaty, looking strong and confident.", completed: false },
-    { id: "i7", category: "Voice Notes", title: "'Rise and shine soldier' morning", description: "Commanding, confident, like a drill sergeant but flirty.", completed: false },
-    { id: "i8", category: "Voice Notes", title: "'Mission briefing' tease", description: "15-30 seconds, telling them what they're about to see.", completed: false },
-    { id: "i9", category: "Lifestyle", title: "Stretching / warm-up clip", description: "On yoga mat or floor, athletic wear. Strong and flexible.", completed: false },
-    { id: "i10", category: "Lifestyle", title: "Protein shake / healthy meal", description: "In kitchen, sporty outfit. Healthy lifestyle vibe.", completed: false },
-    { id: "i11", category: "Verification", title: "Verification photos (2+)", description: "Clear face, holding today's date on paper. Different angles.", completed: false },
-  ],
-  willow: [
-    { id: "w1", category: "PPV Content", title: "Playful strip tease", description: "Fun energy, teasing, giggling. Pillow fight vibe.", completed: false },
-    { id: "w2", category: "PPV Content", title: "Bath/shower content", description: "Bubble bath or shower with steam. Relaxed and flirty.", completed: false },
-    { id: "w3", category: "PPV Content", title: "Cooking in underwear tease", description: "In kitchen, apron or just underwear, being playful.", completed: false },
-    { id: "w4", category: "Selfies/Photos", title: "Flirty mirror selfies (5+)", description: "Tongue out, winking, peace signs. Bright and fun energy.", completed: false },
-    { id: "w5", category: "Selfies/Photos", title: "Red lingerie photos (3+)", description: "To match the redhead brand. Different poses.", completed: false },
-    { id: "w6", category: "Selfies/Photos", title: "Casual / cozy photos (3+)", description: "Oversized jumper, messy bun, holding a mug. Cozy vibes.", completed: false },
-    { id: "w7", category: "Voice Notes", title: "'Hey you' flirty greeting", description: "Playful and cheeky, like texting someone you fancy.", completed: false },
-    { id: "w8", category: "Voice Notes", title: "'Guess what I'm wearing' tease", description: "Giggling, teasing, making them guess.", completed: false },
-    { id: "w9", category: "Lifestyle", title: "Dancing / getting ready clip", description: "Music playing, getting ready for a night out. Fun energy.", completed: false },
-    { id: "w10", category: "Lifestyle", title: "Yoga / stretching", description: "On mat, relaxed, flexible. Natural and calm.", completed: false },
-    { id: "w11", category: "Verification", title: "Verification photos (2+)", description: "Clear face, holding today's date on paper. Different angles.", completed: false },
-  ],
+interface OneOffTask {
+  id: string;
+  description: string;
+  due_date: string; // ISO date or empty
+  done: boolean;
+  done_at?: string; // ISO string
+}
+
+interface PipelineData {
+  recurring: {
+    photo_sets: RecurringItem;
+    short_videos: RecurringItem;
+    ppv_pieces: RecurringItem;
+    script_packages: RecurringItem;
+  };
+  one_off_tasks: OneOffTask[];
+  week_start: string; // ISO date (Monday)
+}
+
+type RecurringKey = keyof PipelineData['recurring'];
+
+// --- Helpers ---
+
+const RECURRING_META: Record<RecurringKey, { label: string; description: string; icon: React.ReactNode }> = {
+  photo_sets: { label: 'Photo Sets', description: 'Outfits, bedroom, lifestyle', icon: <Camera className="h-5 w-5" /> },
+  short_videos: { label: 'Short Video Clips', description: '30-60 sec for feed, mix of explicitness', icon: <Video className="h-5 w-5" /> },
+  ppv_pieces: { label: 'PPV Content Pieces', description: 'Lockable content to sell', icon: <Lock className="h-5 w-5" /> },
+  script_packages: { label: 'Script Packages', description: 'Full scenario shoots', icon: <FileText className="h-5 w-5" /> },
 };
 
-const DRIVE_LINKS: Record<string, string> = {
-  ashley: "https://drive.google.com/drive/folders/1pEav3u8dVuWfe3P-pMLFiRzjL1hwb8ca",
-  izzie: "https://drive.google.com/drive/folders/1gsSiL3gOO4XVU7OgAjDK710qb6A5zrJ4",
-  willow: "https://drive.google.com/drive/folders/1SdLKOjpokxnMfzD63CgFy60w9DuE7YsH",
-};
+const RECURRING_KEYS: RecurringKey[] = ['photo_sets', 'short_videos', 'ppv_pieces', 'script_packages'];
 
-const MODEL_NAMES: Record<string, string> = {
-  ashley: "Ashley",
-  izzie: "Izzie",
-  willow: "Willow",
-};
+function getMonday(d: Date): Date {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  date.setHours(0, 0, 0, 0);
+  date.setDate(diff);
+  return date;
+}
 
-export default function ClientChecklist() {
-  const params = new URLSearchParams(window.location.search);
-  const modelKey = (params.get("model") || "ashley").toLowerCase();
-  const modelName = MODEL_NAMES[modelKey] || "Ashley";
-  const driveLink = DRIVE_LINKS[modelKey] || "";
-  
-  const [items, setItems] = useState<ChecklistItem[]>([]);
+function formatDate(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
 
-  useEffect(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}-${modelKey}`);
-    if (saved) {
-      try { setItems(JSON.parse(saved)); } catch { setItems(DEFAULT_ITEMS[modelKey] || []); }
-    } else {
-      setItems(DEFAULT_ITEMS[modelKey] || []);
+function formatWeekLabel(mondayStr: string): string {
+  const mon = new Date(mondayStr + 'T00:00:00');
+  const sun = new Date(mon);
+  sun.setDate(sun.getDate() + 6);
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return `${mon.toLocaleDateString('en-GB', opts)} — ${sun.toLocaleDateString('en-GB', opts)}`;
+}
+
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+}
+
+function defaultData(weekStart: string): PipelineData {
+  return {
+    recurring: {
+      photo_sets: { target: 10, completed: [] },
+      short_videos: { target: 3, completed: [] },
+      ppv_pieces: { target: 5, completed: [] },
+      script_packages: { target: 2, completed: [] },
+    },
+    one_off_tasks: [],
+    week_start: weekStart,
+  };
+}
+
+function storageKey(model: string): string {
+  return `content_pipeline_${model.toLowerCase()}`;
+}
+
+function loadData(model: string): PipelineData {
+  const currentMonday = formatDate(getMonday(new Date()));
+  try {
+    const raw = localStorage.getItem(storageKey(model));
+    if (raw) {
+      const parsed: PipelineData = JSON.parse(raw);
+      // Auto-reset if new week
+      if (parsed.week_start !== currentMonday) {
+        const reset = defaultData(currentMonday);
+        // Keep targets from old data
+        for (const key of RECURRING_KEYS) {
+          if (parsed.recurring[key]?.target) {
+            reset.recurring[key].target = parsed.recurring[key].target;
+          }
+        }
+        // Keep incomplete one-off tasks
+        reset.one_off_tasks = parsed.one_off_tasks.filter(t => !t.done);
+        return reset;
+      }
+      return parsed;
     }
-  }, [modelKey]);
+  } catch {}
+  return defaultData(currentMonday);
+}
 
-  const toggleItem = (id: string) => {
-    const updated = items.map(item => 
-      item.id === id ? { ...item, completed: !item.completed } : item
-    );
-    setItems(updated);
-    localStorage.setItem(`${STORAGE_KEY}-${modelKey}`, JSON.stringify(updated));
+function saveData(model: string, data: PipelineData) {
+  localStorage.setItem(storageKey(model), JSON.stringify(data));
+}
+
+// --- Component ---
+
+const ClientChecklist: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const modelName = searchParams.get('model') || '';
+
+  let isAdmin = false;
+  try {
+    const auth = useAuth();
+    isAdmin = auth.user?.role === 'admin' || auth.user?.role === 'supervisor';
+  } catch {
+    isAdmin = false;
+  }
+
+  const [data, setData] = useState<PipelineData>(() => loadData(modelName));
+  const [editingTargets, setEditingTargets] = useState(false);
+  const [tempTargets, setTempTargets] = useState<Record<RecurringKey, number>>({
+    photo_sets: 10, short_videos: 3, ppv_pieces: 5, script_packages: 2,
+  });
+  const [newTaskDesc, setNewTaskDesc] = useState('');
+  const [newTaskDue, setNewTaskDue] = useState('');
+  const [showAddTask, setShowAddTask] = useState(false);
+
+  // Persist on change
+  useEffect(() => {
+    if (modelName) saveData(modelName, data);
+  }, [data, modelName]);
+
+  // Reload if model changes
+  useEffect(() => {
+    if (modelName) setData(loadData(modelName));
+  }, [modelName]);
+
+  const updateData = useCallback((updater: (prev: PipelineData) => PipelineData) => {
+    setData(prev => updater(prev));
+  }, []);
+
+  // --- Recurring handlers ---
+
+  const toggleRecurring = (key: RecurringKey) => {
+    updateData(prev => {
+      const item = prev.recurring[key];
+      if (item.completed.length < item.target) {
+        // Add one
+        return {
+          ...prev,
+          recurring: {
+            ...prev.recurring,
+            [key]: { ...item, completed: [...item.completed, { timestamp: new Date().toISOString() }] },
+          },
+        };
+      }
+      return prev;
+    });
   };
 
-  const completedCount = items.filter(i => i.completed).length;
-  const totalCount = items.length;
-  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const removeLastRecurring = (key: RecurringKey) => {
+    updateData(prev => {
+      const item = prev.recurring[key];
+      if (item.completed.length > 0) {
+        return {
+          ...prev,
+          recurring: {
+            ...prev.recurring,
+            [key]: { ...item, completed: item.completed.slice(0, -1) },
+          },
+        };
+      }
+      return prev;
+    });
+  };
 
-  const categories = [...new Set(items.map(i => i.category))];
+  const startEditTargets = () => {
+    const t: Record<string, number> = {};
+    for (const key of RECURRING_KEYS) t[key] = data.recurring[key].target;
+    setTempTargets(t as Record<RecurringKey, number>);
+    setEditingTargets(true);
+  };
+
+  const saveTargets = () => {
+    updateData(prev => {
+      const newRecurring = { ...prev.recurring };
+      for (const key of RECURRING_KEYS) {
+        newRecurring[key] = { ...newRecurring[key], target: Math.max(1, tempTargets[key] || 1) };
+      }
+      return { ...prev, recurring: newRecurring };
+    });
+    setEditingTargets(false);
+  };
+
+  // --- One-off handlers ---
+
+  const addOneOffTask = () => {
+    if (!newTaskDesc.trim()) return;
+    updateData(prev => ({
+      ...prev,
+      one_off_tasks: [
+        ...prev.one_off_tasks,
+        { id: generateId(), description: newTaskDesc.trim(), due_date: newTaskDue, done: false },
+      ],
+    }));
+    setNewTaskDesc('');
+    setNewTaskDue('');
+    setShowAddTask(false);
+  };
+
+  const toggleOneOff = (id: string) => {
+    updateData(prev => ({
+      ...prev,
+      one_off_tasks: prev.one_off_tasks.map(t =>
+        t.id === id ? { ...t, done: !t.done, done_at: !t.done ? new Date().toISOString() : undefined } : t
+      ),
+    }));
+  };
+
+  const removeOneOff = (id: string) => {
+    updateData(prev => ({
+      ...prev,
+      one_off_tasks: prev.one_off_tasks.filter(t => t.id !== id),
+    }));
+  };
+
+  // --- Render ---
+
+  if (!modelName) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground text-lg">No model specified.</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Use <code className="bg-muted px-1.5 py-0.5 rounded text-xs">?model=Name</code> in the URL.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 text-white p-6 max-w-3xl mx-auto">
-      {/* Header — NO agency branding */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{modelName}'s Content Checklist</h1>
-        <p className="text-gray-400 mt-1">Tick off each item as you complete it. Upload finished content to the Drive folder below.</p>
-        
-        {/* Upload folder link */}
-        {driveLink && (
-          <a
-            href={driveLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Upload className="h-4 w-4" />
-            Upload Content to Drive
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        )}
-      </div>
-
-      {/* Progress bar */}
-      <div className="mb-6 p-4 bg-gray-800/50 rounded-xl border border-gray-700/50">
-        <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-400">Progress</span>
-          <span className="font-bold">{completedCount}/{totalCount} ({progress}%)</span>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-1">
+          <h1 className="text-2xl font-bold">{modelName}'s Content Checklist</h1>
+          <p className="text-sm text-muted-foreground">
+            Week of {formatWeekLabel(data.week_start)}
+          </p>
+          {isAdmin && (
+            <Badge variant="outline" className="text-xs">Admin View</Badge>
+          )}
         </div>
-        <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : 'bg-yellow-500'}`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
 
-      {/* Checklist by category */}
-      {categories.map(category => (
-        <div key={category} className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Camera className="h-4 w-4" />
-            {category}
-          </h2>
-          <div className="space-y-2">
-            {items.filter(i => i.category === category).map(item => (
-              <div
-                key={item.id}
-                className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                  item.completed 
-                    ? 'bg-green-500/10 border-green-500/30' 
-                    : 'bg-gray-800/30 border-gray-700/30 hover:border-gray-600/50'
-                }`}
-                onClick={() => toggleItem(item.id)}
-              >
-                <div className="flex items-start gap-3">
-                  {item.completed ? (
-                    <CheckSquare className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  ) : (
-                    <Square className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
-                  )}
-                  <div>
-                    <p className={`text-sm font-medium ${item.completed ? 'line-through text-gray-500' : 'text-white'}`}>
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+        {/* Recurring Weekly Section */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Weekly Content</CardTitle>
+              {isAdmin && !editingTargets && (
+                <Button variant="ghost" size="sm" onClick={startEditTargets}>
+                  <Pencil className="h-4 w-4 mr-1" /> Edit Targets
+                </Button>
+              )}
+              {isAdmin && editingTargets && (
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={saveTargets}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditingTargets(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {RECURRING_KEYS.map(key => {
+              const item = data.recurring[key];
+              const meta = RECURRING_META[key];
+              const done = item.completed.length;
+              const target = item.target;
+              const pct = target > 0 ? Math.round((done / target) * 100) : 0;
+              const allDone = done >= target;
+
+              return (
+                <div key={key} className="space-y-2">
+                  <div className="flex items-start gap-3">
+                    <button
+                      onClick={() => allDone ? removeLastRecurring(key) : toggleRecurring(key)}
+                      className={`mt-0.5 flex-shrink-0 w-10 h-10 rounded-lg border-2 flex items-center justify-center transition-all
+                        ${allDone
+                          ? 'bg-green-600 border-green-600 text-white'
+                          : 'border-muted-foreground/30 hover:border-primary/50 text-muted-foreground'
+                        }`}
+                    >
+                      {meta.icon}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{meta.label}</span>
+                        {editingTargets ? (
+                          <Input
+                            type="number"
+                            min={1}
+                            value={tempTargets[key]}
+                            onChange={e => setTempTargets(prev => ({ ...prev, [key]: parseInt(e.target.value) || 1 }))}
+                            className="w-16 h-7 text-xs text-center"
+                          />
+                        ) : (
+                          <span className={`text-sm font-mono ${allDone ? 'text-green-500' : 'text-muted-foreground'}`}>
+                            {done}/{target}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{meta.description}</p>
+                      <Progress value={pct} className="h-1.5 mt-1.5" />
+                      {isAdmin && item.completed.length > 0 && (
+                        <p className="text-[10px] text-muted-foreground/60 mt-1">
+                          Last: {new Date(item.completed[item.completed.length - 1].timestamp).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {/* Tap buttons for adding/removing */}
+                  <div className="flex gap-2 pl-13 ml-[52px]">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs flex-1"
+                      disabled={allDone}
+                      onClick={() => toggleRecurring(key)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> Done One
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs"
+                      disabled={done === 0}
+                      onClick={() => removeLastRecurring(key)}
+                    >
+                      Undo
+                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+              );
+            })}
+          </CardContent>
+        </Card>
 
-      {/* Footer */}
-      <div className="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-600">
-        Questions? Message your contact directly.
+        {/* One-off Tasks Section */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Specific Tasks</CardTitle>
+              {isAdmin && (
+                <Button variant="ghost" size="sm" onClick={() => setShowAddTask(!showAddTask)}>
+                  <Plus className="h-4 w-4 mr-1" /> Add
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Add task form */}
+            {isAdmin && showAddTask && (
+              <div className="space-y-2 p-3 rounded-lg border border-dashed border-muted-foreground/30">
+                <Input
+                  placeholder="Task description..."
+                  value={newTaskDesc}
+                  onChange={e => setNewTaskDesc(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && addOneOffTask()}
+                />
+                <div className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={newTaskDue}
+                    onChange={e => setNewTaskDue(e.target.value)}
+                    className="flex-1"
+                    placeholder="Due date (optional)"
+                  />
+                  <Button size="sm" onClick={addOneOffTask} disabled={!newTaskDesc.trim()}>
+                    Add
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Task list */}
+            {data.one_off_tasks.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No specific tasks this week
+              </p>
+            ) : (
+              data.one_off_tasks.map(task => (
+                <div
+                  key={task.id}
+                  className={`flex items-start gap-3 p-3 rounded-lg border transition-all
+                    ${task.done ? 'border-green-600/30 bg-green-600/5' : 'border-muted-foreground/20'}`}
+                >
+                  <Checkbox
+                    checked={task.done}
+                    onCheckedChange={() => toggleOneOff(task.id)}
+                    className="mt-0.5 h-6 w-6"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm ${task.done ? 'line-through text-muted-foreground' : ''}`}>
+                      {task.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {task.due_date && (
+                        <span className="text-[11px] text-muted-foreground">
+                          Due: {new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        </span>
+                      )}
+                      {isAdmin && task.done && task.done_at && (
+                        <span className="text-[10px] text-muted-foreground/60">
+                          Done: {new Date(task.done_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeOneOff(task.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <p className="text-center text-[11px] text-muted-foreground/40 pb-4">
+          Tap items to mark as done · Resets every Monday
+        </p>
       </div>
     </div>
   );
-}
+};
+
+export default ClientChecklist;
