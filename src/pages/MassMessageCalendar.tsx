@@ -526,7 +526,7 @@ export default function MassMessageCalendar() {
             </h4>
             <ul className="text-xs text-muted-foreground space-y-1">
               <li>• <strong>Exclude whales from mass messages</strong> — they get personal attention</li>
-              <li>• Whales = $100+ lifetime spend</li>
+              <li>• Whales = $500+ lifetime spend</li>
               <li>• Send whales custom content, not blasts</li>
               <li>• Track whale PPV open rates separately</li>
             </ul>
