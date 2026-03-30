@@ -1,4 +1,4 @@
-// fan-profiles-v2
+// fan-profiles-v3 — cleaned up layout, better hierarchy, all fans shown
 import { useState, useEffect } from "react";
 import {
   MessageCircle, Clock, Calendar, Briefcase, MapPin, Loader2,
@@ -72,6 +72,8 @@ const MODEL_COLORS: Record<string, string> = {
 
 const FAN_TYPES = ["Unknown", "Submissive", "Dominant", "Switch", "Vanilla", "Roleplay", "Voyeur", "Generous Tipper", "Whale Potential"];
 
+const TIER_ORDER: Record<string, number> = { whale: 0, vip: 1, regular: 2, new: 3 };
+
 function needsContact(lastMessaged: string): boolean {
   if (!lastMessaged) return true;
   const diff = Date.now() - new Date(lastMessaged).getTime();
@@ -106,6 +108,31 @@ function getFanTypeLabel(tier: string): { label: string; color: string } {
   }
 }
 
+/** Parse the pipe-separated interests field into 3 parts */
+function parseInterests(interests: string) {
+  const parts = (interests || "").split("|").map(s => s.trim());
+  return { fanType: parts[0] || "", contentPref: parts[1] || "", spentOn: parts[2] || "" };
+}
+
+/** Get left border color for whale/VIP cards */
+function getTierBorderClass(tier: string): string {
+  switch (tier?.toLowerCase()) {
+    case "whale": return "border-l-4 border-l-yellow-500/60";
+    case "vip": return "border-l-4 border-l-amber-500/40";
+    default: return "";
+  }
+}
+
+/** Sort fans: whales first, then VIP, then by total spent desc */
+function sortFans(fans: Fan[]): Fan[] {
+  return [...fans].sort((a, b) => {
+    const tierA = TIER_ORDER[a.tier?.toLowerCase()] ?? 2;
+    const tierB = TIER_ORDER[b.tier?.toLowerCase()] ?? 2;
+    if (tierA !== tierB) return tierA - tierB;
+    return b.totalSpent - a.totalSpent;
+  });
+}
+
 /* ─── Edit Modal ─── */
 function EditModal({
   fan,
@@ -119,7 +146,6 @@ function EditModal({
   const [data, setData] = useState<Fan>({ ...fan });
   const set = (key: keyof Fan, value: any) => setData((p) => ({ ...p, [key]: value }));
 
-  // Parse interests for fan type & content preference
   const parts = (data.interests || "").split("|").map(s => s.trim());
   const fanType = parts[0] || "";
   const contentPref = parts[1] || "";
@@ -305,101 +331,81 @@ function FanCard({
   const [expanded, setExpanded] = useState(false);
   const contact = needsContact(fan.lastMessaged);
   const typeInfo = getFanTypeLabel(fan.tier);
-
-  // Parse interests for fan type, content preference, spent on
-  const interestParts = (fan.interests || "").split("|").map(s => s.trim());
-  const fanType = interestParts[0] || "";
-  const contentPref = interestParts[1] || "";
-  const spentOn = interestParts[2] || "";
+  const { fanType, contentPref, spentOn } = parseInterests(fan.interests);
+  const tierBorder = getTierBorderClass(fan.tier);
 
   return (
-    <div className="glass-card border border-border/20 hover:border-border/40 transition-all duration-200 rounded-lg overflow-hidden">
-      {/* ── Collapsed View — shows key info at a glance ── */}
+    <div className={`glass-card border border-border/20 hover:border-border/40 transition-all duration-200 rounded-lg overflow-hidden ${tierBorder}`}>
+      {/* ── Collapsed View — clean 2-line summary ── */}
       <div
-        className="p-4 cursor-pointer select-none"
+        className="p-3 cursor-pointer select-none"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-start gap-3">
-          {/* Avatar */}
-          <div
-            className="h-11 w-11 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5"
-            style={{ backgroundColor: modelColor }}
-          >
-            {isDemo ? "??" : (fan.name ? fan.name.slice(0, 2).toUpperCase() : "??")}
+        <div className="flex items-center gap-3">
+          {/* Model color dot + avatar */}
+          <div className="relative shrink-0">
+            <div
+              className="h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style={{ backgroundColor: modelColor }}
+            >
+              {isDemo ? "??" : (fan.name ? fan.name.slice(0, 2).toUpperCase() : "??")}
+            </div>
           </div>
 
-          {/* Main Info */}
+          {/* Main Info — 2 lines */}
           <div className="min-w-0 flex-1">
-            {/* Row 1: Name + Username + Badges */}
+            {/* Line 1: Name, @username, tier badge */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-base">{isDemo ? `Fan #${fan.id.slice(-4).toUpperCase()}` : (fan.name || "Unknown")}</span>
+              <span className="font-semibold text-sm">{isDemo ? `Fan #${fan.id.slice(-4).toUpperCase()}` : (fan.name || "Unknown")}</span>
               {!isDemo && fan.ofUsername && (
                 <a
                   href={`https://onlyfans.com/${fan.ofUsername}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-0.5"
+                  className="text-xs text-blue-400/80 hover:text-blue-300 flex items-center gap-0.5"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  @{fan.ofUsername} <ExternalLink className="h-3 w-3" />
+                  @{fan.ofUsername} <ExternalLink className="h-2.5 w-2.5" />
                 </a>
               )}
-              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${typeInfo.color}`}>
+              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${typeInfo.color}`}>
                 {typeInfo.label}
               </span>
-              {fanType && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/25">
-                  {fanType}
-                </span>
-              )}
-              {contact && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/25 text-red-400 border border-red-500/40 flex items-center gap-1 animate-pulse">
-                  <AlertTriangle className="h-3 w-3" /> CONTACT
-                </span>
-              )}
             </div>
 
-            {/* Row 2: Key stats at a glance */}
-            <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
+            {/* Line 2: Total spent, last contact, one key tag */}
+            <div className="flex items-center gap-2.5 mt-1 text-xs text-muted-foreground">
               {isAdmin && !isDemo && (
-                <>
-                  <span className="flex items-center gap-1">
-                    <DollarSign className="h-3 w-3 text-green-400" />
-                    <span className="text-green-400 font-bold">${fan.totalSpent.toLocaleString()}</span> lifetime
-                  </span>
-                  <span className="text-border/60">|</span>
-                </>
+                <span className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3 text-green-400" />
+                  <span className="text-green-400 font-semibold">${fan.totalSpent.toLocaleString()}</span>
+                </span>
               )}
               <span className="flex items-center gap-1">
                 <MessageCircle className="h-3 w-3" />
-                Last contact: <span className={contact ? "text-red-400 font-semibold" : "text-foreground"}>{timeSince(fan.lastMessaged)}</span>
+                <span className={contact ? "text-red-400 font-semibold" : ""}>{timeSince(fan.lastMessaged)}</span>
               </span>
-              {fan.hobbies && (
-                <>
-                  <span className="text-border/60">|</span>
-                  <span className="truncate max-w-[180px]">🎮 {fan.hobbies}</span>
-                </>
-              )}
-              {contentPref && (
-                <>
-                  <span className="text-border/60">|</span>
-                  <span className="flex items-center gap-1">
-                    <Heart className="h-3 w-3 text-pink-400" /> {contentPref}
-                  </span>
-                </>
-              )}
+              {contact ? (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-0.5">
+                  <AlertTriangle className="h-2.5 w-2.5" /> Contact
+                </span>
+              ) : fanType ? (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                  {fanType}
+                </span>
+              ) : null}
             </div>
           </div>
 
           {/* Right: Edit + Expand */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
               onClick={(e) => { e.stopPropagation(); onEdit(fan); }}
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="h-3 w-3" />
             </Button>
             {expanded ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -410,149 +416,113 @@ function FanCard({
         </div>
       </div>
 
-      {/* ── Expanded View — ALL fields visible ── */}
+      {/* ── Expanded View — 2 sections: Quick Stats + Personal Details ── */}
       {expanded && (
-        <div className="px-4 pb-4 pt-0 border-t border-border/20 space-y-4">
-          {/* Quick Actions */}
-          <div className="flex gap-2 pt-3">
+        <div className="px-3 pb-3 pt-0 border-t border-border/15 space-y-3">
+          {/* Quick Action */}
+          <div className="pt-2">
             <button
               onClick={() => onMarkMessaged(fan.id)}
-              className="text-xs px-3 py-1.5 rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors border border-green-500/30"
+              className="text-xs px-3 py-1.5 rounded-md bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-colors border border-green-500/25"
             >
               ✅ Mark Messaged Today
             </button>
           </div>
 
-          {/* Spending & Content */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {isAdmin && !isDemo && (
-              <>
-                <InfoBox
-                  icon={<DollarSign className="h-4 w-4 text-green-400" />}
-                  label="Total Lifetime Spend"
-                  value={`$${fan.totalSpent.toLocaleString()}`}
-                  valueClass="text-green-400 text-lg font-bold"
-                />
-                <InfoBox
-                  icon={<ShoppingBag className="h-4 w-4 text-amber-400" />}
-                  label="Spent Money On"
-                  value={spentOn || "Not recorded"}
-                  valueClass={spentOn ? "text-foreground" : "text-muted-foreground/40 italic"}
-                />
-              </>
-            )}
-            <InfoBox
-              icon={<Heart className="h-4 w-4 text-pink-400" />}
-              label="Favourite Content"
-              value={contentPref || "Not recorded"}
-              valueClass={contentPref ? "text-foreground" : "text-muted-foreground/40 italic"}
-            />
-          </div>
+          {/* Notes — prominent if they exist */}
+          {fan.notes && (
+            <div className="bg-amber-500/10 rounded-md p-3 border border-amber-500/15">
+              <p className="text-xs font-medium text-amber-300/90 leading-relaxed">📝 {fan.notes}</p>
+            </div>
+          )}
 
-          {/* Fan Type & Personality */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <InfoBox
-              icon={<Flame className="h-4 w-4 text-orange-400" />}
-              label="Fan Type"
-              value={fanType || "Not set"}
-              valueClass={fanType ? "text-foreground" : "text-muted-foreground/40 italic"}
-            />
-            <InfoBox
-              icon={<Eye className="h-4 w-4 text-blue-400" />}
-              label="Personality / How to Talk"
-              value={fan.personality || "Not recorded"}
-              valueClass={fan.personality ? "text-foreground text-xs leading-relaxed" : "text-muted-foreground/40 italic"}
-            />
-          </div>
-
-          {/* Personal Info Grid */}
+          {/* Section 1: Quick Stats */}
           <div>
-            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-              <User className="h-3 w-3" /> Personal Info
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <h4 className="text-[10px] font-medium text-muted-foreground mb-2">Quick Stats</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {isAdmin && !isDemo && (
+                <StatItem label="Lifetime Spend" value={`$${fan.totalSpent.toLocaleString()}`} valueClass="text-green-400 font-bold" />
+              )}
+              <StatItem label="Tier" value={typeInfo.label} />
+              <StatItem label="Fan Type" value={fanType || "Not set"} muted={!fanType} />
+              <StatItem label="Last Contact" value={fan.lastMessaged ? formatDate(fan.lastMessaged) : "Never"} valueClass={contact ? "text-red-400 font-semibold" : ""} />
+              {contentPref && <StatItem label="Fav Content" value={contentPref} />}
+              {spentOn && <StatItem label="Spent On" value={spentOn} />}
+            </div>
+          </div>
+
+          {/* Section 2: Personal Details */}
+          <div>
+            <h4 className="text-[10px] font-medium text-muted-foreground mb-2">Personal Details</h4>
+            <div className="grid grid-cols-2 gap-2">
               <MiniInfo label="🎂 DOB" value={fan.dob} />
               <MiniInfo label="📍 Location" value={fan.location} />
               <MiniInfo label="💼 Job" value={fan.job} />
               <MiniInfo label="💰 Payday" value={fan.payday} />
               <MiniInfo label="💑 Relationship" value={fan.relationshipStatus} />
               <MiniInfo label="🎮 Hobbies" value={fan.hobbies} />
-            </div>
-          </div>
-
-          {/* Activity */}
-          <div>
-            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-              <Clock className="h-3 w-3" /> Activity
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              <MiniInfo label="💬 Last Messaged" value={fan.lastMessaged ? formatDate(fan.lastMessaged) : undefined} alert={contact} />
+              <MiniInfo label="⏰ Usually Online" value={fan.activeTime} />
               <MiniInfo label="🟢 Last Active" value={fan.lastActive ? formatDate(fan.lastActive) : undefined} />
-              <MiniInfo label="⏰ Online Usually" value={fan.activeTime} />
             </div>
           </div>
 
-          {/* Preferences Tags */}
-          <div>
-            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-              <Tag className="h-3 w-3" /> What They Buy / Respond To
-            </h4>
-            {fan.preferences && fan.preferences.length > 0 ? (
+          {/* Personality */}
+          {fan.personality && (
+            <div className="bg-secondary/20 rounded-md p-2.5">
+              <span className="text-[10px] text-muted-foreground block mb-1">💬 Personality / How to Talk</span>
+              <p className="text-xs text-foreground leading-relaxed">{fan.personality}</p>
+            </div>
+          )}
+
+          {/* Preference Tags */}
+          {fan.preferences && fan.preferences.length > 0 && (
+            <div>
+              <span className="text-[10px] text-muted-foreground block mb-1.5">What They Buy / Respond To</span>
               <div className="flex gap-1.5 flex-wrap">
                 {fan.preferences.map((pref, i) => (
-                  <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/25">
+                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
                     {pref}
                   </span>
                 ))}
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground/40 italic">No tags yet — edit to add</p>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Notes */}
-          <div>
-            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">📝 Notes</h4>
-            {fan.notes ? (
-              <p className="text-xs text-amber-300/80 bg-amber-500/10 rounded-md p-3 leading-relaxed">{fan.notes}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground/40 italic">No notes yet</p>
-            )}
-          </div>
+          {/* Notes — only show placeholder if no notes above */}
+          {!fan.notes && (
+            <p className="text-[10px] text-muted-foreground/40 italic">No notes — click edit to add</p>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function InfoBox({
-  icon,
+function StatItem({
   label,
   value,
   valueClass = "text-foreground",
+  muted = false,
 }: {
-  icon: React.ReactNode;
   label: string;
   value: string;
   valueClass?: string;
+  muted?: boolean;
 }) {
   return (
-    <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
-      <div className="flex items-center gap-1.5 mb-1">
-        {icon}
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span>
-      </div>
-      <p className={`text-sm ${valueClass}`}>{value}</p>
+    <div className="p-2 rounded-md bg-secondary/20">
+      <span className="text-[10px] text-muted-foreground block">{label}</span>
+      <span className={`text-xs ${muted ? "text-muted-foreground/40 italic" : valueClass}`}>{value}</span>
     </div>
   );
 }
 
 function MiniInfo({ label, value, alert }: { label: string; value?: string; alert?: boolean }) {
   return (
-    <div className="p-2 rounded-md bg-secondary/20 border border-border/20">
+    <div className="p-2 rounded-md bg-secondary/15">
       <span className="text-[10px] text-muted-foreground block">{label}</span>
       <span className={`text-xs ${alert ? "text-red-400 font-semibold" : value ? "text-foreground" : "text-muted-foreground/40 italic"}`}>
-        {value || "Not set"}
+        {value || "—"}
       </span>
     </div>
   );
@@ -579,7 +549,6 @@ export default function FanProfiles() {
     const { data, error } = await supabase
       .from("fan_profiles")
       .select("*")
-      .gt("total_spent", 0)
       .order("total_spent", { ascending: false });
 
     if (error) {
@@ -603,6 +572,9 @@ export default function FanProfiles() {
         grouped[model].push(fan);
       }
     });
+
+    // Sort each model's fans: whales first, then VIP, then by spend
+    MODELS.forEach((m) => { grouped[m] = sortFans(grouped[m]); });
 
     setFansByModel(grouped);
     setTotalsByModel(totals);
@@ -774,26 +746,33 @@ export default function FanProfiles() {
 
         const totalLifetime = totalsByModel[model] || 0;
         const count = countsByModel[model] || 0;
+        const whaleCount = (fansByModel[model] || []).filter(f => f.tier?.toLowerCase() === "whale").length;
         const needsContactCount = (fansByModel[model] || []).filter((f) => needsContact(f.lastMessaged)).length;
 
         return (
-          <div key={model} className="space-y-3">
-            <div className="flex items-center justify-between border-b border-border/30 pb-2">
+          <div key={model} className="space-y-2">
+            <div className="flex items-center justify-between border-b border-border/20 pb-2">
               <div className="flex items-center gap-3">
                 <div
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
+                  className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
                   style={{ backgroundColor: color }}
                 >
                   {model.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">{model}</h2>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <h2 className="text-lg font-bold">{model}</h2>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{count} fans</span>
+                    {whaleCount > 0 && (
+                      <>
+                        <span>·</span>
+                        <span className="text-yellow-400">{whaleCount} 🐋</span>
+                      </>
+                    )}
                     {isAdmin && !isDemo && (
                       <>
                         <span>·</span>
-                        <span className="text-green-400 font-semibold">${totalLifetime.toLocaleString()} lifetime</span>
+                        <span className="text-green-400 font-semibold">${totalLifetime.toLocaleString()}</span>
                       </>
                     )}
                     {needsContactCount > 0 && (
@@ -811,7 +790,7 @@ export default function FanProfiles() {
             </div>
 
             {addingModel === model && (
-              <div className="glass-card p-4 flex gap-3 items-end border border-border/30 rounded-lg">
+              <div className="glass-card p-3 flex gap-3 items-end border border-border/30 rounded-lg">
                 <div className="flex-1">
                   <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Name</label>
                   <Input value={newFan.name} onChange={(e) => setNewFan((p) => ({ ...p, name: e.target.value }))} placeholder="Fan name" className="mt-1" />
@@ -830,7 +809,7 @@ export default function FanProfiles() {
                 {searchQuery || filterTier !== "all" ? "No fans match the current filters" : `No fans tracked yet for ${model}. Click "Add Fan" to start.`}
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {fans.map((fan) => (
                   <FanCard
                     key={fan.id}
