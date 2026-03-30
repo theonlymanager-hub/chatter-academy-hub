@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Plus,
@@ -11,86 +10,87 @@ import {
   X,
   MapPin,
   Calendar,
-  CheckSquare,
-  Copy,
-  Share2,
   Edit2,
-  ChevronDown,
-  ChevronUp,
   Home,
-  User,
+  PoundSterling,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
   StickyNote,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 // ── Types ──────────────────────────────────────────────────────────────
-
-interface ContentItem {
-  id: string;
-  category: "feed" | "ppv" | "custom" | "scenario" | "content_bank";
-  title: string;
-  description: string;
-  completed: boolean;
-  completedAt: string | null;
-}
 
 interface AirbnbBooking {
   id: string;
   model: string;
   location: string;
-  checkIn: string;
-  checkOut: string;
-  status: "upcoming" | "active" | "completed";
-  feedPostCount: number;
-  ppvVideoCount: number;
+  check_in: string;
+  check_out: string;
+  cost: number;
+  status: "booked" | "confirmed" | "completed" | "cancelled";
   notes: string;
-  assignedTo: string;
-  contentItems: ContentItem[];
-  createdBy: string;
-  createdAt: string;
+  created_by: string;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────
 
-const STORAGE_KEY = "airbnb-schedule-v2";
+const STORAGE_KEY = "airbnb_bookings";
 
-const MODELS = ["Ashley Morris", "Izzy", "Willow"];
+const MODELS = ["Ashley", "Willow", "Izzie"];
 
-const MODEL_COLORS: Record<string, string> = {
-  "Ashley Morris": "border-l-pink-500",
-  "Izzy": "border-l-purple-500",
-  "Willow": "border-l-emerald-500",
-};
-
-const MODEL_BG: Record<string, string> = {
-  "Ashley Morris": "from-pink-500/10 to-transparent",
-  "Izzy": "from-purple-500/10 to-transparent",
-  "Willow": "from-emerald-500/10 to-transparent",
-};
-
-const MODEL_ACCENT: Record<string, string> = {
-  "Ashley Morris": "text-pink-400",
-  "Izzy": "text-purple-400",
-  "Willow": "text-emerald-400",
+const MODEL_COLORS: Record<string, { border: string; bg: string; text: string; dot: string }> = {
+  Ashley: { border: "border-pink-500", bg: "bg-pink-500/15", text: "text-pink-400", dot: "bg-pink-500" },
+  Willow: { border: "border-emerald-500", bg: "bg-emerald-500/15", text: "text-emerald-400", dot: "bg-emerald-500" },
+  Izzie: { border: "border-violet-500", bg: "bg-violet-500/15", text: "text-violet-400", dot: "bg-violet-500" },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  upcoming: { label: "Upcoming", color: "text-blue-300", bg: "bg-blue-500/20 border-blue-500/30" },
-  active: { label: "Active", color: "text-green-300", bg: "bg-green-500/20 border-green-500/30" },
+  booked: { label: "Booked", color: "text-blue-300", bg: "bg-blue-500/20 border-blue-500/30" },
+  confirmed: { label: "Confirmed", color: "text-green-300", bg: "bg-green-500/20 border-green-500/30" },
   completed: { label: "Completed", color: "text-zinc-400", bg: "bg-zinc-500/20 border-zinc-500/30" },
+  cancelled: { label: "Cancelled", color: "text-red-300", bg: "bg-red-500/20 border-red-500/30" },
 };
 
-const CATEGORY_CONFIG: Record<string, { label: string; emoji: string }> = {
-  feed: { label: "Feed Posts", emoji: "📸" },
-  ppv: { label: "PPV Videos", emoji: "💰" },
-  custom: { label: "Custom Fulfillments", emoji: "🎯" },
-  scenario: { label: "Scenario Content", emoji: "🎬" },
-  content_bank: { label: "Content Bank", emoji: "🗂️" },
-};
+const DEFAULT_MODEL_COLORS = { border: "border-zinc-500", bg: "bg-zinc-500/15", text: "text-zinc-400", dot: "bg-zinc-500" };
 
-const CATEGORY_ORDER: ContentItem["category"][] = ["feed", "ppv", "custom", "scenario", "content_bank"];
-
-const ASSIGNEES = ["Elle", "Ashley Morris", "Izzy", "Willow", "Luke"];
+const SAMPLE_BOOKINGS: AirbnbBooking[] = [
+  {
+    id: "sample-1",
+    model: "Ashley",
+    location: "Brighton, UK",
+    check_in: "2026-04-02",
+    check_out: "2026-04-04",
+    cost: 200,
+    status: "booked",
+    notes: "2-bed flat, good lighting, near beach for outdoor content",
+    created_by: "Elle",
+  },
+  {
+    id: "sample-2",
+    model: "Willow",
+    location: "Manchester, UK",
+    check_in: "2026-04-08",
+    check_out: "2026-04-10",
+    cost: 180,
+    status: "booked",
+    notes: "City centre apartment, ring light included",
+    created_by: "Elle",
+  },
+  {
+    id: "sample-3",
+    model: "Izzie",
+    location: "London, UK",
+    check_in: "2026-04-15",
+    check_out: "2026-04-17",
+    cost: 250,
+    status: "booked",
+    notes: "Luxury flat, great for premium content shoots",
+    created_by: "Luke",
+  },
+];
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -98,9 +98,17 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-function formatDate(dateStr: string) {
+function formatDateShort(dateStr: string) {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-GB", {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function formatDateFull(dateStr: string) {
+  if (!dateStr) return "";
+  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-GB", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -108,20 +116,51 @@ function formatDate(dateStr: string) {
   });
 }
 
-function getBookingStatus(booking: AirbnbBooking): "upcoming" | "active" | "completed" {
-  if (booking.status === "completed") return "completed";
-  const today = new Date().toISOString().split("T")[0];
-  if (booking.checkIn <= today && booking.checkOut >= today) return "active";
-  if (booking.checkOut < today) return "completed";
-  return "upcoming";
-}
-
-function daysUntil(dateStr: string): number {
+function isPast(dateStr: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr);
-  target.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return new Date(dateStr + "T00:00:00") < today;
+}
+
+function isToday(dateStr: string) {
+  const today = new Date().toISOString().split("T")[0];
+  return dateStr === today;
+}
+
+function getMonday(d: Date): Date {
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d);
+  monday.setDate(diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function addDays(d: Date, days: number): Date {
+  const result = new Date(d);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function dateToStr(d: Date): string {
+  return d.toISOString().split("T")[0];
+}
+
+function getWeeksInRange(startMonday: Date, numWeeks: number): Date[][] {
+  const weeks: Date[][] = [];
+  for (let w = 0; w < numWeeks; w++) {
+    const weekStart = addDays(startMonday, w * 7);
+    const days: Date[] = [];
+    for (let d = 0; d < 7; d++) {
+      days.push(addDays(weekStart, d));
+    }
+    weeks.push(days);
+  }
+  return weeks;
+}
+
+function bookingSpansDates(booking: AirbnbBooking, dateStr: string): boolean {
+  return dateStr >= booking.check_in && dateStr <= booking.check_out;
 }
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -129,47 +168,40 @@ function daysUntil(dateStr: string): number {
 export default function AirbnbSchedule() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const canManage = user?.role === "admin" || user?.role === "supervisor" || user?.role === "data_entry";
+  const canManage = user?.role === "admin" || user?.role === "supervisor";
 
   const [bookings, setBookings] = useState<AirbnbBooking[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showAddItem, setShowAddItem] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterModel, setFilterModel] = useState<string>("all");
+  const [weekOffset, setWeekOffset] = useState(0);
 
   // Form state
   const [form, setForm] = useState({
     model: "",
     location: "",
-    checkIn: "",
-    checkOut: "",
-    feedPostCount: 5,
-    ppvVideoCount: 3,
+    check_in: "",
+    check_out: "",
+    cost: 0,
+    status: "booked" as AirbnbBooking["status"],
     notes: "",
-    assignedTo: "Elle",
-  });
-
-  // Content item form
-  const [itemForm, setItemForm] = useState({
-    category: "feed" as ContentItem["category"],
-    title: "",
-    description: "",
   });
 
   // ── Persistence ────────────────────────────────────────────────────
 
   useEffect(() => {
-    // NOTE: Using localStorage as temporary storage. Supabase table `airbnb_bookings` is needed.
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        setBookings(JSON.parse(saved));
-      } catch {
-        setBookings([]);
-      }
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setBookings(parsed);
+          return;
+        }
+      } catch {}
     }
+    // Pre-populate with sample data
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE_BOOKINGS));
+    setBookings(SAMPLE_BOOKINGS);
   }, []);
 
   const save = useCallback((data: AirbnbBooking[]) => {
@@ -180,29 +212,19 @@ export default function AirbnbSchedule() {
   // ── CRUD ───────────────────────────────────────────────────────────
 
   const resetForm = () => {
-    setForm({ model: "", location: "", checkIn: "", checkOut: "", feedPostCount: 5, ppvVideoCount: 3, notes: "", assignedTo: "Elle" });
+    setForm({ model: "", location: "", check_in: "", check_out: "", cost: 0, status: "booked", notes: "" });
     setShowForm(false);
     setEditingId(null);
   };
 
   const submitBooking = () => {
-    if (!form.model || !form.location || !form.checkIn || !form.checkOut) return;
+    if (!form.model || !form.location || !form.check_in || !form.check_out) return;
 
     if (editingId) {
       save(
         bookings.map((b) =>
           b.id === editingId
-            ? {
-                ...b,
-                model: form.model,
-                location: form.location,
-                checkIn: form.checkIn,
-                checkOut: form.checkOut,
-                feedPostCount: form.feedPostCount,
-                ppvVideoCount: form.ppvVideoCount,
-                notes: form.notes,
-                assignedTo: form.assignedTo,
-              }
+            ? { ...b, ...form }
             : b
         )
       );
@@ -211,13 +233,9 @@ export default function AirbnbSchedule() {
       const booking: AirbnbBooking = {
         id: generateId(),
         ...form,
-        status: "upcoming",
-        contentItems: [],
-        createdBy: user?.username || "Unknown",
-        createdAt: new Date().toISOString().split("T")[0],
+        created_by: user?.displayName || user?.username || "Unknown",
       };
-      save([booking, ...bookings]);
-      setExpandedId(booking.id);
+      save([...bookings, booking]);
       toast({ title: "Booking created" });
     }
     resetForm();
@@ -227,12 +245,11 @@ export default function AirbnbSchedule() {
     setForm({
       model: booking.model,
       location: booking.location,
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-      feedPostCount: booking.feedPostCount,
-      ppvVideoCount: booking.ppvVideoCount,
+      check_in: booking.check_in,
+      check_out: booking.check_out,
+      cost: booking.cost,
+      status: booking.status,
       notes: booking.notes,
-      assignedTo: booking.assignedTo,
     });
     setEditingId(booking.id);
     setShowForm(true);
@@ -243,121 +260,58 @@ export default function AirbnbSchedule() {
     toast({ title: "Booking deleted" });
   };
 
-  const updateStatus = (id: string, status: AirbnbBooking["status"]) => {
-    save(bookings.map((b) => (b.id === id ? { ...b, status } : b)));
-  };
+  // ── Calendar data ──────────────────────────────────────────────────
 
-  // ── Content Items ──────────────────────────────────────────────────
+  const today = new Date();
+  const baseMonday = getMonday(today);
+  const startMonday = addDays(baseMonday, weekOffset * 7);
+  const NUM_WEEKS = 4;
+  const weeks = getWeeksInRange(startMonday, NUM_WEEKS);
 
-  const addContentItem = (bookingId: string) => {
-    if (!itemForm.title.trim()) return;
-    const item: ContentItem = {
-      id: generateId(),
-      category: itemForm.category,
-      title: itemForm.title.trim(),
-      description: itemForm.description.trim(),
-      completed: false,
-      completedAt: null,
-    };
-    save(bookings.map((b) => (b.id === bookingId ? { ...b, contentItems: [...b.contentItems, item] } : b)));
-    setItemForm({ ...itemForm, title: "", description: "" });
-  };
+  const calendarEnd = dateToStr(addDays(startMonday, NUM_WEEKS * 7 - 1));
+  const calendarStart = dateToStr(startMonday);
 
-  const toggleItem = (bookingId: string, itemId: string) => {
-    if (!canManage) return;
-    save(
-      bookings.map((b) =>
-        b.id === bookingId
-          ? {
-              ...b,
-              contentItems: b.contentItems.map((i) =>
-                i.id === itemId
-                  ? { ...i, completed: !i.completed, completedAt: !i.completed ? new Date().toISOString().split("T")[0] : null }
-                  : i
-              ),
-            }
-          : b
-      )
-    );
-  };
+  const visibleBookings = useMemo(
+    () =>
+      bookings.filter(
+        (b) =>
+          b.status !== "cancelled" &&
+          b.check_out >= calendarStart &&
+          b.check_in <= calendarEnd
+      ),
+    [bookings, calendarStart, calendarEnd]
+  );
 
-  const deleteItem = (bookingId: string, itemId: string) => {
-    save(bookings.map((b) => (b.id === bookingId ? { ...b, contentItems: b.contentItems.filter((i) => i.id !== itemId) } : b)));
-  };
+  // ── Monthly summary ────────────────────────────────────────────────
 
-  const copyChecklist = (booking: AirbnbBooking) => {
-    const lines = [
-      `🏠 AIRBNB SHOOT — ${booking.model}`,
-      `📍 ${booking.location}`,
-      `📅 ${formatDate(booking.checkIn)} → ${formatDate(booking.checkOut)}`,
-      `👤 Assigned: ${booking.assignedTo}`,
-      `📸 Feed posts: ${booking.feedPostCount} | 💰 PPV videos: ${booking.ppvVideoCount}`,
-      "",
-    ];
+  const thisMonth = today.toISOString().slice(0, 7); // "2026-03"
+  const monthBookings = bookings.filter(
+    (b) => b.check_in.startsWith(thisMonth) && b.status !== "cancelled"
+  );
+  const monthlyCount = monthBookings.length;
+  const monthlyCost = monthBookings.reduce((sum, b) => sum + b.cost, 0);
 
-    for (const cat of CATEGORY_ORDER) {
-      const items = booking.contentItems.filter((i) => i.category === cat);
-      if (items.length === 0) continue;
-      const cfg = CATEGORY_CONFIG[cat];
-      lines.push(`${cfg.emoji} ${cfg.label} (${items.filter((i) => i.completed).length}/${items.length})`);
-      items.forEach((item, idx) => {
-        const check = item.completed ? "✅" : "⬜";
-        lines.push(`  ${check} ${idx + 1}. ${item.title}`);
-        if (item.description) lines.push(`     ${item.description}`);
-      });
-      lines.push("");
-    }
+  // ── Sorted list for below-calendar view ────────────────────────────
 
-    const total = booking.contentItems.length;
-    const done = booking.contentItems.filter((i) => i.completed).length;
-    lines.push(`Progress: ${done}/${total} (${total > 0 ? Math.round((done / total) * 100) : 0}%)`);
-    if (booking.notes) lines.push(`\n📝 Notes: ${booking.notes}`);
-
-    navigator.clipboard.writeText(lines.join("\n")).then(() => {
-      toast({ title: "Checklist copied!", description: "Paste into Telegram, WhatsApp, etc." });
-    });
-  };
-
-  // ── Filtering & sorting ────────────────────────────────────────────
-
-  const sortedBookings = [...bookings]
-    .map((b) => ({ ...b, computedStatus: getBookingStatus(b) }))
-    .sort((a, b) => {
-      const statusOrder = { active: 0, upcoming: 1, completed: 2 };
-      const diff = statusOrder[a.computedStatus] - statusOrder[b.computedStatus];
-      if (diff !== 0) return diff;
-      return new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime();
-    });
-
-  const filtered = sortedBookings.filter((b) => {
-    if (filterStatus !== "all" && b.computedStatus !== filterStatus) return false;
-    if (filterModel !== "all" && b.model !== filterModel) return false;
-    return true;
+  const sortedBookings = [...bookings].sort((a, b) => {
+    if (a.status === "cancelled" && b.status !== "cancelled") return 1;
+    if (b.status === "cancelled" && a.status !== "cancelled") return -1;
+    return a.check_in.localeCompare(b.check_in);
   });
-
-  // ── Stats ──────────────────────────────────────────────────────────
-
-  const stats = {
-    upcoming: sortedBookings.filter((b) => b.computedStatus === "upcoming").length,
-    active: sortedBookings.filter((b) => b.computedStatus === "active").length,
-    completed: sortedBookings.filter((b) => b.computedStatus === "completed").length,
-    totalItems: bookings.reduce((s, b) => s + b.contentItems.length, 0),
-    completedItems: bookings.reduce((s, b) => s + b.contentItems.filter((i) => i.completed).length, 0),
-  };
 
   // ── Render ─────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Home className="h-6 w-6 text-rose-400" />
             Airbnb Schedule
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Plan content shoots, track bookings, manage checklists
+            Upcoming Airbnb bookings for content shoots
           </p>
         </div>
         {canManage && (
@@ -374,53 +328,34 @@ export default function AirbnbSchedule() {
         )}
       </div>
 
-      {/* Stats bar */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {[
-          { label: "Upcoming", value: stats.upcoming, color: "text-blue-400" },
-          { label: "Active", value: stats.active, color: "text-green-400" },
-          { label: "Completed", value: stats.completed, color: "text-zinc-400" },
-          { label: "Total Items", value: stats.totalItems, color: "text-white" },
-          { label: "Items Done", value: stats.completedItems, color: "text-emerald-400" },
-        ].map((s) => (
-          <div key={s.label} className="glass-card p-3 text-center">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className="flex gap-3 flex-wrap">
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="all">All statuses</option>
-          <option value="upcoming">Upcoming</option>
-          <option value="active">Active</option>
-          <option value="completed">Completed</option>
-        </select>
-        <select
-          value={filterModel}
-          onChange={(e) => setFilterModel(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="all">All models</option>
-          {MODELS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+      {/* Summary strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="glass-card p-3 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">This Month</p>
+          <p className="text-2xl font-bold text-white">{monthlyCount}</p>
+          <p className="text-[10px] text-muted-foreground">bookings</p>
+        </div>
+        <div className="glass-card p-3 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Monthly Cost</p>
+          <p className="text-2xl font-bold text-emerald-400">£{monthlyCost.toLocaleString()}</p>
+        </div>
+        <div className="glass-card p-3 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Bookings</p>
+          <p className="text-2xl font-bold text-blue-400">{bookings.filter(b => b.status !== "cancelled").length}</p>
+        </div>
+        <div className="glass-card p-3 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Spend</p>
+          <p className="text-2xl font-bold text-amber-400">
+            £{bookings.filter(b => b.status !== "cancelled").reduce((s, b) => s + b.cost, 0).toLocaleString()}
+          </p>
+        </div>
       </div>
 
       {/* Booking form */}
       {showForm && canManage && (
-        <div className="glass-card p-5 space-y-4 border-primary/30">
+        <div className="glass-card p-5 space-y-4 border border-primary/30">
           <h3 className="font-semibold text-sm">{editingId ? "Edit Booking" : "New Airbnb Booking"}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label className="text-[10px] text-muted-foreground uppercase block mb-1">Model</label>
               <select
@@ -430,58 +365,47 @@ export default function AirbnbSchedule() {
               >
                 <option value="">Select model...</option>
                 {MODELS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
+                  <option key={m} value={m}>{m}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Location (City, State)</label>
+              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Location</label>
               <Input
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
-                placeholder="e.g. Brighton, East Sussex"
+                placeholder="e.g. Brighton, UK"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Cost (£)</label>
+              <Input
+                type="number"
+                min={0}
+                value={form.cost || ""}
+                onChange={(e) => setForm({ ...form, cost: parseInt(e.target.value) || 0 })}
+                placeholder="200"
               />
             </div>
             <div>
               <label className="text-[10px] text-muted-foreground uppercase block mb-1">Check-in</label>
-              <Input type="date" value={form.checkIn} onChange={(e) => setForm({ ...form, checkIn: e.target.value })} />
+              <Input type="date" value={form.check_in} onChange={(e) => setForm({ ...form, check_in: e.target.value })} />
             </div>
             <div>
               <label className="text-[10px] text-muted-foreground uppercase block mb-1">Check-out</label>
-              <Input type="date" value={form.checkOut} onChange={(e) => setForm({ ...form, checkOut: e.target.value })} />
+              <Input type="date" value={form.check_out} onChange={(e) => setForm({ ...form, check_out: e.target.value })} />
             </div>
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Feed Posts (target count)</label>
-              <Input
-                type="number"
-                min={0}
-                value={form.feedPostCount}
-                onChange={(e) => setForm({ ...form, feedPostCount: parseInt(e.target.value) || 0 })}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] text-muted-foreground uppercase block mb-1">PPV Videos (target count)</label>
-              <Input
-                type="number"
-                min={0}
-                value={form.ppvVideoCount}
-                onChange={(e) => setForm({ ...form, ppvVideoCount: parseInt(e.target.value) || 0 })}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Assigned To</label>
+              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Status</label>
               <select
-                value={form.assignedTo}
-                onChange={(e) => setForm({ ...form, assignedTo: e.target.value })}
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value as AirbnbBooking["status"] })}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
               >
-                {ASSIGNEES.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
+                <option value="booked">Booked</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
           </div>
@@ -490,12 +414,12 @@ export default function AirbnbSchedule() {
             <Textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Budget, special requirements, equipment, outfit notes..."
+              placeholder="Equipment, outfit notes, location details..."
               className="min-h-[60px]"
             />
           </div>
           <div className="flex gap-2">
-            <Button onClick={submitBooking} disabled={!form.model || !form.location || !form.checkIn || !form.checkOut}>
+            <Button onClick={submitBooking} disabled={!form.model || !form.location || !form.check_in || !form.check_out}>
               {editingId ? "Save Changes" : "Create Booking"}
             </Button>
             {editingId && (
@@ -507,311 +431,227 @@ export default function AirbnbSchedule() {
         </div>
       )}
 
-      {/* Bookings list */}
-      {filtered.length === 0 ? (
-        <div className="glass-card p-10 text-center">
-          <Home className="h-10 w-10 mx-auto text-muted-foreground/20 mb-3" />
-          <p className="text-muted-foreground text-sm">
-            {bookings.length === 0 ? "No bookings yet — create one to start planning shoots." : "No bookings match your filters."}
+      {/* Calendar navigation */}
+      <div className="flex items-center justify-between">
+        <Button variant="outline" size="sm" onClick={() => setWeekOffset((w) => w - NUM_WEEKS)}>
+          <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+        </Button>
+        <div className="text-center">
+          <p className="text-sm font-medium">
+            {formatDateShort(dateToStr(startMonday))} — {formatDateShort(calendarEnd)}
           </p>
+          {weekOffset !== 0 && (
+            <button
+              onClick={() => setWeekOffset(0)}
+              className="text-[10px] text-primary hover:underline"
+            >
+              Back to today
+            </button>
+          )}
         </div>
-      ) : (
-        <div className="space-y-4">
-          {filtered.map((booking) => {
-            const isExpanded = expandedId === booking.id;
-            const completedCount = booking.contentItems.filter((i) => i.completed).length;
-            const totalCount = booking.contentItems.length;
-            const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-            const statusCfg = STATUS_CONFIG[booking.computedStatus];
-            const modelColor = MODEL_COLORS[booking.model] || "border-l-zinc-500";
-            const modelBg = MODEL_BG[booking.model] || "from-zinc-500/10 to-transparent";
-            const modelAccent = MODEL_ACCENT[booking.model] || "text-zinc-400";
-            const days = daysUntil(booking.checkIn);
+        <Button variant="outline" size="sm" onClick={() => setWeekOffset((w) => w + NUM_WEEKS)}>
+          Next <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
 
-            return (
-              <div
-                key={booking.id}
-                className={`glass-card overflow-hidden border-l-4 ${modelColor}`}
-              >
-                {/* Card header with gradient */}
+      {/* Calendar grid */}
+      <div className="glass-card overflow-hidden">
+        {/* Day headers */}
+        <div className="grid grid-cols-7 border-b border-border/30">
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+            <div key={d} className="text-center text-[10px] text-muted-foreground uppercase py-2 font-semibold">
+              {d}
+            </div>
+          ))}
+        </div>
+
+        {/* Week rows */}
+        {weeks.map((week, wi) => (
+          <div key={wi} className="grid grid-cols-7 border-b border-border/20 last:border-b-0">
+            {week.map((day) => {
+              const ds = dateToStr(day);
+              const todayStr = dateToStr(today);
+              const dayIsPast = ds < todayStr;
+              const dayIsToday = ds === todayStr;
+              const dayBookings = visibleBookings.filter((b) => bookingSpansDates(b, ds));
+
+              return (
                 <div
-                  className={`p-4 bg-gradient-to-r ${modelBg} cursor-pointer`}
-                  onClick={() => setExpandedId(isExpanded ? null : booking.id)}
+                  key={ds}
+                  className={`min-h-[80px] p-1 border-r border-border/10 last:border-r-0 transition-colors ${
+                    dayIsToday
+                      ? "bg-primary/10"
+                      : dayIsPast
+                      ? "bg-zinc-900/30"
+                      : ""
+                  }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      {/* Date block */}
-                      <div className="text-center min-w-[50px]">
-                        <p className="text-2xl font-bold leading-none">{new Date(booking.checkIn).getDate()}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase">
-                          {new Date(booking.checkIn).toLocaleDateString("en-GB", { month: "short" })}
-                        </p>
-                        {booking.computedStatus === "upcoming" && days > 0 && (
-                          <p className="text-[9px] text-blue-400 mt-0.5">{days}d away</p>
-                        )}
-                      </div>
-
-                      {/* Details */}
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className={`font-bold text-lg ${modelAccent}`}>{booking.model}</h3>
-                          <Badge variant="outline" className={`text-[10px] ${statusCfg.bg} ${statusCfg.color}`}>
-                            {statusCfg.label}
-                          </Badge>
+                  <p
+                    className={`text-[11px] font-medium mb-0.5 ${
+                      dayIsToday
+                        ? "text-primary font-bold"
+                        : dayIsPast
+                        ? "text-muted-foreground/40"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {day.getDate()}
+                    {day.getDate() === 1 && (
+                      <span className="ml-1 text-[9px]">
+                        {day.toLocaleDateString("en-GB", { month: "short" })}
+                      </span>
+                    )}
+                  </p>
+                  <div className="space-y-0.5">
+                    {dayBookings.map((b) => {
+                      const mc = MODEL_COLORS[b.model] || DEFAULT_MODEL_COLORS;
+                      const isStart = ds === b.check_in;
+                      return (
+                        <div
+                          key={b.id}
+                          className={`text-[9px] px-1 py-0.5 rounded truncate ${mc.bg} ${mc.text} ${
+                            dayIsPast && b.status !== "completed" ? "opacity-40" : ""
+                          }`}
+                          title={`${b.model} — ${b.location}\n${formatDateFull(b.check_in)} → ${formatDateFull(b.check_out)}\n£${b.cost}`}
+                        >
+                          {isStart ? (
+                            <span className="font-semibold">{b.model}</span>
+                          ) : (
+                            <span className="flex items-center gap-0.5">
+                              <span className={`inline-block w-1.5 h-1.5 rounded-full ${mc.dot}`} />
+                              {b.model}
+                            </span>
+                          )}
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> {booking.location}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(booking.checkIn)} → {formatDate(booking.checkOut)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" /> {booking.assignedTo}
-                          </span>
-                          <span>📸 {booking.feedPostCount} feed</span>
-                          <span>💰 {booking.ppvVideoCount} PPV</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right side — progress */}
-                    <div className="text-right flex items-center gap-3">
-                      <div>
-                        <p className="text-lg font-bold">
-                          {completedCount}/{totalCount}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">items done</p>
-                        {totalCount > 0 && (
-                          <div className="w-28 mt-1">
-                            <Progress value={progress} className="h-2" />
-                          </div>
-                        )}
-                        {totalCount > 0 && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{progress}%</p>
-                        )}
-                      </div>
-                      {isExpanded ? (
-                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
 
-                {/* Expanded content */}
-                {isExpanded && (
-                  <div className="border-t border-border/30 p-4 space-y-4">
-                    {/* Action bar */}
-                    <div className="flex gap-2 flex-wrap">
-                      {canManage && (
-                        <>
-                          <select
-                            value={booking.status}
-                            onChange={(e) => updateStatus(booking.id, e.target.value as AirbnbBooking["status"])}
-                            className="bg-secondary border border-border/30 rounded-md px-3 py-1.5 text-sm"
-                          >
-                            <option value="upcoming">📅 Upcoming</option>
-                            <option value="active">🟢 Active</option>
-                            <option value="completed">✅ Completed</option>
-                          </select>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setShowAddItem(showAddItem === booking.id ? null : booking.id)}
-                          >
-                            <Plus className="h-3 w-3 mr-1" /> Add Item
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => startEdit(booking)}>
-                            <Edit2 className="h-3 w-3 mr-1" /> Edit
-                          </Button>
-                        </>
+      {/* Model legend */}
+      <div className="flex gap-4 justify-center">
+        {MODELS.map((m) => {
+          const mc = MODEL_COLORS[m] || DEFAULT_MODEL_COLORS;
+          return (
+            <div key={m} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className={`inline-block w-3 h-3 rounded-full ${mc.dot}`} />
+              {m}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Booking cards list */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-muted-foreground" />
+          All Bookings
+        </h2>
+        {sortedBookings.length === 0 ? (
+          <div className="glass-card p-10 text-center">
+            <Home className="h-10 w-10 mx-auto text-muted-foreground/20 mb-3" />
+            <p className="text-muted-foreground text-sm">No bookings yet — create one to start planning shoots.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sortedBookings.map((booking) => {
+              const mc = MODEL_COLORS[booking.model] || DEFAULT_MODEL_COLORS;
+              const statusCfg = STATUS_CONFIG[booking.status];
+              const bookingIsPast = isPast(booking.check_out);
+              const isCancelled = booking.status === "cancelled";
+
+              return (
+                <div
+                  key={booking.id}
+                  className={`glass-card border-l-4 ${mc.border} p-4 transition-opacity ${
+                    bookingIsPast || isCancelled ? "opacity-50" : ""
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      {/* Model + status */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`font-bold text-lg ${mc.text}`}>{booking.model}</h3>
+                        <Badge variant="outline" className={`text-[10px] ${statusCfg.bg} ${statusCfg.color}`}>
+                          {statusCfg.label}
+                        </Badge>
+                        {bookingIsPast && !isCancelled && booking.status !== "completed" && (
+                          <span className="text-[10px] text-amber-400">Past</span>
+                        )}
+                      </div>
+
+                      {/* Date + location */}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {formatDateFull(booking.check_in)} → {formatDateFull(booking.check_out)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {booking.location}
+                        </span>
+                      </div>
+
+                      {/* Cost */}
+                      <div className="flex items-center gap-1 text-sm">
+                        <PoundSterling className="h-3.5 w-3.5 text-emerald-400" />
+                        <span className="text-emerald-400 font-semibold">£{booking.cost.toLocaleString()}</span>
+                      </div>
+
+                      {/* Notes */}
+                      {booking.notes && (
+                        <div className="flex items-start gap-1.5 mt-1">
+                          <StickyNote className="h-3.5 w-3.5 text-yellow-400 mt-0.5 shrink-0" />
+                          <p className="text-xs text-muted-foreground">{booking.notes}</p>
+                        </div>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => copyChecklist(booking)}>
-                        <Copy className="h-3 w-3 mr-1" /> Copy Checklist
-                      </Button>
-                      {canManage && (
+
+                      {/* Checklist link */}
+                      <Link
+                        to={`/client-checklist?model=${encodeURIComponent(booking.model)}`}
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Content Checklist for {booking.model}
+                      </Link>
+                    </div>
+
+                    {/* Actions */}
+                    {canManage && (
+                      <div className="flex gap-1.5 shrink-0">
+                        <Button size="sm" variant="outline" onClick={() => startEdit(booking)}>
+                          <Edit2 className="h-3 w-3" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
                           className="text-red-400 hover:text-red-300"
                           onClick={() => deleteBooking(booking.id)}
                         >
-                          <Trash2 className="h-3 w-3 mr-1" /> Delete
+                          <Trash2 className="h-3 w-3" />
                         </Button>
-                      )}
-                    </div>
-
-                    {/* Notes */}
-                    {booking.notes && (
-                      <div className="flex items-start gap-2 bg-secondary/30 rounded-lg p-3">
-                        <StickyNote className="h-4 w-4 text-yellow-400 mt-0.5 shrink-0" />
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{booking.notes}</p>
-                      </div>
-                    )}
-
-                    {/* Summary counts */}
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                      {CATEGORY_ORDER.map((cat) => {
-                        const cfg = CATEGORY_CONFIG[cat];
-                        const items = booking.contentItems.filter((i) => i.category === cat);
-                        const done = items.filter((i) => i.completed).length;
-                        return (
-                          <div key={cat} className="bg-secondary/30 rounded-lg p-2 text-center">
-                            <p className="text-[10px] text-muted-foreground uppercase">
-                              {cfg.emoji} {cfg.label}
-                            </p>
-                            <p className="text-sm font-bold">
-                              {done}/{items.length}
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Add item form */}
-                    {showAddItem === booking.id && canManage && (
-                      <div className="bg-secondary/50 rounded-lg p-4 space-y-3">
-                        <h4 className="text-sm font-semibold">Add Content Item</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[10px] text-muted-foreground uppercase block mb-1">Category</label>
-                            <select
-                              value={itemForm.category}
-                              onChange={(e) =>
-                                setItemForm({ ...itemForm, category: e.target.value as ContentItem["category"] })
-                              }
-                              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-                            >
-                              {CATEGORY_ORDER.map((cat) => {
-                                const cfg = CATEGORY_CONFIG[cat];
-                                return (
-                                  <option key={cat} value={cat}>
-                                    {cfg.emoji} {cfg.label}
-                                  </option>
-                                );
-                              })}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-[10px] text-muted-foreground uppercase block mb-1">Title</label>
-                            <Input
-                              value={itemForm.title}
-                              onChange={(e) => setItemForm({ ...itemForm, title: e.target.value })}
-                              placeholder="e.g. Lingerie set — red lace"
-                            />
-                          </div>
-                        </div>
-                        <Textarea
-                          value={itemForm.description}
-                          onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
-                          placeholder="Details — outfit, props, angles, duration, specific fan requests..."
-                          className="min-h-[70px]"
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() => addContentItem(booking.id)}
-                          disabled={!itemForm.title.trim()}
-                        >
-                          Add to Checklist
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Content checklist by category */}
-                    {booking.contentItems.length === 0 ? (
-                      <p className="text-sm text-muted-foreground/50 italic text-center py-6">
-                        No content items yet — add feed posts, PPV, customs, scenarios, and content bank items
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {CATEGORY_ORDER.map((cat) => {
-                          const items = booking.contentItems.filter((i) => i.category === cat);
-                          if (items.length === 0) return null;
-                          const cfg = CATEGORY_CONFIG[cat];
-                          const done = items.filter((i) => i.completed).length;
-                          return (
-                            <div key={cat}>
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs text-muted-foreground uppercase font-semibold">
-                                  {cfg.emoji} {cfg.label} ({done}/{items.length})
-                                </p>
-                                <div className="w-20">
-                                  <Progress
-                                    value={items.length > 0 ? Math.round((done / items.length) * 100) : 0}
-                                    className="h-1.5"
-                                  />
-                                </div>
-                              </div>
-                              {items.map((item) => (
-                                <div
-                                  key={item.id}
-                                  className={`flex items-start gap-3 p-3 rounded-lg mb-1.5 transition-colors ${
-                                    item.completed ? "bg-green-500/5 opacity-60" : "bg-secondary/30"
-                                  }`}
-                                >
-                                  <button
-                                    onClick={() => toggleItem(booking.id, item.id)}
-                                    disabled={!canManage}
-                                    className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                                      item.completed
-                                        ? "bg-green-500 border-green-500 text-white"
-                                        : "border-zinc-500 hover:border-green-400"
-                                    } ${!canManage ? "cursor-default" : "cursor-pointer"}`}
-                                  >
-                                    {item.completed && <CheckSquare className="h-3 w-3" />}
-                                  </button>
-                                  <div className="flex-1 min-w-0">
-                                    <p
-                                      className={`font-medium text-sm ${
-                                        item.completed ? "line-through text-muted-foreground" : ""
-                                      }`}
-                                    >
-                                      {item.title}
-                                    </p>
-                                    {item.description && (
-                                      <p className="text-[11px] text-muted-foreground mt-0.5 whitespace-pre-wrap">
-                                        {item.description}
-                                      </p>
-                                    )}
-                                    {item.completedAt && (
-                                      <p className="text-[10px] text-green-400/60 mt-0.5">
-                                        ✓ Completed {item.completedAt}
-                                      </p>
-                                    )}
-                                  </div>
-                                  {canManage && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="text-red-400 h-6 w-6 p-0 shrink-0"
-                                      onClick={() => deleteItem(booking.id, item.id)}
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* Supabase notice */}
+                  {/* Footer */}
+                  <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border/20 text-[10px] text-muted-foreground/50">
+                    <span>Created by {booking.created_by}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <p className="text-[10px] text-muted-foreground/40 text-center">
-        ⚠ Data stored in localStorage. Supabase table <code>airbnb_bookings</code> needed for persistence.
+        Data stored in localStorage
       </p>
     </div>
   );
