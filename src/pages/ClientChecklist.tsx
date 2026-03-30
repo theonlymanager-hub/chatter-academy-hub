@@ -34,6 +34,8 @@ interface PipelineData {
     short_videos: RecurringItem;
     ppv_pieces: RecurringItem;
     script_packages: RecurringItem;
+    ai_lifestyle: RecurringItem;
+    ai_scenario: RecurringItem;
   };
   one_off_tasks: OneOffTask[];
   week_start: string; // ISO date (Monday)
@@ -48,6 +50,8 @@ const RECURRING_META: Record<RecurringKey, { label: string; description: string;
   short_videos: { label: 'Short Video Clips', description: '30-60 sec for feed, mix of explicitness', icon: <Video className="h-5 w-5" /> },
   ppv_pieces: { label: 'PPV Content Pieces', description: 'Lockable content to sell', icon: <Lock className="h-5 w-5" /> },
   script_packages: { label: 'Script Packages', description: 'Full scenario shoots', icon: <FileText className="h-5 w-5" /> },
+  ai_lifestyle: { label: 'AI Lifestyle Posts', description: 'AI images for feed — carousels, out and about, daily life', icon: <Camera className="h-5 w-5" /> },
+  ai_scenario: { label: 'AI Scenario Content', description: 'AI images to support script scenarios — setup shots', icon: <FileText className="h-5 w-5" /> },
 };
 
 const RECURRING_KEYS: RecurringKey[] = ['photo_sets', 'short_videos', 'ppv_pieces', 'script_packages'];
@@ -84,6 +88,8 @@ function defaultData(weekStart: string): PipelineData {
       short_videos: { target: 3, completed: [] },
       ppv_pieces: { target: 5, completed: [] },
       script_packages: { target: 2, completed: [] },
+      ai_lifestyle: { target: 5, completed: [] },
+      ai_scenario: { target: 3, completed: [] },
     },
     one_off_tasks: [],
     week_start: weekStart,
