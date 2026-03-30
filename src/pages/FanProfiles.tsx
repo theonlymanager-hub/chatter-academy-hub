@@ -1,10 +1,10 @@
-// fan-profiles-v3 — cleaned up layout, better hierarchy, all fans shown
+// fan-profiles-v4 — whale management features, dashboard, whale watch, notes template
 import { useState, useEffect } from "react";
 import {
   MessageCircle, Clock, Calendar, Briefcase, MapPin, Loader2,
   Pencil, Save, X, Plus, ExternalLink, AlertTriangle, ChevronDown,
   ChevronUp, Crown, Heart, User, Star, DollarSign, Tag, ShoppingBag,
-  Flame, Eye
+  Flame, Eye, Trophy, Target, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,48 @@ const FAN_TYPES = ["Unknown", "Submissive", "Dominant", "Switch", "Vanilla", "Ro
 
 const TIER_ORDER: Record<string, number> = { whale: 0, vip: 1, regular: 2, new: 3 };
 
+/** Known whale seed data for pre-population */
+const KNOWN_WHALES: Partial<Fan & { assignedChatter?: string }>[] = [
+  {
+    name: "Gary",
+    ofUsername: "u62150621",
+    modelName: "Ashley",
+    totalSpent: 568,
+    tier: "whale",
+    isWhale: true,
+    notes: "🐋 WHALE NOTES\n• Preferred content: PPVs\n• Communication style: Direct\n• Purchase triggers: New PPV drops — bought 3 today\n• New whale as of today\n\n[Assigned Chatter: Unassigned]",
+    preferences: ["PPVs"],
+  },
+  {
+    name: "James",
+    modelName: "Willow",
+    totalSpent: 0,
+    tier: "whale",
+    isWhale: true,
+    notes: "🐋 WHALE NOTES\n• Preferred content: Dildo/dirty talk\n• Communication style: Flirty\n• Purchase triggers: Custom content\n• Red flags: Custom was voided — handle carefully\n• Turning 85 — be mindful of age\n\n[Assigned Chatter: Unassigned]",
+    preferences: ["Customs", "Dirty talk", "Dildo content"],
+  },
+  {
+    name: "Larry",
+    modelName: "Ashley",
+    totalSpent: 0,
+    tier: "whale",
+    isWhale: true,
+    notes: "🐋 WHALE NOTES\n• Preferred content: PPVs\n• Communication style: Direct\n• Payday info: Buys PPVs before work (morning)\n• Purchase triggers: Morning routine — send PPVs early AM\n\n[Assigned Chatter: Unassigned]",
+    payday: "Buys before work (mornings)",
+    preferences: ["PPVs"],
+  },
+  {
+    name: "Harry",
+    modelName: "Izzie",
+    totalSpent: 0,
+    tier: "whale",
+    isWhale: true,
+    notes: "🐋 WHALE NOTES\n• Preferred content: Lingerie, scripts\n• Communication style: Romantic\n• Red flags: Done with pink lingerie script — don't resend\n• Purchase triggers: New scripts/content variety\n\n[Assigned Chatter: Unassigned]",
+    preferences: ["Scripts", "Lingerie content"],
+  },
+];
+
 function needsContact(lastMessaged: string): boolean {
   if (!lastMessaged) return true;
   const diff = Date.now() - new Date(lastMessaged).getTime();
@@ -108,13 +150,11 @@ function getFanTypeLabel(tier: string): { label: string; color: string } {
   }
 }
 
-/** Parse the pipe-separated interests field into 3 parts */
 function parseInterests(interests: string) {
   const parts = (interests || "").split("|").map(s => s.trim());
   return { fanType: parts[0] || "", contentPref: parts[1] || "", spentOn: parts[2] || "" };
 }
 
-/** Get left border color for whale/VIP cards */
 function getTierBorderClass(tier: string): string {
   switch (tier?.toLowerCase()) {
     case "whale": return "border-l-4 border-l-yellow-500/60";
@@ -123,7 +163,6 @@ function getTierBorderClass(tier: string): string {
   }
 }
 
-/** Sort fans: whales first, then VIP, then by total spent desc */
 function sortFans(fans: Fan[]): Fan[] {
   return [...fans].sort((a, b) => {
     const tierA = TIER_ORDER[a.tier?.toLowerCase()] ?? 2;
@@ -132,6 +171,168 @@ function sortFans(fans: Fan[]): Fan[] {
     return b.totalSpent - a.totalSpent;
   });
 }
+
+/** Compute engagement score 0-100 based on available data */
+function computeEngagementScore(fan: Fan): number {
+  let score = 0;
+  // Spending weight (up to 30 points)
+  if (fan.totalSpent >= 500) score += 30;
+  else if (fan.totalSpent >= 200) score += 20;
+  else if (fan.totalSpent >= 50) score += 10;
+  else if (fan.totalSpent > 0) score += 5;
+
+  // Recent contact (up to 25 points)
+  if (fan.lastMessaged) {
+    const hoursSince = (Date.now() - new Date(fan.lastMessaged).getTime()) / (1000 * 60 * 60);
+    if (hoursSince < 24) score += 25;
+    else if (hoursSince < 48) score += 15;
+    else if (hoursSince < 72) score += 10;
+    else if (hoursSince < 168) score += 5;
+  }
+
+  // Recent activity (up to 15 points)
+  if (fan.lastActive) {
+    const hoursSince = (Date.now() - new Date(fan.lastActive).getTime()) / (1000 * 60 * 60);
+    if (hoursSince < 24) score += 15;
+    else if (hoursSince < 72) score += 10;
+    else if (hoursSince < 168) score += 5;
+  }
+
+  // Preferences/purchase history (up to 15 points)
+  if (fan.preferences && fan.preferences.length > 0) {
+    score += Math.min(fan.preferences.length * 3, 15);
+  }
+
+  // Profile completeness (up to 15 points)
+  const fields = [fan.personality, fan.hobbies, fan.interests, fan.payday, fan.activeTime];
+  const filled = fields.filter(f => f && f.trim()).length;
+  score += Math.round((filled / fields.length) * 15);
+
+  return Math.min(score, 100);
+}
+
+/** Extract assigned chatter from notes */
+function getAssignedChatter(notes: string): string {
+  const match = notes.match(/\[Assigned Chatter:\s*([^\]]+)\]/);
+  return match ? match[1].trim() : "";
+}
+
+/** Engagement score color */
+function engagementColor(score: number): string {
+  if (score >= 70) return "text-green-400";
+  if (score >= 40) return "text-yellow-400";
+  return "text-red-400";
+}
+
+function engagementBg(score: number): string {
+  if (score >= 70) return "bg-green-500";
+  if (score >= 40) return "bg-yellow-500";
+  return "bg-red-500";
+}
+
+/* ─── Whale Dashboard ─── */
+function WhaleDashboard({
+  allFans,
+  isAdmin,
+  isDemo,
+}: {
+  allFans: Fan[];
+  isAdmin: boolean;
+  isDemo: boolean;
+}) {
+  const whales = allFans.filter(f => f.tier?.toLowerCase() === "whale");
+  const totalWhaleSpend = whales.reduce((sum, w) => sum + w.totalSpent, 0);
+  const needsContactCount = whales.filter(w => needsContact(w.lastMessaged)).length;
+  const topSpenders = [...whales].sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
+
+  if (whales.length === 0) return null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Crown className="h-5 w-5 text-yellow-400" />
+        <h2 className="text-lg font-bold text-yellow-300">Whale Dashboard</h2>
+        <span className="text-xs text-muted-foreground">— High-value fan management</span>
+      </div>
+
+      {/* Whale summary stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="glass-card p-4 rounded-lg border border-yellow-500/20 text-center bg-yellow-500/5">
+          <p className="text-[10px] text-yellow-400/70 uppercase font-semibold tracking-wider">Total Whales</p>
+          <p className="text-2xl font-bold text-yellow-300">🐋 {whales.length}</p>
+        </div>
+        {isAdmin && !isDemo && (
+          <div className="glass-card p-4 rounded-lg border border-yellow-500/20 text-center bg-yellow-500/5">
+            <p className="text-[10px] text-yellow-400/70 uppercase font-semibold tracking-wider">Whale Spend</p>
+            <p className="text-2xl font-bold text-green-400">${totalWhaleSpend.toLocaleString()}</p>
+          </div>
+        )}
+        <div className="glass-card p-4 rounded-lg border border-yellow-500/20 text-center bg-yellow-500/5">
+          <p className="text-[10px] text-yellow-400/70 uppercase font-semibold tracking-wider">Needs Contact</p>
+          <p className={`text-2xl font-bold ${needsContactCount > 0 ? "text-red-400" : "text-green-400"}`}>
+            {needsContactCount > 0 ? `⚠️ ${needsContactCount}` : "✅ 0"}
+          </p>
+        </div>
+        <div className="glass-card p-4 rounded-lg border border-yellow-500/20 text-center bg-yellow-500/5">
+          <p className="text-[10px] text-yellow-400/70 uppercase font-semibold tracking-wider">Avg Whale Spend</p>
+          <p className="text-2xl font-bold text-amber-300">
+            ${whales.length ? Math.round(totalWhaleSpend / whales.length).toLocaleString() : 0}
+          </p>
+        </div>
+      </div>
+
+      {/* Top 5 Spenders Leaderboard */}
+      {isAdmin && !isDemo && topSpenders.length > 0 && (
+        <div className="glass-card rounded-lg border border-yellow-500/15 overflow-hidden">
+          <div className="px-4 py-3 border-b border-yellow-500/15 bg-yellow-500/5 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-yellow-400" />
+            <span className="text-sm font-semibold text-yellow-300">Top 5 Spenders</span>
+          </div>
+          <div className="divide-y divide-border/10">
+            {topSpenders.map((whale, i) => {
+              const contact = needsContact(whale.lastMessaged);
+              const chatter = getAssignedChatter(whale.notes);
+              return (
+                <div key={whale.id} className="px-4 py-2.5 flex items-center gap-3">
+                  <span className={`text-sm font-bold w-6 text-center ${i === 0 ? "text-yellow-400" : i === 1 ? "text-slate-300" : i === 2 ? "text-amber-600" : "text-muted-foreground"}`}>
+                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{isDemo ? `Fan #${whale.id.slice(-4)}` : whale.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: MODEL_COLORS[whale.modelName] + "33", color: MODEL_COLORS[whale.modelName] }}>
+                        {whale.modelName}
+                      </span>
+                      {chatter && (
+                        <span className="text-[10px] text-muted-foreground">👤 {chatter}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-sm font-bold text-green-400">${whale.totalSpent.toLocaleString()}</span>
+                    <span className={`block text-[10px] ${contact ? "text-red-400 font-semibold" : "text-muted-foreground"}`}>
+                      {contact ? "⚠️ " : ""}{timeSince(whale.lastMessaged)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Whale Notes Template ─── */
+const WHALE_NOTES_TEMPLATE = `🐋 WHALE NOTES
+• Preferred content: 
+• Communication style: (flirty/direct/romantic)
+• Payday info: 
+• Purchase triggers: 
+• Red flags: 
+
+[Assigned Chatter: ]`;
 
 /* ─── Edit Modal ─── */
 function EditModal({
@@ -145,6 +346,7 @@ function EditModal({
 }) {
   const [data, setData] = useState<Fan>({ ...fan });
   const set = (key: keyof Fan, value: any) => setData((p) => ({ ...p, [key]: value }));
+  const isWhale = data.tier?.toLowerCase() === "whale";
 
   const parts = (data.interests || "").split("|").map(s => s.trim());
   const fanType = parts[0] || "";
@@ -158,12 +360,32 @@ function EditModal({
     set("interests", p.join(" | "));
   };
 
+  const insertWhaleTemplate = () => {
+    const currentNotes = data.notes || "";
+    if (currentNotes.includes("🐋 WHALE NOTES")) {
+      toast.info("Whale notes template already present");
+      return;
+    }
+    const newNotes = currentNotes ? currentNotes + "\n\n" + WHALE_NOTES_TEMPLATE : WHALE_NOTES_TEMPLATE;
+    set("notes", newNotes);
+    toast.success("Whale notes template added");
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
       <div
         className="bg-[#1a1a2e] border border-border/40 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Whale gold header bar */}
+        {isWhale && (
+          <div className="bg-gradient-to-r from-yellow-600/30 via-amber-500/20 to-yellow-600/30 px-5 py-2 flex items-center gap-2 border-b border-yellow-500/30">
+            <Crown className="h-4 w-4 text-yellow-400" />
+            <span className="text-sm font-bold text-yellow-300">Whale Profile</span>
+            <span className="text-xs text-yellow-400/60">— High-value fan, handle with care</span>
+          </div>
+        )}
+
         <div className="flex items-center justify-between p-5 border-b border-border/30 sticky top-0 bg-[#1a1a2e] z-10">
           <h3 className="text-lg font-bold">Edit Fan — {fan.name || "New Fan"}</h3>
           <div className="flex gap-2">
@@ -243,6 +465,38 @@ function EditModal({
             </div>
           </div>
 
+          {/* Whale Notes Template — only shows for whale tier */}
+          {isWhale && (
+            <div className="border border-yellow-500/20 rounded-lg p-4 bg-yellow-500/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className="h-4 w-4 text-yellow-400" />
+                  <h4 className="text-xs font-semibold text-yellow-300 uppercase tracking-wider">Whale Intel</h4>
+                </div>
+                {!data.notes?.includes("🐋 WHALE NOTES") && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs border-yellow-500/30 text-yellow-300 hover:bg-yellow-500/10"
+                    onClick={insertWhaleTemplate}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Add Whale Template
+                  </Button>
+                )}
+              </div>
+              <div className="text-[10px] text-yellow-400/60 space-y-1">
+                <p>Suggested fields for whale profiles:</p>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  <li>Preferred content type</li>
+                  <li>Communication style (flirty / direct / romantic)</li>
+                  <li>Payday info</li>
+                  <li>Purchase triggers (what makes them spend)</li>
+                  <li>Red flags (anything to avoid)</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
           {/* Personality & Notes */}
           <div>
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Personality & Notes</h4>
@@ -272,9 +526,9 @@ function EditModal({
                 <Textarea
                   value={data.notes}
                   onChange={(e) => set("notes", e.target.value)}
-                  rows={2}
-                  placeholder="Anything else important about this fan..."
-                  className="mt-1"
+                  rows={isWhale ? 6 : 2}
+                  placeholder={isWhale ? "Whale notes — use the template above for suggested structure..." : "Anything else important about this fan..."}
+                  className={`mt-1 ${isWhale ? "border-yellow-500/20" : ""}`}
                 />
               </div>
             </div>
@@ -320,6 +574,7 @@ function FanCard({
   onMarkMessaged,
   isAdmin,
   isDemo,
+  showModel = false,
 }: {
   fan: Fan;
   modelColor: string;
@@ -327,22 +582,54 @@ function FanCard({
   onMarkMessaged: (id: string) => void;
   isAdmin: boolean;
   isDemo: boolean;
+  showModel?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const contact = needsContact(fan.lastMessaged);
   const typeInfo = getFanTypeLabel(fan.tier);
   const { fanType, contentPref, spentOn } = parseInterests(fan.interests);
   const tierBorder = getTierBorderClass(fan.tier);
+  const isWhale = fan.tier?.toLowerCase() === "whale";
+  const engScore = computeEngagementScore(fan);
+  const chatter = getAssignedChatter(fan.notes);
 
   return (
     <div className={`glass-card border border-border/20 hover:border-border/40 transition-all duration-200 rounded-lg overflow-hidden ${tierBorder}`}>
+      {/* Gold header bar for whales */}
+      {isWhale && (
+        <div className="bg-gradient-to-r from-yellow-600/20 via-amber-500/15 to-yellow-600/20 px-3 py-1.5 flex items-center justify-between border-b border-yellow-500/20">
+          <div className="flex items-center gap-2">
+            <Crown className="h-3.5 w-3.5 text-yellow-400" />
+            <span className="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">Whale</span>
+            {chatter && chatter !== "Unassigned" && (
+              <span className="text-[10px] text-yellow-400/60">👤 {chatter}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Engagement Score */}
+            <div className="flex items-center gap-1.5">
+              <Zap className={`h-3 w-3 ${engagementColor(engScore)}`} />
+              <span className={`text-[10px] font-bold ${engagementColor(engScore)}`}>{engScore}/100</span>
+              <div className="w-12 h-1.5 bg-black/30 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${engagementBg(engScore)}`} style={{ width: `${engScore}%` }} />
+              </div>
+            </div>
+            {/* Last contact alert */}
+            {contact && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-500/30 text-red-400 border border-red-500/40 flex items-center gap-0.5 animate-pulse">
+                <AlertTriangle className="h-2.5 w-2.5" /> {timeSince(fan.lastMessaged)}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── Collapsed View — clean 2-line summary ── */}
       <div
         className="p-3 cursor-pointer select-none"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3">
-          {/* Model color dot + avatar */}
           <div className="relative shrink-0">
             <div
               className="h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -350,11 +637,12 @@ function FanCard({
             >
               {isDemo ? "??" : (fan.name ? fan.name.slice(0, 2).toUpperCase() : "??")}
             </div>
+            {isWhale && (
+              <div className="absolute -top-1 -right-1 text-xs">🐋</div>
+            )}
           </div>
 
-          {/* Main Info — 2 lines */}
           <div className="min-w-0 flex-1">
-            {/* Line 1: Name, @username, tier badge */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-sm">{isDemo ? `Fan #${fan.id.slice(-4).toUpperCase()}` : (fan.name || "Unknown")}</span>
               {!isDemo && fan.ofUsername && (
@@ -371,9 +659,13 @@ function FanCard({
               <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${typeInfo.color}`}>
                 {typeInfo.label}
               </span>
+              {showModel && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: modelColor + "33", color: modelColor }}>
+                  {fan.modelName}
+                </span>
+              )}
             </div>
 
-            {/* Line 2: Total spent, last contact, one key tag */}
             <div className="flex items-center gap-2.5 mt-1 text-xs text-muted-foreground">
               {isAdmin && !isDemo && (
                 <span className="flex items-center gap-1">
@@ -385,19 +677,24 @@ function FanCard({
                 <MessageCircle className="h-3 w-3" />
                 <span className={contact ? "text-red-400 font-semibold" : ""}>{timeSince(fan.lastMessaged)}</span>
               </span>
-              {contact ? (
+              {!isWhale && contact ? (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-0.5">
                   <AlertTriangle className="h-2.5 w-2.5" /> Contact
                 </span>
-              ) : fanType ? (
+              ) : !isWhale && fanType ? (
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
                   {fanType}
                 </span>
               ) : null}
+              {/* Engagement score for non-whales in collapsed view */}
+              {!isWhale && (
+                <span className={`flex items-center gap-1 text-[10px] ${engagementColor(engScore)}`}>
+                  <Zap className="h-2.5 w-2.5" /> {engScore}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Right: Edit + Expand */}
           <div className="flex items-center gap-1.5 shrink-0">
             <Button
               variant="ghost"
@@ -416,10 +713,9 @@ function FanCard({
         </div>
       </div>
 
-      {/* ── Expanded View — 2 sections: Quick Stats + Personal Details ── */}
+      {/* ── Expanded View ── */}
       {expanded && (
         <div className="px-3 pb-3 pt-0 border-t border-border/15 space-y-3">
-          {/* Quick Action */}
           <div className="pt-2">
             <button
               onClick={() => onMarkMessaged(fan.id)}
@@ -429,14 +725,42 @@ function FanCard({
             </button>
           </div>
 
-          {/* Notes — prominent if they exist */}
           {fan.notes && (
-            <div className="bg-amber-500/10 rounded-md p-3 border border-amber-500/15">
-              <p className="text-xs font-medium text-amber-300/90 leading-relaxed">📝 {fan.notes}</p>
+            <div className={`rounded-md p-3 border ${isWhale ? "bg-yellow-500/10 border-yellow-500/20" : "bg-amber-500/10 border-amber-500/15"}`}>
+              <p className={`text-xs font-medium leading-relaxed whitespace-pre-line ${isWhale ? "text-yellow-300/90" : "text-amber-300/90"}`}>📝 {fan.notes}</p>
             </div>
           )}
 
-          {/* Section 1: Quick Stats */}
+          {/* Whale-specific expanded section */}
+          {isWhale && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="p-2 rounded-md bg-yellow-500/5 border border-yellow-500/15">
+                <span className="text-[10px] text-yellow-400/60 block">Engagement</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className={`text-sm font-bold ${engagementColor(engScore)}`}>{engScore}/100</span>
+                  <div className="flex-1 h-1.5 bg-black/30 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full ${engagementBg(engScore)}`} style={{ width: `${engScore}%` }} />
+                  </div>
+                </div>
+              </div>
+              <div className="p-2 rounded-md bg-yellow-500/5 border border-yellow-500/15">
+                <span className="text-[10px] text-yellow-400/60 block">Last Contact</span>
+                <span className={`text-xs font-semibold ${contact ? "text-red-400" : "text-green-400"}`}>
+                  {fan.lastMessaged ? timeSince(fan.lastMessaged) : "Never"}
+                </span>
+              </div>
+              <div className="p-2 rounded-md bg-yellow-500/5 border border-yellow-500/15">
+                <span className="text-[10px] text-yellow-400/60 block">Assigned Chatter</span>
+                <span className="text-xs text-foreground">{chatter || "Unassigned"}</span>
+              </div>
+              <div className="p-2 rounded-md bg-yellow-500/5 border border-yellow-500/15">
+                <span className="text-[10px] text-yellow-400/60 block">Lifetime Spend</span>
+                <span className="text-xs font-bold text-green-400">${fan.totalSpent.toLocaleString()}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Stats */}
           <div>
             <h4 className="text-[10px] font-medium text-muted-foreground mb-2">Quick Stats</h4>
             <div className="grid grid-cols-2 gap-2">
@@ -451,7 +775,7 @@ function FanCard({
             </div>
           </div>
 
-          {/* Section 2: Personal Details */}
+          {/* Personal Details */}
           <div>
             <h4 className="text-[10px] font-medium text-muted-foreground mb-2">Personal Details</h4>
             <div className="grid grid-cols-2 gap-2">
@@ -466,7 +790,6 @@ function FanCard({
             </div>
           </div>
 
-          {/* Personality */}
           {fan.personality && (
             <div className="bg-secondary/20 rounded-md p-2.5">
               <span className="text-[10px] text-muted-foreground block mb-1">💬 Personality / How to Talk</span>
@@ -474,7 +797,6 @@ function FanCard({
             </div>
           )}
 
-          {/* Preference Tags */}
           {fan.preferences && fan.preferences.length > 0 && (
             <div>
               <span className="text-[10px] text-muted-foreground block mb-1.5">What They Buy / Respond To</span>
@@ -488,7 +810,6 @@ function FanCard({
             </div>
           )}
 
-          {/* Notes — only show placeholder if no notes above */}
           {!fan.notes && (
             <p className="text-[10px] text-muted-foreground/40 italic">No notes — click edit to add</p>
           )}
@@ -543,6 +864,7 @@ export default function FanProfiles() {
   const [filterModel, setFilterModel] = useState<string>("all");
   const [filterTier, setFilterTier] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [whaleWatch, setWhaleWatch] = useState(false);
 
   const fetchFans = async () => {
     setLoading(true);
@@ -573,7 +895,6 @@ export default function FanProfiles() {
       }
     });
 
-    // Sort each model's fans: whales first, then VIP, then by spend
     MODELS.forEach((m) => { grouped[m] = sortFans(grouped[m]); });
 
     setFansByModel(grouped);
@@ -584,7 +905,37 @@ export default function FanProfiles() {
 
   useEffect(() => { fetchFans(); }, []);
 
+  /** Seed known whales if not already present */
+  const seedWhales = async () => {
+    const { data: existing } = await supabase.from("fan_profiles").select("name, model_name");
+    const existingNames = new Set((existing || []).map((r: any) => `${r.name}|${r.model_name}`));
+
+    let seeded = 0;
+    for (const whale of KNOWN_WHALES) {
+      const key = `${whale.name}|${whale.modelName}`;
+      if (existingNames.has(key)) continue;
+
+      const { error } = await supabase.from("fan_profiles").insert({
+        name: whale.name,
+        model_name: whale.modelName,
+        of_username: whale.ofUsername || "",
+        total_spent: whale.totalSpent || 0,
+        tier: whale.tier || "whale",
+        is_whale: true,
+        notes: whale.notes || "",
+        payday: whale.payday || "",
+        preferences: whale.preferences || [],
+      });
+      if (!error) seeded++;
+    }
+    if (seeded > 0) {
+      toast.success(`Seeded ${seeded} known whale profile(s)`);
+      fetchFans();
+    }
+  };
+
   const saveEdit = async (data: Fan) => {
+    const isWhale = data.tier?.toLowerCase() === "whale";
     const { error } = await supabase
       .from("fan_profiles")
       .update({
@@ -592,6 +943,7 @@ export default function FanProfiles() {
         of_username: data.ofUsername,
         total_spent: data.totalSpent,
         tier: data.tier,
+        is_whale: isWhale,
         active_time: data.activeTime,
         last_messaged: data.lastMessaged || null,
         last_active: data.lastActive || null,
@@ -648,10 +1000,14 @@ export default function FanProfiles() {
     }
   };
 
-  // Compute totals
+  // All fans flat
+  const allFans = Object.values(fansByModel).flat();
   const totalFans = Object.values(countsByModel).reduce((a, b) => a + b, 0);
   const totalSpend = Object.values(totalsByModel).reduce((a, b) => a + b, 0);
-  const totalNeedsContact = Object.values(fansByModel).flat().filter(f => needsContact(f.lastMessaged)).length;
+  const totalNeedsContact = allFans.filter(f => needsContact(f.lastMessaged)).length;
+
+  // Whale watch: flat list of all whales
+  const allWhales = sortFans(allFans.filter(f => f.tier?.toLowerCase() === "whale"));
 
   const modelsToShow = filterModel === "all" ? MODELS : [filterModel];
 
@@ -666,12 +1022,25 @@ export default function FanProfiles() {
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Fan Profiles</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Every fan's info in one place — hobbies, spend history, preferences, contact status
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Fan Profiles</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Every fan's info in one place — hobbies, spend history, preferences, contact status
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs"
+          onClick={seedWhales}
+        >
+          <Plus className="h-3.5 w-3.5 mr-1" /> Seed Known Whales
+        </Button>
       </div>
+
+      {/* Whale Dashboard — top of page */}
+      <WhaleDashboard allFans={allFans} isAdmin={isAdmin} isDemo={isDemo} />
 
       {/* Summary Stats */}
       <div className={`grid grid-cols-2 ${isAdmin && !isDemo ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-3`}>
@@ -697,27 +1066,42 @@ export default function FanProfiles() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters + Whale Watch Toggle */}
       <div className="flex gap-3 flex-wrap items-center">
-        <select
-          className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
-          value={filterModel}
-          onChange={(e) => setFilterModel(e.target.value)}
+        <button
+          onClick={() => setWhaleWatch(!whaleWatch)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all border ${
+            whaleWatch
+              ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/40 shadow-[0_0_12px_rgba(234,179,8,0.15)]"
+              : "bg-secondary border-border/30 text-muted-foreground hover:text-foreground"
+          }`}
         >
-          <option value="all">All Models</option>
-          {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
-        <select
-          className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
-          value={filterTier}
-          onChange={(e) => setFilterTier(e.target.value)}
-        >
-          <option value="all">All Tiers</option>
-          <option value="whale">🐋 Whales</option>
-          <option value="vip">⭐ VIP</option>
-          <option value="regular">Regular</option>
-          <option value="new">🆕 New</option>
-        </select>
+          <Eye className={`h-4 w-4 ${whaleWatch ? "text-yellow-400" : ""}`} />
+          🐋 Whale Watch
+        </button>
+        {!whaleWatch && (
+          <>
+            <select
+              className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
+              value={filterModel}
+              onChange={(e) => setFilterModel(e.target.value)}
+            >
+              <option value="all">All Models</option>
+              {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <select
+              className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
+              value={filterTier}
+              onChange={(e) => setFilterTier(e.target.value)}
+            >
+              <option value="all">All Tiers</option>
+              <option value="whale">🐋 Whales</option>
+              <option value="vip">⭐ VIP</option>
+              <option value="regular">Regular</option>
+              <option value="new">🆕 New</option>
+            </select>
+          </>
+        )}
         <Input
           placeholder="Search fans..."
           value={searchQuery}
@@ -726,106 +1110,143 @@ export default function FanProfiles() {
         />
       </div>
 
-      {/* Fan Lists by Model */}
-      {modelsToShow.map((model) => {
-        const color = MODEL_COLORS[model];
-        let fans = fansByModel[model] || [];
-        
-        if (filterTier !== "all") {
-          fans = fans.filter(f => f.tier === filterTier);
-        }
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          fans = fans.filter(f => 
-            f.name.toLowerCase().includes(q) ||
-            f.ofUsername.toLowerCase().includes(q) ||
-            f.hobbies.toLowerCase().includes(q) ||
-            f.notes.toLowerCase().includes(q)
-          );
-        }
-
-        const totalLifetime = totalsByModel[model] || 0;
-        const count = countsByModel[model] || 0;
-        const whaleCount = (fansByModel[model] || []).filter(f => f.tier?.toLowerCase() === "whale").length;
-        const needsContactCount = (fansByModel[model] || []).filter((f) => needsContact(f.lastMessaged)).length;
-
-        return (
-          <div key={model} className="space-y-2">
-            <div className="flex items-center justify-between border-b border-border/20 pb-2">
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                  style={{ backgroundColor: color }}
-                >
-                  {model.slice(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold">{model}</h2>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{count} fans</span>
-                    {whaleCount > 0 && (
-                      <>
-                        <span>·</span>
-                        <span className="text-yellow-400">{whaleCount} 🐋</span>
-                      </>
-                    )}
-                    {isAdmin && !isDemo && (
-                      <>
-                        <span>·</span>
-                        <span className="text-green-400 font-semibold">${totalLifetime.toLocaleString()}</span>
-                      </>
-                    )}
-                    {needsContactCount > 0 && (
-                      <>
-                        <span>·</span>
-                        <span className="text-red-400 font-semibold">{needsContactCount} need contact</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setAddingModel(addingModel === model ? null : model)}>
-                <Plus className="h-4 w-4 mr-1" /> Add Fan
-              </Button>
+      {/* Whale Watch Mode — flat list of all whales */}
+      {whaleWatch ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 border-b border-yellow-500/20 pb-2">
+            <Crown className="h-5 w-5 text-yellow-400" />
+            <h2 className="text-lg font-bold text-yellow-300">All Whales</h2>
+            <span className="text-xs text-muted-foreground">({allWhales.length} across all models)</span>
+          </div>
+          {allWhales.length === 0 ? (
+            <div className="glass-card p-6 text-center text-muted-foreground text-sm rounded-lg border border-yellow-500/15">
+              No whales tracked yet. Add fans with tier "Whale" or click "Seed Known Whales".
             </div>
-
-            {addingModel === model && (
-              <div className="glass-card p-3 flex gap-3 items-end border border-border/30 rounded-lg">
-                <div className="flex-1">
-                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Name</label>
-                  <Input value={newFan.name} onChange={(e) => setNewFan((p) => ({ ...p, name: e.target.value }))} placeholder="Fan name" className="mt-1" />
-                </div>
-                <div className="flex-1">
-                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider">OF Username</label>
-                  <Input value={newFan.ofUsername} onChange={(e) => setNewFan((p) => ({ ...p, ofUsername: e.target.value }))} placeholder="@username" className="mt-1" />
-                </div>
-                <Button onClick={() => addFan(model)} size="sm">Add</Button>
-                <Button variant="ghost" size="sm" onClick={() => setAddingModel(null)}><X className="h-4 w-4" /></Button>
-              </div>
-            )}
-
-            {fans.length === 0 ? (
-              <div className="glass-card p-6 text-center text-muted-foreground text-sm rounded-lg border border-border/20">
-                {searchQuery || filterTier !== "all" ? "No fans match the current filters" : `No fans tracked yet for ${model}. Click "Add Fan" to start.`}
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                {fans.map((fan) => (
+          ) : (
+            <div className="space-y-1.5">
+              {allWhales
+                .filter(f => {
+                  if (!searchQuery) return true;
+                  const q = searchQuery.toLowerCase();
+                  return f.name.toLowerCase().includes(q) || f.ofUsername.toLowerCase().includes(q) || f.notes.toLowerCase().includes(q);
+                })
+                .map((fan) => (
                   <FanCard
                     key={fan.id}
                     fan={fan}
-                    modelColor={color}
+                    modelColor={MODEL_COLORS[fan.modelName] || "hsl(220, 50%, 50%)"}
                     onEdit={setEditingFan}
                     onMarkMessaged={markMessaged}
                     isAdmin={isAdmin}
                     isDemo={isDemo}
+                    showModel={true}
                   />
                 ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Normal model-grouped view */
+        modelsToShow.map((model) => {
+          const color = MODEL_COLORS[model];
+          let fans = fansByModel[model] || [];
+          
+          if (filterTier !== "all") {
+            fans = fans.filter(f => f.tier === filterTier);
+          }
+          if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            fans = fans.filter(f => 
+              f.name.toLowerCase().includes(q) ||
+              f.ofUsername.toLowerCase().includes(q) ||
+              f.hobbies.toLowerCase().includes(q) ||
+              f.notes.toLowerCase().includes(q)
+            );
+          }
+
+          const totalLifetime = totalsByModel[model] || 0;
+          const count = countsByModel[model] || 0;
+          const whaleCount = (fansByModel[model] || []).filter(f => f.tier?.toLowerCase() === "whale").length;
+          const needsContactCount = (fansByModel[model] || []).filter((f) => needsContact(f.lastMessaged)).length;
+
+          return (
+            <div key={model} className="space-y-2">
+              <div className="flex items-center justify-between border-b border-border/20 pb-2">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    style={{ backgroundColor: color }}
+                  >
+                    {model.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">{model}</h2>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{count} fans</span>
+                      {whaleCount > 0 && (
+                        <>
+                          <span>·</span>
+                          <span className="text-yellow-400">{whaleCount} 🐋</span>
+                        </>
+                      )}
+                      {isAdmin && !isDemo && (
+                        <>
+                          <span>·</span>
+                          <span className="text-green-400 font-semibold">${totalLifetime.toLocaleString()}</span>
+                        </>
+                      )}
+                      {needsContactCount > 0 && (
+                        <>
+                          <span>·</span>
+                          <span className="text-red-400 font-semibold">{needsContactCount} need contact</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setAddingModel(addingModel === model ? null : model)}>
+                  <Plus className="h-4 w-4 mr-1" /> Add Fan
+                </Button>
               </div>
-            )}
-          </div>
-        );
-      })}
+
+              {addingModel === model && (
+                <div className="glass-card p-3 flex gap-3 items-end border border-border/30 rounded-lg">
+                  <div className="flex-1">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Name</label>
+                    <Input value={newFan.name} onChange={(e) => setNewFan((p) => ({ ...p, name: e.target.value }))} placeholder="Fan name" className="mt-1" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider">OF Username</label>
+                    <Input value={newFan.ofUsername} onChange={(e) => setNewFan((p) => ({ ...p, ofUsername: e.target.value }))} placeholder="@username" className="mt-1" />
+                  </div>
+                  <Button onClick={() => addFan(model)} size="sm">Add</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setAddingModel(null)}><X className="h-4 w-4" /></Button>
+                </div>
+              )}
+
+              {fans.length === 0 ? (
+                <div className="glass-card p-6 text-center text-muted-foreground text-sm rounded-lg border border-border/20">
+                  {searchQuery || filterTier !== "all" ? "No fans match the current filters" : `No fans tracked yet for ${model}. Click "Add Fan" to start.`}
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {fans.map((fan) => (
+                    <FanCard
+                      key={fan.id}
+                      fan={fan}
+                      modelColor={color}
+                      onEdit={setEditingFan}
+                      onMarkMessaged={markMessaged}
+                      isAdmin={isAdmin}
+                      isDemo={isDemo}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
 
       {editingFan && (
         <EditModal
