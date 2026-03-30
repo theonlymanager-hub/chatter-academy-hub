@@ -39,7 +39,7 @@ export interface TeamMemberStatus {
 // ── Shift Schedule (UK time) ───────────────────────────────────────────────
 
 export const SHIFT_SCHEDULE = [
-  { shift: "6AM–2PM", members: ["KC", "Jane"], startHour: 6, endHour: 14 },
+  { shift: "6AM–2PM", members: ["Marc"], startHour: 6, endHour: 14 },
   { shift: "2PM–10PM", members: ["JD", "Jemimah"], startHour: 14, endHour: 22 },
   { shift: "10PM–6AM", members: ["KC", "Jane"], startHour: 22, endHour: 6 },
 ];

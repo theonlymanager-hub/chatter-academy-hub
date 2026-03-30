@@ -133,9 +133,7 @@ export default function TeamActivityFeed() {
             <span>{s.members.join(" + ")}</span>
           </div>
         ))}
-        <p className="text-[9px] text-amber-400/80 mt-1">
-          ⚠ KC + Jane covering double shifts currently
-        </p>
+
       </div>
 
       {/* Activity Feed */}
