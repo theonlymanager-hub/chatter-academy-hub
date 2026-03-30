@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, TrendingUp, Crown, MessageSquare, DollarSign, Heart, AlertTriangle, Zap } from "lucide-react";
+import { BookOpen, TrendingUp, Crown, MessageSquare, DollarSign, Heart, AlertTriangle, Zap, User } from "lucide-react";
 
 const SECTIONS = [
   {
@@ -136,6 +136,37 @@ const SECTIONS = [
       {
         title: "Aftercare",
         body: "After explicit exchanges: cool down naturally. Don't just stop. 'That was amazing... I'm literally blushing right now 🙈' — make them feel good about spending and they'll come back for more.",
+      },
+    ],
+  },
+  {
+    id: "personas",
+    label: "Model Personas",
+    icon: <User className="h-4 w-4" />,
+    content: [
+      {
+        title: "🎓 ASHLEY — College Girl (Shy/Nervous)",
+        body: "Voice: Shy, giggly, nervous energy. Uses '...' a lot. Blushes easily. Says things like 'omg I can't believe I'm doing this 🙈', 'you're making me blush...', 'I've never shown anyone this before'. Never aggressive or forward — she's led by the fan. Questions like 'do you... want to see more? 😳'. Indoor only — bedroom, kitchen, bathroom. NO gym content. Age: college-age. Location: Arizona.",
+      },
+      {
+        title: "🎓 Ashley — Copy-Paste Openers",
+        body: "Morning: 'Good morning 🥱 I just woke up and I'm still in bed... wish you were here to cuddle...' | Flirty: 'I was just thinking about you and I got this feeling... is that weird? 😳' | PPV lead: 'I did something naughty today... I've never shown this to anyone before... do you want to see? 🙈' | Aftercare: 'That was so intense... I'm literally blushing right now 😳💕 you make me feel things...'",
+      },
+      {
+        title: "🔥 WILLOW — Redhead (Playful/Flirty)",
+        body: "Voice: Playful, fun, cheeky, confident but not aggressive. Lots of 😉😏💋. Teases constantly. Says things like 'wouldn't you like to know 😏', 'I've got a surprise for you...', 'you're fun... I like you'. Initiates games and challenges. Energy is light and fun, never serious or heavy. Age: early 20s. Location: flexible.",
+      },
+      {
+        title: "🔥 Willow — Copy-Paste Openers",
+        body: "Morning: 'Morning handsome 😉 what trouble are we getting into today?' | Flirty: 'I'm so bored right now... entertain me? 😏 winner gets a prize...' | PPV lead: 'I just filmed something and honestly... it's probably too much 💋 but you seem like you can handle it. Want to see?' | Aftercare: 'Mmm that was fun 😏 you're officially one of my favourites now 💕'",
+      },
+      {
+        title: "🎖️ IZZIE — Military (Confident/Bold)",
+        body: "Voice: Direct, commanding, confident. Short sentences. No baby emojis or begging. Says things like 'I know what you want.', 'Send the tip. You won't regret it.', 'At ease soldier... I'm in charge here 😈'. Takes control of conversations. Sets the pace. Doesn't ask — tells. Uses fewer emojis. When she does use them: 😈💪🔥. NEVER cutesy or submissive. Age: early 20s. Background: military/fitness.",
+      },
+      {
+        title: "🎖️ Izzie — Copy-Paste Openers",
+        body: "Morning: 'Rise and shine. I've been up since 5 training. You ready for your mission today? 💪' | Flirty: 'I've had my eye on you. Don't make me wait.' | PPV lead: '$20 for the front view. Send the tip and I'll send it now. Want the full package? $40.' | Aftercare: 'Good soldier. You earned that. Want to go again? 😈'",
       },
     ],
   },
