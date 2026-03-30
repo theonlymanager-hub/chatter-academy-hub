@@ -48,6 +48,10 @@ const STATIC_TASKS: MarkTask[] = [
   { id: '15', title: 'Strikes system — move to Supabase from localStorage', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
   { id: '16', title: 'Smart PPV timing system', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
   { id: '17', title: 'Content ideas page with weekly targets per client', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
+  { id: '18', title: 'Vault organisation — folders per content type', status: 'queued', category: 'Operations', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Per Mateo: prevent wrong content/AI pics being sent' },
+  { id: '19', title: 'Per-model persona scripts for chatters', status: 'queued', category: 'Knowledge Base', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Ashley=shy, Izzie=bold, Willow=flirty. Specific copy-paste scripts.' },
+  { id: '20', title: 'Model info sheets — what each model can/can\'t do', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Per Mateo: chatters need boundaries + backstory per model' },
+  { id: '21', title: 'Verification pics + specific content requests for models', status: 'queued', category: 'Content', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Per Mateo: need verification pics, pussy vids with toys' },
 
   // DONE TODAY
   { id: '100', title: 'Mass message schedule — week of 30 Mar to 5 Apr', status: 'done', category: 'Operations', created_at: '2026-03-29T11:00:00Z', completed_at: '2026-03-29T12:27:00Z', notes: 'Posted to #mass-message-schedule: Ashley, Willow, Izzie. 7 days each.' },
@@ -61,6 +65,8 @@ const STATIC_TASKS: MarkTask[] = [
   { id: '108', title: 'Shift Calendar cleanup', status: 'done', category: 'Dashboard', created_at: '2026-03-29T16:30:00Z', completed_at: '2026-03-29T16:45:00Z', notes: 'Cleaner header, quick overview badges showing today\'s assignments.' },
   { id: '109', title: 'Chatting Playbook — full page', status: 'done', category: 'Knowledge Base', created_at: '2026-03-29T16:45:00Z', completed_at: '2026-03-29T17:30:00Z', notes: '6 sections, 30+ techniques: Conversation Flow, PPV Timing, Whale Handling, Upsell Ladder, Sexting Flow, Common Mistakes.' },
   { id: '110', title: 'Content filming checklist for Luke', status: 'done', category: 'Content', created_at: '2026-03-29T17:00:00Z', completed_at: '2026-03-29T17:15:00Z', notes: 'Per-model breakdown: categories, scenarios, quantities. ~60-75 content pieces/week across 3 models.' },
+  { id: '111', title: 'QC analysis — Jem/Manny 4/10, Jane/Danny 3/10, KC/Zizu 3/10', status: 'done', category: 'Operations', created_at: '2026-03-29T20:00:00Z', completed_at: '2026-03-29T20:10:00Z', notes: 'Harsh scoring per Luke. Sent to Zar for coaching.' },
+  { id: '112', title: 'Revenue widget — this week gross + all-time LTV', status: 'done', category: 'Dashboard', created_at: '2026-03-29T22:45:00Z', completed_at: '2026-03-30T00:05:00Z', notes: 'Ashley $4,583 / Izzie $2,178 / Willow $480. $15K target.' },
 ];
 
 export default function MarkTaskTracker() {
