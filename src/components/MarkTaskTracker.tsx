@@ -30,14 +30,14 @@ const STATUS_COLORS = {
 const STATIC_TASKS: MarkTask[] = [
   // ACTIVE — actually working on RIGHT NOW
   { id: '1', title: 'Weekly LTV tracking — historical week-over-week data', status: 'active', category: 'Dashboard', created_at: '2026-03-29T23:00:00Z', completed_at: null, notes: 'Luke wants weekly LTV trend, not just snapshot' },
-  { id: '2', title: 'Daily automated OF API revenue pull (cron)', status: 'active', category: 'API', created_at: '2026-03-29T23:00:00Z', completed_at: null, notes: 'So dashboard updates automatically without manual pulls' },
+  { id: '2', title: 'Daily automated OF API revenue pull (cron)', status: 'done', category: 'API', created_at: '2026-03-29T23:00:00Z', completed_at: '2026-03-30T02:40:00Z', notes: 'pm2 cron every 6 hours. Auto-updates Supabase daily_model_stats.' },
 
   // QUEUED — next up
   { id: '3', title: 'Luke\'s Tasks section on dashboard', status: 'done', category: 'Dashboard', created_at: '2026-03-29T18:00:00Z', completed_at: '2026-03-30T00:30:00Z', notes: 'Crown icon, priority badges, 10 tasks listed.' },
   { id: '4', title: 'Smart mass messaging system (exclude active convos + whales)', status: 'queued', category: 'API', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
   { id: '5', title: 'Scenarios → mass messages → scripts pipeline', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T18:00:00Z', completed_at: null, notes: null },
   { id: '6', title: 'Dashboard — chatter task repetition system (10-15x)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
-  { id: '7', title: 'Client-facing content checklist page (no agency branding)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
+  { id: '7', title: 'Client-facing content checklist page (no agency branding)', status: 'done', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: '2026-03-30T03:00:00Z', notes: '/client-checklist?model=ashley (or izzie/willow). Per-model checklists with Drive upload links.' },
   { id: '8', title: 'Dashboard — training results visibility (needs Supabase table)', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: 'Blocked: quiz_results table doesn\'t exist' },
   { id: '9', title: 'Dashboard — team activity feed fix', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T13:45:00Z', completed_at: null, notes: null },
   { id: '10', title: 'Expired fan re-engagement mass messages', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
@@ -49,8 +49,8 @@ const STATIC_TASKS: MarkTask[] = [
   { id: '16', title: 'Smart PPV timing system', status: 'queued', category: 'API', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
   { id: '17', title: 'Content ideas page with weekly targets per client', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T14:00:00Z', completed_at: null, notes: null },
   { id: '18', title: 'Vault organisation — folders per content type', status: 'queued', category: 'Operations', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Per Mateo: prevent wrong content/AI pics being sent' },
-  { id: '19', title: 'Per-model persona scripts for chatters', status: 'queued', category: 'Knowledge Base', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Ashley=shy, Izzie=bold, Willow=flirty. Specific copy-paste scripts.' },
-  { id: '20', title: 'Model info sheets — what each model can/can\'t do', status: 'queued', category: 'Dashboard', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Per Mateo: chatters need boundaries + backstory per model' },
+  { id: '19', title: 'Per-model persona scripts for chatters', status: 'done', category: 'Knowledge Base', created_at: '2026-03-29T23:30:00Z', completed_at: '2026-03-30T01:30:00Z', notes: 'Added to Chatting Playbook: Ashley shy openers, Willow flirty openers, Izzie commanding openers.' },
+  { id: '20', title: 'Model info sheets — what each model can/can\'t do', status: 'done', category: 'Dashboard', created_at: '2026-03-29T23:30:00Z', completed_at: '2026-03-30T03:10:00Z', notes: 'Already on Client Profiles page: can-do/cant-do lists, personality, background per model.' },
   { id: '21', title: 'Verification pics + specific content requests for models', status: 'queued', category: 'Content', created_at: '2026-03-29T23:30:00Z', completed_at: null, notes: 'Per Mateo: need verification pics, pussy vids with toys' },
 
   // DONE TODAY
