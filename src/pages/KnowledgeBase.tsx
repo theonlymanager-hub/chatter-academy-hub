@@ -1266,28 +1266,28 @@ export default function KnowledgeBase() {
                 <DollarSign className="h-5 w-5" />
               </div>
               <div className="text-left">
-                <h2 className="text-base font-bold">The Upsell Ladder — MANDATORY</h2>
-                <p className="text-xs text-muted-foreground font-normal">Step-by-step PPV sales system. Follow this EXACTLY.</p>
+                <h2 className="text-base font-bold">The Sales System — How We Sell</h2>
+                <p className="text-xs text-muted-foreground font-normal">Structured PPV sales process. Learn it, adapt it to your style, use it every shift.</p>
               </div>
             </div>
           </AccordionTrigger>
           <AccordionContent className="space-y-6">
             <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/10">
-              <h3 className="font-bold text-green-400 mb-2">⚠️ THIS IS NOT OPTIONAL</h3>
+              <h3 className="font-bold text-green-400 mb-2">Why This Matters</h3>
               <p className="text-sm text-muted-foreground">
-                This system is based on analysis of a $170K/month account with $38 LTV. Their chatters follow this exact process for every single fan. No exceptions.
+                This system is based on analysis of top-performing accounts doing $100K+/month. The difference between us and them isn't content — it's having a STRUCTURE. Every fan should go through a clear process. No more freestyling. Adapt the tone to the fan, but follow the steps.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-sm mb-3">The 5-Step Ladder</h3>
+              <h3 className="font-semibold text-sm mb-3">The Commitment Ladder</h3>
               <div className="space-y-3">
                 {[
-                  { step: 1, title: "The Opener (Welcome Message)", price: "Free", desc: "\"Why did you sub to my page, what makes me different? 💝🤞\" — This is NOT a greeting. It's a QUESTION. The fan HAS to reply. Their answer tells you exactly what they want, which you use for the entire conversation. If no reply after 2 hours: \"answer me, that's called manners....\"" },
-                  { step: 2, title: "Qualification & Build-Up", price: "Free", desc: "Ask follow-up questions based on their answer. \"What do you find so mesmerizing about my body?\" / \"Did something catch your eye scrolling through my profile?\" / \"Be open with me please\" — Build emotional investment BEFORE any PPV. Get them talking about what they want." },
-                  { step: 3, title: "Commitment Test", price: "$8-10", desc: "\"Open this and show me COMMITMENT, make me close out ALL my other chats so I can focus on YOU ONLY. This is a way of me testing your potential, commitment and hardness.\" — 5 images, low price. Purpose is FOOT IN THE DOOR. Once they buy this, they'll buy more. Frame it as THEM proving themselves to YOU." },
-                  { step: 4, title: "Escalation", price: "$40-50", desc: "\"Take care of this if you wanna have 1 on 1 with me right now. Drop me your snapchat @. You wanna make this personal with me, don't you?\" — 5 media items. Request their Snapchat (creates illusion of real connection). Use YES/NO close: \"READY? YES/NO\" — no wiggle room." },
-                  { step: 5, title: "The Big PPV", price: "$75-200", desc: "\"EXCLUSIVE VIP VIDEO INCOMING — I HOPE THAT COCK IS READY FOR THIS\" — 2-5 media items. Stack multiple in one session: \"Can you unwrap one more for me so I add a special one to your bundle? I really want that cock spoiled.\" Top fans will buy 2-3 of these in a row." },
+                  { step: 1, title: "The Opener (Welcome Message)", price: "Free", desc: "\"Why did you sub to my page, what makes me different? 💝🤞\" — A QUESTION, not a greeting. Forces the fan to reply and tells you what they want. Use their answer to personalise everything after. If no reply after 2 hours, follow up warmly: \"Hey, don't be shy 😊 I noticed you subbed — what caught your eye?\"" },
+                  { step: 2, title: "Qualification & Connection", price: "Free", desc: "Ask follow-ups based on their answer. \"What caught your eye?\" / \"Be open with me\" — Build a genuine connection BEFORE selling anything. Get them talking about what they want. This gives you ammo for the whole conversation. At least 3-4 messages of real chat before any PPV." },
+                  { step: 3, title: "Commitment Test (Low PPV)", price: "$8-15", desc: "A small, affordable PPV to get them buying. Frame it as something special: \"I want to show you something exclusive, just for you.\" 3-5 images. The purpose is FOOT IN THE DOOR — once they buy one thing, they'll buy more. Don't hard-sell it. Make it feel like a gift they need to unlock." },
+                  { step: 4, title: "Escalation (Mid PPV)", price: "$40-75", desc: "Now they're invested. Escalate naturally: \"I've got something even better... want to see?\" Use a YES/NO close — \"Ready? Yes or no 😏\" — direct but playful, not aggressive. This is where you can mention Snapchat or \"making it more personal\" to deepen the connection." },
+                  { step: 5, title: "Premium Content", price: "$75-200+", desc: "The big PPV. Only after they've already bought something. \"I made this just for you\" / \"This is my most private content.\" If they buy, try to stack: \"Want me to add something special to that?\" A fan who's already buying is the easiest upsell. Don't be afraid to offer more." },
                 ].map((s) => (
                   <div key={s.step} className="glass-card p-4">
                     <div className="flex items-start gap-3">
@@ -1305,16 +1305,17 @@ export default function KnowledgeBase() {
             <div>
               <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                 <Zap className="h-4 w-4 text-yellow-400" />
-                Critical Sales Rules
+                Sales Rules
               </h3>
               <div className="space-y-2">
                 {[
-                  { rule: "NEVER quote a price first", detail: "Always ask: \"How much can you do baby? So I can make it special.\" Then send a PPV at EXACTLY their budget. Fan says $50? Send a $50 PPV. Never lose a sale." },
-                  { rule: "Use YES/NO binary closes", detail: "Before every mid/high PPV: \"READY? YES/NO\" in bold. Removes \"maybe\" and \"let me think\" as options." },
-                  { rule: "Never let a chat die", detail: "If a fan goes quiet: \"Don't ignore me baby... this pussy needs you\" / \"Come and claim it\" / \"UMMMM?????\" — Aggressive follow-up. Always." },
-                  { rule: "Create urgency & FOMO", detail: "\"This message will be unsent in 1 minute\" — Then actually unsend it. If they come back: \"I don't feel appreciated, letting you see my most private stuff and you ignore it... but I might give you another chance since you're so sweet.\"" },
-                  { rule: "Stack PPVs in one session", detail: "After each purchase: \"Can you unwrap one more for me?\" — A fan who's already buying is the easiest sale. Don't wait — stack while they're hot." },
-                  { rule: "Adapt price to fan budget", detail: "Not every fan can do $200. Some can only do $50. THAT'S FINE. $50 from a fan who would've spent $0 is better than losing them. Meet them where they are." },
+                  { rule: "NEVER quote a price first", detail: "Always ask: \"How much can you do baby? I'll make it special for you.\" Then send a PPV at EXACTLY their budget. Fan says $50? Send a $50 PPV. Fan says $10? Send a $10 pic. Never lose a sale by pricing them out." },
+                  { rule: "Use YES/NO closes", detail: "Before mid/high PPVs: \"Ready? Yes or no 😏\" — Direct but playful. Removes the option to dodge without being aggressive." },
+                  { rule: "Never let a chat die", detail: "If a fan goes quiet, follow up within 30 min. Warm tone: \"Hey, you still there? 😊\" / \"Don't go quiet on me...\" — Show you care, don't guilt-trip. Exception: if they've clearly said no, respect it and try again tomorrow." },
+                  { rule: "Create soft urgency", detail: "\"I only made this for you — if you don't want it I'll delete it\" / \"This offer is just for today\" — Light FOMO without being manipulative. Make them feel like they're getting something exclusive and time-limited." },
+                  { rule: "Stack when they're hot", detail: "After each purchase: \"Want me to add something special?\" / \"I've got one more thing you'll love...\" — A fan who's already buying is your easiest next sale. Don't wait — offer while the moment is right." },
+                  { rule: "Adapt to their budget", detail: "Not every fan can do $200. Some can only do $10. THAT'S FINE. $10 from someone who would've spent $0 is still a win. Meet them where they are — you can always upsell later." },
+                  { rule: "Read the fan's energy", detail: "Some fans respond to direct/aggressive. Some need gentle handling. Adapt your tone. The STRUCTURE stays the same (ladder), but how you deliver it changes per fan. A potential whale who seems genuine — don't push too hard or you'll lose them." },
                 ].map((r, i) => (
                   <div key={i} className="p-3 rounded-lg bg-secondary/30">
                     <p className="text-sm"><strong className="text-yellow-400">{r.rule}:</strong> <span className="text-muted-foreground">{r.detail}</span></p>
@@ -1323,16 +1324,18 @@ export default function KnowledgeBase() {
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/10">
-              <h3 className="font-bold text-red-400 mb-2 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> What We Were Doing Wrong</h3>
+            <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/10">
+              <h3 className="font-bold text-blue-400 mb-2 flex items-center gap-2"><Brain className="h-4 w-4" /> Balance is Key</h3>
               <div className="space-y-1 text-sm text-muted-foreground">
-                <p>❌ Generic welcome messages that don't demand a response</p>
-                <p>❌ Sending expensive PPVs cold with no build-up or investment</p>
-                <p>❌ Fixed PPV prices — take it or leave it (losing sales)</p>
-                <p>❌ Letting conversations die instead of following up aggressively</p>
-                <p>❌ Open-ended questions instead of YES/NO closes</p>
-                <p>❌ No urgency or scarcity (fan thinks they can buy anytime)</p>
-                <p className="text-red-400 font-medium mt-2">Result: $1.75 LTV vs $38 LTV on the account doing it right.</p>
+                <p>✅ Be structured — every fan goes through the same ladder</p>
+                <p>✅ Be flexible — adapt tone and price to the fan</p>
+                <p>✅ Be persistent — follow up on quiet chats, never let them die</p>
+                <p>✅ Be genuine — build real connections, especially with potential whales</p>
+                <p>⚠️ Use guilt-tripping sparingly — it works sometimes but can push whales away</p>
+                <p>⚠️ Heavy aggression is a tool, not the default — use it selectively</p>
+                <p>❌ Don't freestyle — have a plan for every conversation</p>
+                <p>❌ Don't send expensive PPVs cold — always build up first</p>
+                <p>❌ Don't use fixed prices — always ask their budget</p>
               </div>
             </div>
           </AccordionContent>

@@ -1,19 +1,19 @@
 {
-  "updated_at": "2026-03-30T15:05:27Z",
+  "updated_at": "2026-03-30T17:00:06Z",
   "date": "2026-03-30",
   "week_start": "2026-03-30",
   "models": {
     "Ashley": {
-      "today_gross": 594.0,
-      "week_gross": 594.0,
-      "total_subs": 10189,
+      "today_gross": 728.0,
+      "week_gross": 728.0,
+      "total_subs": 10211,
       "new_subs_week": 0,
       "ltv_week": 0
     },
     "Izzie": {
-      "today_gross": 172.0,
-      "week_gross": 172.0,
-      "total_subs": 12624,
+      "today_gross": 242.0,
+      "week_gross": 242.0,
+      "total_subs": 12626,
       "new_subs_week": 0,
       "ltv_week": 0
     },
