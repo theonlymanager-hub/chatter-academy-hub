@@ -29,6 +29,7 @@ import Customs from "./pages/Customs";
 import ChatFeedback from "./pages/ChatFeedback";
 import StrikeTracker from "./pages/StrikeTracker";
 import ContentIdeas from "./pages/ContentIdeas";
+import GameStrategies from "./pages/GameStrategies";
 import ScenarioBoard from "./pages/ScenarioBoard";
 import LtvTracker from "./pages/LtvTracker";
 import AirbnbTracker from "./pages/AirbnbTracker";
@@ -233,6 +234,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <ContentIdeas />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Game Strategies - All roles */}
+        <Route 
+          path="/game-strategies" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
+              <DashboardLayout>
+                <GameStrategies />
               </DashboardLayout>
             </ProtectedRoute>
           } 

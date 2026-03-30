@@ -11,6 +11,7 @@ import {
   Star,
   Heart,
   BookOpen,
+  Camera,
   Palette,
   Settings,
   LogOut,
@@ -60,7 +61,8 @@ const getAllSections = () => [
   {
     label: "Ideas & Strategies",
     items: [
-      { title: "Game Strategies", url: "/content-ideas", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Content Ideas", url: "/content-ideas", icon: Camera, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
+      { title: "Game Strategies", url: "/game-strategies", icon: Lightbulb, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },

@@ -1,401 +1,597 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Gamepad2, Zap, DollarSign, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Camera,
+  Video,
+  Paintbrush,
+  Plus,
+  Pencil,
+  Trash2,
+  Target,
+  Save,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface GameStrategy {
+// ─── Types ───────────────────────────────────────────────────────────
+type Model = "Ashley" | "Willow" | "Izzie";
+type Category = "solo" | "b/g" | "lingerie" | "lifestyle" | "themed" | "custom" | "bts";
+type IdeaStatus = "idea" | "planned" | "shot" | "edited" | "posted";
+type Priority = "high" | "medium" | "low";
+
+interface ContentIdea {
   id: string;
-  name: string;
-  description: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  revenue: "Low" | "Medium" | "High";
-  steps: string[];
+  model: Model;
+  title: string;
+  category: Category;
+  status: IdeaStatus;
+  priority: Priority;
+  notes: string;
+  created_at: string;
+  due_date: string;
 }
 
-const GAME_STRATEGIES: GameStrategy[] = [
-  {
-    id: "rps",
-    name: "Rock Paper Scissors",
-    description: "Classic game with escalating unlock prices per round. Fans play rounds to unlock exclusive content, with each round costing more than the last.",
-    difficulty: "Beginner",
-    revenue: "Medium",
-    steps: [
-      "Send an opening message: 'Want to play a game? 🎮 Rock Paper Scissors — winner gets a surprise!'",
-      "Set Round 1 unlock at a low entry price (e.g. $5) to get them hooked",
-      "If the fan wins, send a teaser reward and offer the next round at a higher price",
-      "If the fan loses, offer a 'rematch' at the same price — keep them engaged",
-      "Escalate prices each round: Round 2 = $10, Round 3 = $15, Round 4 = $20+",
-      "Final round winner gets exclusive content as the grand prize",
-      "Tip: Let them win early rounds to build momentum, then raise stakes"
-    ]
-  },
-  {
-    id: "rapsheet",
-    name: "Rapsheet Quiz",
-    description: "A 'Getting to Know Me' quiz using model facts. Fans answer questions about the model to unlock content — tests how well they pay attention.",
-    difficulty: "Beginner",
-    revenue: "Medium",
-    steps: [
-      "Prepare 5-10 questions about the model (favourite colour, birthday, pet name, etc.)",
-      "Send: 'Think you really know me? 😏 Take my quiz and prove it!'",
-      "Each correct answer earns a point; set a price per question ($3-5 each)",
-      "Keep score as you go — fans love the competitive element",
-      "At the end, give rewards based on score: 3/5 = teaser, 4/5 = photo set, 5/5 = exclusive video",
-      "Wrong answers? Offer hints for an extra tip",
-      "Tip: Update questions regularly using info from the model's social media and bio"
-    ]
-  },
-  {
-    id: "word-game",
-    name: "10 Round Word Game",
-    description: "Fans collect one word per round to build a password that unlocks exclusive content. Each round costs more — 10 rounds of escalating engagement.",
-    difficulty: "Intermediate",
-    revenue: "High",
-    steps: [
-      "Tell the fan: 'I have something special locked away 🔐 Collect all 10 words to unlock it!'",
-      "Each round reveals one word of a 10-word password/phrase",
-      "Set escalating prices: Round 1-3 = $5, Round 4-6 = $8, Round 7-9 = $12, Round 10 = $15",
-      "Between rounds, send teaser content to keep anticipation high",
-      "Give each word with a flirty message to maintain the mood",
-      "Once they have all 10 words, they send the password to unlock the exclusive content",
-      "Total potential: $80-100+ per fan who completes all rounds",
-      "Tip: Add bonus rounds for fans who want even more after completing the game"
-    ]
-  },
-  {
-    id: "upsell-bundle",
-    name: "Upselling Bundle Strategy",
-    description: "Pivot single content requests into higher-value bundles. Turn a $10 request into a $50+ sale by packaging content strategically.",
-    difficulty: "Advanced",
-    revenue: "High",
-    steps: [
-      "When a fan requests a single piece of content, acknowledge it warmly",
-      "Before sending, offer a bundle: 'I actually have a set of 5 similar ones — want the full collection?'",
-      "Price the bundle at 3-4x the single item (not 5x — make it feel like a deal)",
-      "If they hesitate, offer a 'middle option': 3 for 2.5x the single price",
-      "Always frame it as exclusive: 'I only offer these bundles to my favourites'",
-      "Include a bonus item in the bundle that they didn't ask for — adds perceived value",
-      "Follow up after purchase: 'Want me to make a custom set just for you?' to start the next sale",
-      "Tip: Keep a catalogue of bundle-ready content organised by theme"
-    ]
-  },
-  {
-    id: "paradise",
-    name: "Trip to Paradise",
-    description: "Long-form word unlock game with 20+ rounds. Fans collect words to 'travel to paradise' — maximum engagement and revenue over extended conversations.",
-    difficulty: "Advanced",
-    revenue: "High",
-    steps: [
-      "Set the scene: 'Want to take a trip to paradise with me? 🏝️ Collect the words to get your boarding pass!'",
-      "Plan 20-25 rounds, each revealing one word of a long phrase",
-      "Start with low prices ($3-5) and gradually escalate to $15-20 per round",
-      "Every 5 rounds, send a 'destination preview' — a teaser of the final reward",
-      "Add 'turbulence' rounds where they can lose a word unless they pay to keep it",
-      "Halfway point: Offer a 'first class upgrade' bundle for extra content",
-      "Final destination unlock = premium exclusive content (photo set + video)",
-      "Total potential: $150-250+ per fan who completes the journey",
-      "Tip: This works best with highly engaged fans — qualify them first with a shorter game"
-    ]
-  },
-  {
-    id: "private-heaven",
-    name: "Private Heaven",
-    description: "Mass DM hook that leads into a word collection game. Cast a wide net with an enticing opener, then convert responses into the word game format.",
-    difficulty: "Intermediate",
-    revenue: "High",
-    steps: [
-      "Craft a mass DM: 'I have a private collection that only a few fans can access 🔑 Want in?'",
-      "Anyone who responds gets entered into the word collection game",
-      "Start with a free first word to hook them in",
-      "Set 10-15 rounds of word collection at $5-10 each",
-      "Send teaser clips between rounds to maintain interest",
-      "The 'heaven' content should be genuinely premium — fans will talk about it",
-      "Track which fans complete the game for future targeting",
-      "Tip: Send the mass DM during peak hours (evenings/weekends) for best response rate"
-    ]
-  },
-  {
-    id: "joi-game",
-    name: "7 Round Guided Game",
-    description: "Structured 7-round interactive experience with locked video content at each stage. Each round builds on the previous one for maximum engagement.",
-    difficulty: "Advanced",
-    revenue: "High",
-    steps: [
-      "Set up 7 themed rounds, each with a locked video as the reward",
-      "Round 1: Low entry price ($5) — introductory teaser content",
-      "Round 2-3: Medium price ($10) — building anticipation",
-      "Round 4-5: Higher price ($15) — premium content reveals",
-      "Round 6: Peak price ($20) — the most exclusive content",
-      "Round 7 (Finale): Special price ($25) — the grand finale experience",
-      "Between rounds, engage with messages to maintain the narrative flow",
-      "Total potential: $100+ per fan across all 7 rounds",
-      "Tip: Pre-record all content so you can run this game with multiple fans simultaneously"
-    ]
-  },
-  {
-    id: "truth-dare",
-    name: "Truth or Dare",
-    description: "Interactive truth or dare where fans pick challenges. Each dare or truth reveal comes with exclusive content — easy to run and highly engaging.",
-    difficulty: "Beginner",
-    revenue: "Medium",
-    steps: [
-      "Start with: 'Let's play Truth or Dare 😈 You pick first!'",
-      "Prepare 10+ truths and 10+ dares in advance",
-      "Truths: Personal questions that build connection (keeps them coming back)",
-      "Dares: Content-based reveals priced at $5-15 depending on intensity",
-      "Fan picks truth or dare, then you deliver and ask them to pick again",
-      "Alternate between free truths and paid dares to keep momentum",
-      "Bonus: Let them dare YOU for premium prices",
-      "Tip: Keep a running list of popular truths and dares that convert well"
-    ]
-  },
-  {
-    id: "spin-wheel",
-    name: "Spin the Wheel",
-    description: "Randomised prize wheel concept. Fans pay to spin and win content of varying value — the gambling element drives repeat purchases.",
-    difficulty: "Beginner",
-    revenue: "Medium",
-    steps: [
-      "Create a visual wheel graphic with 6-8 segments (use Canva or similar)",
-      "Segments range from small wins (teaser photo) to big wins (exclusive video set)",
-      "Charge $5-10 per spin",
-      "Use a random method to determine the result (coin flip, random number, etc.)",
-      "Send the result with the corresponding content",
-      "Offer 'double or nothing' spins for fans who want to go again",
-      "Weekly wheel refresh: Change prizes to keep it fresh",
-      "Tip: Weight the wheel slightly in their favour early on — happy fans spin more"
-    ]
-  },
-  {
-    id: "hot-cold",
-    name: "Hot or Cold",
-    description: "Guide fans toward hidden content using hot/cold clues. Each clue costs a small amount — fans pay to narrow down what exclusive content they will unlock.",
-    difficulty: "Beginner",
-    revenue: "Low",
-    steps: [
-      "Tell the fan: 'I have something hidden for you 🔥❄️ Pay for clues to find it!'",
-      "Prepare 5-8 clues that gradually reveal what the content is",
-      "Charge $3-5 per clue",
-      "Use 'cold', 'warm', 'hot', 'burning' language to build excitement",
-      "After all clues, offer the final content at a premium price",
-      "If they guess early (unlikely), reward their enthusiasm with a bonus",
-      "Tip: The mystery element is the hook — don't reveal too much too early"
-    ]
-  },
-  {
-    id: "would-you-rather",
-    name: "Would You Rather",
-    description: "Present two content options and let the fan choose. Both options require payment — it's not IF they buy, but WHICH they buy.",
-    difficulty: "Beginner",
-    revenue: "Medium",
-    steps: [
-      "Send: 'Would you rather see [Option A] or [Option B]? 🤔'",
-      "Both options should be desirable — this is a choice, not a yes/no",
-      "Price both options similarly ($8-15 each)",
-      "After they choose and purchase, reveal: 'Good choice... but are you curious about the other one?'",
-      "Many fans will buy both — that's the strategy",
-      "Run 3-5 rounds of Would You Rather in a session",
-      "Tip: Pair a fan favourite with something new to drive discovery of fresh content"
-    ]
-  },
-  {
-    id: "countdown",
-    name: "Countdown Timer",
-    description: "Create urgency with a countdown to exclusive content drop. Limited-time offers drive impulse purchases and FOMO.",
-    difficulty: "Intermediate",
-    revenue: "Medium",
-    steps: [
-      "Announce: 'Something exclusive drops in 24 hours ⏰ Pre-order now at a discount!'",
-      "Offer early-bird pricing (20-30% off) for fans who commit before the countdown ends",
-      "Send countdown updates: 12 hours, 6 hours, 1 hour, 30 minutes",
-      "Each update includes a new teaser to build anticipation",
-      "When the timer hits zero, send the content to pre-orders first",
-      "After delivery, offer it to everyone else at full price",
-      "Create a 'late fee' version at premium price for fans who missed the window",
-      "Tip: Use countdowns for your best content — scarcity must feel real"
-    ]
-  },
-  {
-    id: "fantasy-builder",
-    name: "Fantasy Builder",
-    description: "Fans design their ideal custom content by choosing elements step-by-step. Each choice adds to the price — fans build (and pay for) their perfect experience.",
-    difficulty: "Advanced",
-    revenue: "High",
-    steps: [
-      "Start with: 'Let's build your dream experience together 💭 You choose every detail!'",
-      "Step 1: Choose a theme/setting (bedroom, shower, outdoor, etc.) — base price $10",
-      "Step 2: Choose an outfit/look — add $5-10",
-      "Step 3: Choose the style (teasing, playful, intense, etc.) — add $5-10",
-      "Step 4: Choose the format (photo set, short clip, long video) — add $10-25",
-      "Step 5: Add extras (personalised message, name mention, etc.) — add $5-15",
-      "Present the final 'build' with total price and create the custom content",
-      "Total potential: $35-70+ per custom build",
-      "Tip: Have pre-made content for common combinations to fulfil quickly"
-    ]
-  }
+interface WeeklyTargets {
+  [key: string]: { photos: number; videos: number; customs: number };
+}
+
+interface ContentData {
+  content_ideas: ContentIdea[];
+  weekly_targets: WeeklyTargets;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────
+const MODELS: Model[] = ["Ashley", "Willow", "Izzie"];
+
+const CATEGORIES: { value: Category; label: string }[] = [
+  { value: "solo", label: "Solo" },
+  { value: "b/g", label: "B/G" },
+  { value: "lingerie", label: "Lingerie" },
+  { value: "lifestyle", label: "Lifestyle" },
+  { value: "themed", label: "Themed" },
+  { value: "custom", label: "Custom" },
+  { value: "bts", label: "Behind the Scenes" },
 ];
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  Beginner: "bg-green-500/20 text-green-400 border-green-500/30",
-  Intermediate: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  Advanced: "bg-red-500/20 text-red-400 border-red-500/30",
+const STATUSES: { value: IdeaStatus; label: string; color: string }[] = [
+  { value: "idea", label: "💡 Idea", color: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30" },
+  { value: "planned", label: "📋 Planned", color: "bg-blue-500/20 text-blue-300 border-blue-500/30" },
+  { value: "shot", label: "📸 Shot", color: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" },
+  { value: "edited", label: "✂️ Edited", color: "bg-purple-500/20 text-purple-300 border-purple-500/30" },
+  { value: "posted", label: "✅ Posted", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
+];
+
+const PRIORITIES: { value: Priority; label: string; color: string }[] = [
+  { value: "high", label: "High", color: "bg-red-500/20 text-red-400 border-red-500/30" },
+  { value: "medium", label: "Medium", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
+  { value: "low", label: "Low", color: "bg-slate-500/20 text-slate-400 border-slate-500/30" },
+];
+
+const CATEGORY_COLORS: Record<Category, string> = {
+  solo: "bg-pink-500/20 text-pink-300",
+  "b/g": "bg-orange-500/20 text-orange-300",
+  lingerie: "bg-rose-500/20 text-rose-300",
+  lifestyle: "bg-teal-500/20 text-teal-300",
+  themed: "bg-violet-500/20 text-violet-300",
+  custom: "bg-amber-500/20 text-amber-300",
+  bts: "bg-cyan-500/20 text-cyan-300",
 };
 
-const REVENUE_COLORS: Record<string, string> = {
-  Low: "bg-blue-500/20 text-blue-300",
-  Medium: "bg-purple-500/20 text-purple-300",
-  High: "bg-emerald-500/20 text-emerald-300",
+const STATUS_ORDER: IdeaStatus[] = ["idea", "planned", "shot", "edited", "posted"];
+
+const DEFAULT_TARGETS: WeeklyTargets = {
+  Ashley: { photos: 10, videos: 3, customs: 2 },
+  Willow: { photos: 8, videos: 2, customs: 1 },
+  Izzie: { photos: 10, videos: 3, customs: 2 },
 };
 
-const REVENUE_ICONS: Record<string, string> = {
-  Low: "$",
-  Medium: "$$",
-  High: "$$$",
-};
+const SAMPLE_IDEAS: ContentIdea[] = [
+  // Ashley — college theme
+  { id: crypto.randomUUID(), model: "Ashley", title: "College dorm room strip tease", category: "themed", status: "idea", priority: "high", notes: "Need dorm room props — fairy lights, textbooks, mini fridge", created_at: "2026-03-30", due_date: "2026-04-05" },
+  { id: crypto.randomUUID(), model: "Ashley", title: "Library study session", category: "themed", status: "planned", priority: "high", notes: "Need books + glasses props", created_at: "2026-03-30", due_date: "2026-04-05" },
+  { id: crypto.randomUUID(), model: "Ashley", title: "Campus walk in sundress", category: "lifestyle", status: "idea", priority: "medium", notes: "Outdoor shoot, need sunny day", created_at: "2026-03-30", due_date: "2026-04-07" },
+  { id: crypto.randomUUID(), model: "Ashley", title: "Graduation cap & gown reveal", category: "themed", status: "idea", priority: "medium", notes: "Buy grad cap and gown", created_at: "2026-03-30", due_date: "2026-04-10" },
+  { id: crypto.randomUUID(), model: "Ashley", title: "Study group gone wild", category: "b/g", status: "idea", priority: "low", notes: "Need male talent", created_at: "2026-03-30", due_date: "" },
+  { id: crypto.randomUUID(), model: "Ashley", title: "Cheerleader tryouts", category: "solo", status: "shot", priority: "high", notes: "Cheerleader outfit arrived", created_at: "2026-03-28", due_date: "2026-04-02" },
+  { id: crypto.randomUUID(), model: "Ashley", title: "Sorority initiation", category: "lingerie", status: "idea", priority: "medium", notes: "White lingerie set + sorority letter props", created_at: "2026-03-30", due_date: "" },
 
+  // Willow — redhead/ginger theme
+  { id: crypto.randomUUID(), model: "Willow", title: "Kitchen baking in apron only", category: "lifestyle", status: "idea", priority: "high", notes: "Flour, mixing bowls, cute apron", created_at: "2026-03-30", due_date: "2026-04-04" },
+  { id: crypto.randomUUID(), model: "Willow", title: "Autumn outdoor walk", category: "lifestyle", status: "planned", priority: "medium", notes: "Cozy sweater, falling leaves backdrop", created_at: "2026-03-30", due_date: "2026-04-06" },
+  { id: crypto.randomUUID(), model: "Willow", title: "Cozy fireplace evening", category: "solo", status: "idea", priority: "high", notes: "Blanket, wine glass, candles", created_at: "2026-03-30", due_date: "2026-04-05" },
+  { id: crypto.randomUUID(), model: "Willow", title: "Morning routine — bed to shower", category: "bts", status: "idea", priority: "medium", notes: "Natural lighting, no heavy makeup", created_at: "2026-03-30", due_date: "" },
+  { id: crypto.randomUUID(), model: "Willow", title: "Bubble bath time", category: "solo", status: "shot", priority: "high", notes: "Bath bombs, candles, dim lighting", created_at: "2026-03-28", due_date: "2026-04-02" },
+
+  // Izzie — military theme
+  { id: crypto.randomUUID(), model: "Izzie", title: "Military uniform tease", category: "themed", status: "planned", priority: "high", notes: "Camo uniform, boots, beret", created_at: "2026-03-30", due_date: "2026-04-04" },
+  { id: crypto.randomUUID(), model: "Izzie", title: "Boot camp workout", category: "lifestyle", status: "idea", priority: "high", notes: "Sports bra, camo leggings, outdoor setting", created_at: "2026-03-30", due_date: "2026-04-06" },
+  { id: crypto.randomUUID(), model: "Izzie", title: "Dog tag shower scene", category: "solo", status: "idea", priority: "medium", notes: "Dog tags only, steamy shower", created_at: "2026-03-30", due_date: "" },
+  { id: crypto.randomUUID(), model: "Izzie", title: "Camo lingerie set", category: "lingerie", status: "shot", priority: "high", notes: "Camo lingerie arrived — ready to edit", created_at: "2026-03-28", due_date: "2026-04-03" },
+  { id: crypto.randomUUID(), model: "Izzie", title: "Morning PT drill", category: "lifestyle", status: "idea", priority: "medium", notes: "Early morning light, outdoor exercises", created_at: "2026-03-30", due_date: "2026-04-08" },
+];
+
+const STORAGE_KEY = "the_only_board_content_ideas";
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+function loadData(): ContentData {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { content_ideas: SAMPLE_IDEAS, weekly_targets: DEFAULT_TARGETS };
+}
+
+function saveData(data: ContentData) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getStatusMeta(s: IdeaStatus) {
+  return STATUSES.find((st) => st.value === s)!;
+}
+
+function getPriorityMeta(p: Priority) {
+  return PRIORITIES.find((pr) => pr.value === p)!;
+}
+
+// ─── Component ───────────────────────────────────────────────────────
 export default function ContentIdeas() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filterDifficulty, setFilterDifficulty] = useState("all");
-  const [filterRevenue, setFilterRevenue] = useState("all");
+  const { user } = useAuth();
+  const canEdit = user && ["admin", "supervisor"].includes(user.role);
 
-  let filtered = GAME_STRATEGIES;
-  if (filterDifficulty !== "all") filtered = filtered.filter(g => g.difficulty === filterDifficulty);
-  if (filterRevenue !== "all") filtered = filtered.filter(g => g.revenue === filterRevenue);
+  const [data, setData] = useState<ContentData>(loadData);
+  const [activeModel, setActiveModel] = useState<Model>("Ashley");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
+  const [addOpen, setAddOpen] = useState(false);
+  const [editTargetsOpen, setEditTargetsOpen] = useState(false);
+  const [editingIdea, setEditingIdea] = useState<ContentIdea | null>(null);
 
+  // Form state
+  const [formTitle, setFormTitle] = useState("");
+  const [formCategory, setFormCategory] = useState<Category>("solo");
+  const [formPriority, setFormPriority] = useState<Priority>("medium");
+  const [formNotes, setFormNotes] = useState("");
+  const [formDueDate, setFormDueDate] = useState("");
+
+  // Target edit state
+  const [tempTargets, setTempTargets] = useState<WeeklyTargets>(data.weekly_targets);
+
+  useEffect(() => { saveData(data); }, [data]);
+
+  // Filtered ideas for active model
+  const modelIdeas = useMemo(() => {
+    let ideas = data.content_ideas.filter((i) => i.model === activeModel);
+    if (filterCategory !== "all") ideas = ideas.filter((i) => i.category === filterCategory);
+    if (filterStatus !== "all") ideas = ideas.filter((i) => i.status === filterStatus);
+    if (filterPriority !== "all") ideas = ideas.filter((i) => i.priority === filterPriority);
+    // Sort: priority high→low, then status early→late
+    const pOrder: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
+    ideas.sort((a, b) => {
+      if (pOrder[a.priority] !== pOrder[b.priority]) return pOrder[a.priority] - pOrder[b.priority];
+      return STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
+    });
+    return ideas;
+  }, [data.content_ideas, activeModel, filterCategory, filterStatus, filterPriority]);
+
+  // Weekly progress per model (count "posted" items)
+  const progressFor = (model: Model) => {
+    const ideas = data.content_ideas.filter((i) => i.model === model);
+    const posted = ideas.filter((i) => i.status === "posted");
+    const targets = data.weekly_targets[model] || { photos: 0, videos: 0, customs: 0 };
+    // Count by category approximation: solo/lingerie/lifestyle/themed/bts = photo, b/g stays photo, custom = custom
+    const photosDone = posted.filter((i) => i.category !== "custom").length;
+    const customsDone = posted.filter((i) => i.category === "custom").length;
+    // For videos we count shot items as progress towards video target
+    const videosDone = ideas.filter((i) => ["shot", "edited", "posted"].includes(i.status) && ["b/g", "solo"].includes(i.category)).length;
+    return {
+      photos: { done: Math.min(photosDone, targets.photos), target: targets.photos },
+      videos: { done: Math.min(videosDone, targets.videos), target: targets.videos },
+      customs: { done: Math.min(customsDone, targets.customs), target: targets.customs },
+    };
+  };
+
+  // ─── Actions ─────────────────────────────────────────────────────
+  const addIdea = () => {
+    if (!formTitle.trim()) return;
+    const idea: ContentIdea = {
+      id: crypto.randomUUID(),
+      model: activeModel,
+      title: formTitle.trim(),
+      category: formCategory,
+      status: "idea",
+      priority: formPriority,
+      notes: formNotes,
+      created_at: new Date().toISOString().slice(0, 10),
+      due_date: formDueDate,
+    };
+    setData((d) => ({ ...d, content_ideas: [...d.content_ideas, idea] }));
+    resetForm();
+    setAddOpen(false);
+  };
+
+  const updateIdea = () => {
+    if (!editingIdea) return;
+    setData((d) => ({
+      ...d,
+      content_ideas: d.content_ideas.map((i) =>
+        i.id === editingIdea.id ? editingIdea : i
+      ),
+    }));
+    setEditingIdea(null);
+  };
+
+  const deleteIdea = (id: string) => {
+    setData((d) => ({
+      ...d,
+      content_ideas: d.content_ideas.filter((i) => i.id !== id),
+    }));
+  };
+
+  const cycleStatus = (id: string) => {
+    setData((d) => ({
+      ...d,
+      content_ideas: d.content_ideas.map((i) => {
+        if (i.id !== id) return i;
+        const idx = STATUS_ORDER.indexOf(i.status);
+        const next = STATUS_ORDER[(idx + 1) % STATUS_ORDER.length];
+        return { ...i, status: next };
+      }),
+    }));
+  };
+
+  const saveTargets = () => {
+    setData((d) => ({ ...d, weekly_targets: tempTargets }));
+    setEditTargetsOpen(false);
+  };
+
+  const resetForm = () => {
+    setFormTitle("");
+    setFormCategory("solo");
+    setFormPriority("medium");
+    setFormNotes("");
+    setFormDueDate("");
+  };
+
+  // ─── Render ──────────────────────────────────────────────────────
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Gamepad2 className="h-6 w-6 text-primary" />
-          Game Strategies
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Engagement games and conversion strategies — browse, learn, and apply
-        </p>
-      </div>
-
-      {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="glass-card p-4 text-center">
-          <p className="text-2xl font-bold">{GAME_STRATEGIES.length}</p>
-          <p className="text-[10px] text-muted-foreground uppercase">Total Games</p>
+    <div className="space-y-6 max-w-6xl">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Camera className="h-6 w-6 text-primary" />
+            Content Ideas
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Plan and track content ideas per model with weekly production targets
+          </p>
         </div>
-        <div className="glass-card p-4 text-center">
-          <p className="text-2xl font-bold text-emerald-400">{GAME_STRATEGIES.filter(g => g.revenue === "High").length}</p>
-          <p className="text-[10px] text-muted-foreground uppercase">High Revenue</p>
-        </div>
-        <div className="glass-card p-4 text-center">
-          <p className="text-2xl font-bold text-green-400">{GAME_STRATEGIES.filter(g => g.difficulty === "Beginner").length}</p>
-          <p className="text-[10px] text-muted-foreground uppercase">Beginner Friendly</p>
-        </div>
-      </div>
+        <div className="flex gap-2">
+          {canEdit && (
+            <>
+              <Dialog open={editTargetsOpen} onOpenChange={setEditTargetsOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTempTargets(data.weekly_targets)}
+                  >
+                    <Target className="h-4 w-4 mr-1" /> Edit Targets
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Weekly Targets</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {MODELS.map((m) => (
+                      <div key={m} className="space-y-2">
+                        <h3 className="font-semibold text-sm">{m}</h3>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(["photos", "videos", "customs"] as const).map((t) => (
+                            <div key={t}>
+                              <Label className="text-xs capitalize">{t}</Label>
+                              <Input
+                                type="number"
+                                min={0}
+                                value={tempTargets[m]?.[t] ?? 0}
+                                onChange={(e) =>
+                                  setTempTargets((prev) => ({
+                                    ...prev,
+                                    [m]: { ...prev[m], [t]: Number(e.target.value) },
+                                  }))
+                                }
+                                className="h-8"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <Button onClick={saveTargets} className="w-full">
+                      <Save className="h-4 w-4 mr-1" /> Save Targets
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-      {/* Filters */}
-      <div className="flex gap-3 flex-wrap">
-        <select
-          value={filterDifficulty}
-          onChange={e => setFilterDifficulty(e.target.value)}
-          className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
-        >
-          <option value="all">All Difficulty</option>
-          <option value="Beginner">🟢 Beginner</option>
-          <option value="Intermediate">🟡 Intermediate</option>
-          <option value="Advanced">🔴 Advanced</option>
-        </select>
-        <select
-          value={filterRevenue}
-          onChange={e => setFilterRevenue(e.target.value)}
-          className="bg-secondary border border-border/30 rounded-md px-3 py-2 text-sm"
-        >
-          <option value="all">All Revenue</option>
-          <option value="Low">$ Low</option>
-          <option value="Medium">$$ Medium</option>
-          <option value="High">$$$ High</option>
-        </select>
-      </div>
-
-      {/* Game cards — grouped by difficulty */}
-      <div className="space-y-6">
-        {(filterDifficulty === "all" ? ["Beginner", "Intermediate", "Advanced"] : [filterDifficulty]).map(diff => {
-          const revenueOrder: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
-          const group = filtered
-            .filter(g => g.difficulty === diff)
-            .sort((a, b) => (revenueOrder[a.revenue] ?? 2) - (revenueOrder[b.revenue] ?? 2));
-          if (group.length === 0) return null;
-          const diffEmoji = diff === "Beginner" ? "🟢" : diff === "Intermediate" ? "🟡" : "🔴";
-          return (
-            <div key={diff}>
-              <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span>{diffEmoji}</span> {diff}
-                <Badge variant="outline" className="text-xs ml-1">{group.length} games</Badge>
-              </h2>
-              <div className="space-y-3">
-        {group.map((game) => {
-          const isExpanded = expandedId === game.id;
-          return (
-            <div key={game.id} className="glass-card overflow-hidden">
-              <div
-                className="p-4 cursor-pointer hover:bg-secondary/20 transition-colors"
-                onClick={() => setExpandedId(isExpanded ? null : game.id)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h3 className="font-semibold text-base">{game.name}</h3>
-                      <Badge variant="outline" className={`text-[10px] ${DIFFICULTY_COLORS[game.difficulty]}`}>
-                        {game.difficulty}
-                      </Badge>
-                      <Badge className={`text-[10px] ${REVENUE_COLORS[game.revenue]}`}>
-                        {REVENUE_ICONS[game.revenue]} {game.revenue}
-                      </Badge>
+              <Dialog open={addOpen} onOpenChange={(v) => { setAddOpen(v); if (!v) resetForm(); }}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" /> Add Idea
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>New Content Idea — {activeModel}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs">Title</Label>
+                      <Input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="e.g. College dorm room strip tease" />
                     </div>
-                    <p className="text-sm text-muted-foreground">{game.description}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">Category</Label>
+                        <Select value={formCategory} onValueChange={(v) => setFormCategory(v as Category)}>
+                          <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.map((c) => (
+                              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Priority</Label>
+                        <Select value={formPriority} onValueChange={(v) => setFormPriority(v as Priority)}>
+                          <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {PRIORITIES.map((p) => (
+                              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Due Date (optional)</Label>
+                      <Input type="date" value={formDueDate} onChange={(e) => setFormDueDate(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Notes</Label>
+                      <Textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder="Props needed, location, etc." rows={2} />
+                    </div>
+                    <Button onClick={addIdea} disabled={!formTitle.trim()} className="w-full">
+                      <Plus className="h-4 w-4 mr-1" /> Add Idea
+                    </Button>
                   </div>
-                  <div className="shrink-0 mt-1">
-                    {isExpanded ? (
-                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                </div>
-              </div>
+                </DialogContent>
+              </Dialog>
+            </>
+          )}
+        </div>
+      </div>
 
-              {/* Expandable step-by-step instructions */}
-              {isExpanded && (
-                <div className="px-4 pb-4 pt-0 border-t border-border/20">
-                  <div className="mt-3">
-                    <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2 flex items-center gap-1">
-                      <Zap className="h-3 w-3" />
-                      Step-by-Step Instructions
-                    </h4>
-                    <ol className="space-y-2">
-                      {game.steps.map((step, i) => (
-                        <li key={i} className="flex gap-3 text-sm">
-                          <span className="shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold flex items-center justify-center">
-                            {i + 1}
-                          </span>
-                          <span className="text-muted-foreground pt-0.5">{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
+      {/* Weekly Summary — all models */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {MODELS.map((m) => {
+          const p = progressFor(m);
+          return (
+            <Card key={m} className="glass-card p-4 space-y-3">
+              <h3 className="font-semibold text-sm">{m}</h3>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <Camera className="h-3.5 w-3.5 text-pink-400" />
+                  <span className="w-14">Photos</span>
+                  <Progress value={p.photos.target ? (p.photos.done / p.photos.target) * 100 : 0} className="flex-1 h-2" />
+                  <span className="text-muted-foreground w-10 text-right">{p.photos.done}/{p.photos.target}</span>
                 </div>
-              )}
-            </div>
-          );
-        })}
+                <div className="flex items-center gap-2 text-xs">
+                  <Video className="h-3.5 w-3.5 text-blue-400" />
+                  <span className="w-14">Videos</span>
+                  <Progress value={p.videos.target ? (p.videos.done / p.videos.target) * 100 : 0} className="flex-1 h-2" />
+                  <span className="text-muted-foreground w-10 text-right">{p.videos.done}/{p.videos.target}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Paintbrush className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="w-14">Customs</span>
+                  <Progress value={p.customs.target ? (p.customs.done / p.customs.target) * 100 : 0} className="flex-1 h-2" />
+                  <span className="text-muted-foreground w-10 text-right">{p.customs.done}/{p.customs.target}</span>
+                </div>
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
 
-      {filtered.length === 0 && (
-        <div className="glass-card p-8 text-center text-muted-foreground">
-          <Gamepad2 className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p>No games match your filters. Try adjusting the difficulty or revenue filter.</p>
-        </div>
-      )}
+      {/* Model Tabs */}
+      <Tabs value={activeModel} onValueChange={(v) => setActiveModel(v as Model)}>
+        <TabsList className="mb-4">
+          {MODELS.map((m) => {
+            const count = data.content_ideas.filter((i) => i.model === m).length;
+            return (
+              <TabsTrigger key={m} value={m}>
+                {m} <Badge variant="secondary" className="ml-1.5 text-[10px] px-1.5">{count}</Badge>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        {MODELS.map((m) => (
+          <TabsContent key={m} value={m} className="space-y-4">
+            {/* Filters */}
+            <div className="flex gap-2 flex-wrap">
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue placeholder="Priority" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  {PRIORITIES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Ideas List */}
+            {modelIdeas.length === 0 ? (
+              <div className="glass-card p-8 text-center text-muted-foreground">
+                <Camera className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p>No content ideas match your filters.</p>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {modelIdeas.map((idea) => {
+                  const statusMeta = getStatusMeta(idea.status);
+                  const priorityMeta = getPriorityMeta(idea.priority);
+                  return (
+                    <Card key={idea.id} className="glass-card p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                            <h3 className="font-semibold text-sm">{idea.title}</h3>
+                            <Badge variant="outline" className={`text-[10px] ${CATEGORY_COLORS[idea.category]}`}>
+                              {CATEGORIES.find((c) => c.value === idea.category)?.label}
+                            </Badge>
+                            <Badge variant="outline" className={`text-[10px] ${priorityMeta.color}`}>
+                              {priorityMeta.label}
+                            </Badge>
+                          </div>
+                          {idea.notes && (
+                            <p className="text-xs text-muted-foreground mb-2">{idea.notes}</p>
+                          )}
+                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                            <span>Created: {idea.created_at}</span>
+                            {idea.due_date && <span>Due: {idea.due_date}</span>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {/* Status badge — click to cycle */}
+                          <button
+                            onClick={() => canEdit && cycleStatus(idea.id)}
+                            className={`px-2 py-1 rounded text-[10px] font-medium border cursor-pointer transition-colors hover:opacity-80 ${statusMeta.color}`}
+                            title={canEdit ? "Click to advance status" : statusMeta.label}
+                          >
+                            {statusMeta.label}
+                          </button>
+                          {canEdit && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => setEditingIdea({ ...idea })}
+                                className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
+                                title="Edit"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => deleteIdea(idea.id)}
+                                className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      {/* Edit Idea Dialog */}
+      <Dialog open={!!editingIdea} onOpenChange={(v) => { if (!v) setEditingIdea(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Content Idea</DialogTitle>
+          </DialogHeader>
+          {editingIdea && (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Title</Label>
+                <Input value={editingIdea.title} onChange={(e) => setEditingIdea({ ...editingIdea, title: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Label className="text-xs">Category</Label>
+                  <Select value={editingIdea.category} onValueChange={(v) => setEditingIdea({ ...editingIdea, category: v as Category })}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Status</Label>
+                  <Select value={editingIdea.status} onValueChange={(v) => setEditingIdea({ ...editingIdea, status: v as IdeaStatus })}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Priority</Label>
+                  <Select value={editingIdea.priority} onValueChange={(v) => setEditingIdea({ ...editingIdea, priority: v as Priority })}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PRIORITIES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Due Date</Label>
+                <Input type="date" value={editingIdea.due_date} onChange={(e) => setEditingIdea({ ...editingIdea, due_date: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">Notes</Label>
+                <Textarea value={editingIdea.notes} onChange={(e) => setEditingIdea({ ...editingIdea, notes: e.target.value })} rows={2} />
+              </div>
+              <Button onClick={updateIdea} className="w-full">
+                <Save className="h-4 w-4 mr-1" /> Save Changes
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
