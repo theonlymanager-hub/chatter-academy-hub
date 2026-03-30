@@ -1,12 +1,12 @@
 {
-  "updated_at": "2026-03-30T15:04:39Z",
+  "updated_at": "2026-03-30T15:05:27Z",
   "date": "2026-03-30",
   "week_start": "2026-03-30",
   "models": {
     "Ashley": {
       "today_gross": 594.0,
       "week_gross": 594.0,
-      "total_subs": 10188,
+      "total_subs": 10189,
       "new_subs_week": 0,
       "ltv_week": 0
     },
