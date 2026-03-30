@@ -39,6 +39,7 @@ import UserManagement from "./pages/UserManagement";
 import DailyChecklist from "./pages/DailyChecklist";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import ChattingPlaybook from "./pages/ChattingPlaybook";
+import ClientChecklist from "./pages/ClientChecklist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -365,6 +366,9 @@ function AppContent() {
             </ProtectedRoute>
           } 
         />
+
+        {/* Public client-facing page — NO auth, NO layout */}
+        <Route path="/client-checklist" element={<ClientChecklist />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
