@@ -18,6 +18,8 @@ interface ModelProfile {
   cantDo: string[];
   personality: string;
   warning?: string;
+  profileImage?: string;
+  ofLink?: string;
 }
 
 const DEFAULT_MODELS: ModelProfile[] = [
@@ -191,17 +193,26 @@ export default function ClientProfiles() {
                   background: `linear-gradient(135deg, hsl(${color} / 0.15), hsl(${color} / 0.05))`,
                 }}
               >
-                {/* Avatar placeholder */}
-                <div
-                  className="h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold shrink-0 border-2"
-                  style={{
-                    backgroundColor: `hsl(${color} / 0.2)`,
-                    color: `hsl(${color})`,
-                    borderColor: `hsl(${color} / 0.4)`,
-                  }}
-                >
-                  {model.name.slice(0, 2).toUpperCase()}
-                </div>
+                {/* Avatar */}
+                {model.profileImage ? (
+                  <img
+                    src={model.profileImage}
+                    alt={model.name}
+                    className="h-16 w-16 rounded-full object-cover shrink-0 border-2"
+                    style={{ borderColor: `hsl(${color} / 0.4)` }}
+                  />
+                ) : (
+                  <div
+                    className="h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold shrink-0 border-2"
+                    style={{
+                      backgroundColor: `hsl(${color} / 0.2)`,
+                      color: `hsl(${color})`,
+                      borderColor: `hsl(${color} / 0.4)`,
+                    }}
+                  >
+                    {model.name.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   {isEditing ? (
                     <>
@@ -218,11 +229,30 @@ export default function ClientProfiles() {
                           onChange={(e) => updateDraft("username", e.target.value)}
                         />
                       </div>
+                      <input
+                        className="text-xs bg-secondary/50 border border-border/50 rounded px-2 py-0.5 w-full mt-1"
+                        value={draft.profileImage || ""}
+                        onChange={(e) => updateDraft("profileImage", e.target.value)}
+                        placeholder="Profile image URL"
+                      />
+                      <input
+                        className="text-xs bg-secondary/50 border border-border/50 rounded px-2 py-0.5 w-full mt-1"
+                        value={draft.ofLink || ""}
+                        onChange={(e) => updateDraft("ofLink", e.target.value)}
+                        placeholder="OnlyFans profile link"
+                      />
                     </>
                   ) : (
                     <>
                       <h2 className="text-xl font-bold truncate">{model.name}</h2>
-                      <p className="text-sm text-muted-foreground">@{model.username}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-muted-foreground">@{model.username}</p>
+                        {model.ofLink && (
+                          <a href={model.ofLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300">
+                            OF ↗
+                          </a>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>
