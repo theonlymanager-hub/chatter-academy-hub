@@ -75,46 +75,7 @@ const FAN_TYPES = ["Unknown", "Submissive", "Dominant", "Switch", "Vanilla", "Ro
 const TIER_ORDER: Record<string, number> = { whale: 0, vip: 1, regular: 2, new: 3 };
 
 /** Known whale seed data for pre-population */
-const KNOWN_WHALES: Partial<Fan & { assignedChatter?: string }>[] = [
-  {
-    name: "Gary",
-    ofUsername: "u62150621",
-    modelName: "Ashley",
-    totalSpent: 568,
-    tier: "whale",
-    isWhale: true,
-    notes: "🐋 WHALE NOTES\n• Preferred content: PPVs\n• Communication style: Direct\n• Purchase triggers: New PPV drops — bought 3 today\n• New whale as of today\n\n[Assigned Chatter: Unassigned]",
-    preferences: ["PPVs"],
-  },
-  {
-    name: "James",
-    modelName: "Willow",
-    totalSpent: 0,
-    tier: "whale",
-    isWhale: true,
-    notes: "🐋 WHALE NOTES\n• Preferred content: Dildo/dirty talk\n• Communication style: Flirty\n• Purchase triggers: Custom content\n• Red flags: Custom was voided — handle carefully\n• Turning 85 — be mindful of age\n\n[Assigned Chatter: Unassigned]",
-    preferences: ["Customs", "Dirty talk", "Dildo content"],
-  },
-  {
-    name: "Larry",
-    modelName: "Ashley",
-    totalSpent: 0,
-    tier: "whale",
-    isWhale: true,
-    notes: "🐋 WHALE NOTES\n• Preferred content: PPVs\n• Communication style: Direct\n• Payday info: Buys PPVs before work (morning)\n• Purchase triggers: Morning routine — send PPVs early AM\n\n[Assigned Chatter: Unassigned]",
-    payday: "Buys before work (mornings)",
-    preferences: ["PPVs"],
-  },
-  {
-    name: "Harry",
-    modelName: "Izzie",
-    totalSpent: 0,
-    tier: "whale",
-    isWhale: true,
-    notes: "🐋 WHALE NOTES\n• Preferred content: Lingerie, scripts\n• Communication style: Romantic\n• Red flags: Done with pink lingerie script — don't resend\n• Purchase triggers: New scripts/content variety\n\n[Assigned Chatter: Unassigned]",
-    preferences: ["Scripts", "Lingerie content"],
-  },
-];
+const KNOWN_WHALES: Partial<Fan & { assignedChatter?: string }>[] = [];
 
 function needsContact(lastMessaged: string): boolean {
   if (!lastMessaged) return true;

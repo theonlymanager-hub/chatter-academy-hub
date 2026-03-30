@@ -105,30 +105,7 @@ const DEFAULT_TARGETS: WeeklyTargets = {
   Izzie: { photos: 10, videos: 3, customs: 2 },
 };
 
-const SAMPLE_IDEAS: ContentIdea[] = [
-  // Ashley — college theme
-  { id: crypto.randomUUID(), model: "Ashley", title: "College dorm room strip tease", category: "themed", status: "idea", priority: "high", notes: "Need dorm room props — fairy lights, textbooks, mini fridge", created_at: "2026-03-30", due_date: "2026-04-05" },
-  { id: crypto.randomUUID(), model: "Ashley", title: "Library study session", category: "themed", status: "planned", priority: "high", notes: "Need books + glasses props", created_at: "2026-03-30", due_date: "2026-04-05" },
-  { id: crypto.randomUUID(), model: "Ashley", title: "Campus walk in sundress", category: "lifestyle", status: "idea", priority: "medium", notes: "Outdoor shoot, need sunny day", created_at: "2026-03-30", due_date: "2026-04-07" },
-  { id: crypto.randomUUID(), model: "Ashley", title: "Graduation cap & gown reveal", category: "themed", status: "idea", priority: "medium", notes: "Buy grad cap and gown", created_at: "2026-03-30", due_date: "2026-04-10" },
-  { id: crypto.randomUUID(), model: "Ashley", title: "Study group gone wild", category: "b/g", status: "idea", priority: "low", notes: "Need male talent", created_at: "2026-03-30", due_date: "" },
-  { id: crypto.randomUUID(), model: "Ashley", title: "Cheerleader tryouts", category: "solo", status: "shot", priority: "high", notes: "Cheerleader outfit arrived", created_at: "2026-03-28", due_date: "2026-04-02" },
-  { id: crypto.randomUUID(), model: "Ashley", title: "Sorority initiation", category: "lingerie", status: "idea", priority: "medium", notes: "White lingerie set + sorority letter props", created_at: "2026-03-30", due_date: "" },
-
-  // Willow — redhead/ginger theme
-  { id: crypto.randomUUID(), model: "Willow", title: "Kitchen baking in apron only", category: "lifestyle", status: "idea", priority: "high", notes: "Flour, mixing bowls, cute apron", created_at: "2026-03-30", due_date: "2026-04-04" },
-  { id: crypto.randomUUID(), model: "Willow", title: "Autumn outdoor walk", category: "lifestyle", status: "planned", priority: "medium", notes: "Cozy sweater, falling leaves backdrop", created_at: "2026-03-30", due_date: "2026-04-06" },
-  { id: crypto.randomUUID(), model: "Willow", title: "Cozy fireplace evening", category: "solo", status: "idea", priority: "high", notes: "Blanket, wine glass, candles", created_at: "2026-03-30", due_date: "2026-04-05" },
-  { id: crypto.randomUUID(), model: "Willow", title: "Morning routine — bed to shower", category: "bts", status: "idea", priority: "medium", notes: "Natural lighting, no heavy makeup", created_at: "2026-03-30", due_date: "" },
-  { id: crypto.randomUUID(), model: "Willow", title: "Bubble bath time", category: "solo", status: "shot", priority: "high", notes: "Bath bombs, candles, dim lighting", created_at: "2026-03-28", due_date: "2026-04-02" },
-
-  // Izzie — military theme
-  { id: crypto.randomUUID(), model: "Izzie", title: "Military uniform tease", category: "themed", status: "planned", priority: "high", notes: "Camo uniform, boots, beret", created_at: "2026-03-30", due_date: "2026-04-04" },
-  { id: crypto.randomUUID(), model: "Izzie", title: "Boot camp workout", category: "lifestyle", status: "idea", priority: "high", notes: "Sports bra, camo leggings, outdoor setting", created_at: "2026-03-30", due_date: "2026-04-06" },
-  { id: crypto.randomUUID(), model: "Izzie", title: "Dog tag shower scene", category: "solo", status: "idea", priority: "medium", notes: "Dog tags only, steamy shower", created_at: "2026-03-30", due_date: "" },
-  { id: crypto.randomUUID(), model: "Izzie", title: "Camo lingerie set", category: "lingerie", status: "shot", priority: "high", notes: "Camo lingerie arrived — ready to edit", created_at: "2026-03-28", due_date: "2026-04-03" },
-  { id: crypto.randomUUID(), model: "Izzie", title: "Morning PT drill", category: "lifestyle", status: "idea", priority: "medium", notes: "Early morning light, outdoor exercises", created_at: "2026-03-30", due_date: "2026-04-08" },
-];
+const SAMPLE_IDEAS: ContentIdea[] = [];
 
 const STORAGE_KEY = "the_only_board_content_ideas";
 

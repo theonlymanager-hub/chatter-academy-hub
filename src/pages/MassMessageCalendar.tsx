@@ -48,29 +48,8 @@ const MODEL_COLORS: Record<ModelName, string> = {
 
 const STORAGE_KEY = "mass_message_schedule";
 
-// ── Seed data (Mon 30 Mar – Sun 5 Apr 2026) ───────────────────────────
 function buildSeedData(): ScheduledItem[] {
-  const seed: ScheduledItem[] = [
-    // Ashley
-    { id: "seed-a1", model: "Ashley", dayOfWeek: "Monday",    date: "2026-03-30", type: "PPV",          time: "10:00", description: "Morning selfie – bright natural light",               mediaLink: "", ppvPrice: "$12", audience: "all",          status: "scheduled" },
-    { id: "seed-a2", model: "Ashley", dayOfWeek: "Tuesday",   date: "2026-03-31", type: "Mass Message", time: "14:00", description: "Game: \"Truth or Dare\" engagement",                  mediaLink: "", ppvPrice: "",    audience: "all",          status: "scheduled" },
-    { id: "seed-a3", model: "Ashley", dayOfWeek: "Wednesday", date: "2026-04-01", type: "PPV",          time: "11:00", description: "Lingerie set – 5 pics",                              mediaLink: "", ppvPrice: "$15", audience: "all",          status: "scheduled" },
-    { id: "seed-a4", model: "Ashley", dayOfWeek: "Thursday",  date: "2026-04-02", type: "Prompt",       time: "09:00", description: "\"Good morning\" conversation starter",               mediaLink: "", ppvPrice: "",    audience: "all",          status: "scheduled" },
-    { id: "seed-a5", model: "Ashley", dayOfWeek: "Friday",    date: "2026-04-03", type: "PPV",          time: "20:00", description: "Shower video",                                       mediaLink: "", ppvPrice: "$18", audience: "all",          status: "scheduled" },
-    { id: "seed-a6", model: "Ashley", dayOfWeek: "Saturday",  date: "2026-04-04", type: "Mass Message", time: "15:00", description: "Game: \"Would You Rather\"",                          mediaLink: "", ppvPrice: "",    audience: "all",          status: "scheduled" },
-    { id: "seed-a7", model: "Ashley", dayOfWeek: "Sunday",    date: "2026-04-05", type: "Mass Message", time: "12:00", description: "Re-engagement message for quiet fans",                mediaLink: "", ppvPrice: "",    audience: "expired fans", status: "scheduled" },
-    // Willow
-    { id: "seed-w1", model: "Willow", dayOfWeek: "Monday",    date: "2026-03-30", type: "PPV",          time: "11:00", description: "Kitchen baking – cosy vibes",                        mediaLink: "", ppvPrice: "$10", audience: "all",          status: "scheduled" },
-    { id: "seed-w2", model: "Willow", dayOfWeek: "Wednesday", date: "2026-04-01", type: "PPV",          time: "20:00", description: "Cozy evening set",                                   mediaLink: "", ppvPrice: "$15", audience: "all",          status: "scheduled" },
-    { id: "seed-w3", model: "Willow", dayOfWeek: "Friday",    date: "2026-04-03", type: "PPV",          time: "09:00", description: "Morning routine",                                    mediaLink: "", ppvPrice: "$12", audience: "all",          status: "scheduled" },
-    { id: "seed-w4", model: "Willow", dayOfWeek: "Sunday",    date: "2026-04-05", type: "Mass Message", time: "12:00", description: "Re-engagement for quiet fans",                       mediaLink: "", ppvPrice: "",    audience: "expired fans", status: "scheduled" },
-    // Izzie
-    { id: "seed-i1", model: "Izzie",  dayOfWeek: "Monday",    date: "2026-03-30", type: "PPV",          time: "10:00", description: "Workout clip – gym energy",                          mediaLink: "", ppvPrice: "$12", audience: "all",          status: "scheduled" },
-    { id: "seed-i2", model: "Izzie",  dayOfWeek: "Wednesday", date: "2026-04-01", type: "PPV",          time: "19:00", description: "Uniform tease",                                      mediaLink: "", ppvPrice: "$15", audience: "all",          status: "scheduled" },
-    { id: "seed-i3", model: "Izzie",  dayOfWeek: "Friday",    date: "2026-04-03", type: "PPV",          time: "20:00", description: "Shower content",                                     mediaLink: "", ppvPrice: "$18", audience: "all",          status: "scheduled" },
-    { id: "seed-i4", model: "Izzie",  dayOfWeek: "Sunday",    date: "2026-04-05", type: "Mass Message", time: "12:00", description: "Re-engagement for quiet fans",                       mediaLink: "", ppvPrice: "",    audience: "expired fans", status: "scheduled" },
-  ];
-  return seed;
+  return [];
 }
 
 // ── Date helpers ───────────────────────────────────────────────────────

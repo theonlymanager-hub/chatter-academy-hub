@@ -56,41 +56,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
 
 const DEFAULT_MODEL_COLORS = { border: "border-zinc-500", bg: "bg-zinc-500/15", text: "text-zinc-400", dot: "bg-zinc-500" };
 
-const SAMPLE_BOOKINGS: AirbnbBooking[] = [
-  {
-    id: "sample-1",
-    model: "Ashley",
-    location: "Brighton, UK",
-    check_in: "2026-04-02",
-    check_out: "2026-04-04",
-    cost: 200,
-    status: "booked",
-    notes: "2-bed flat, good lighting, near beach for outdoor content",
-    created_by: "Elle",
-  },
-  {
-    id: "sample-2",
-    model: "Willow",
-    location: "Manchester, UK",
-    check_in: "2026-04-08",
-    check_out: "2026-04-10",
-    cost: 180,
-    status: "booked",
-    notes: "City centre apartment, ring light included",
-    created_by: "Elle",
-  },
-  {
-    id: "sample-3",
-    model: "Izzie",
-    location: "London, UK",
-    check_in: "2026-04-15",
-    check_out: "2026-04-17",
-    cost: 250,
-    status: "booked",
-    notes: "Luxury flat, great for premium content shoots",
-    created_by: "Luke",
-  },
-];
+const SAMPLE_BOOKINGS: AirbnbBooking[] = [];
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -337,7 +303,7 @@ export default function AirbnbSchedule() {
         </div>
         <div className="glass-card p-3 text-center">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Monthly Cost</p>
-          <p className="text-2xl font-bold text-emerald-400">£{monthlyCost.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-emerald-400">${monthlyCost.toLocaleString()}</p>
         </div>
         <div className="glass-card p-3 text-center">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Bookings</p>
@@ -346,7 +312,7 @@ export default function AirbnbSchedule() {
         <div className="glass-card p-3 text-center">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Spend</p>
           <p className="text-2xl font-bold text-amber-400">
-            £{bookings.filter(b => b.status !== "cancelled").reduce((s, b) => s + b.cost, 0).toLocaleString()}
+            ${bookings.filter(b => b.status !== "cancelled").reduce((s, b) => s + b.cost, 0).toLocaleString()}
           </p>
         </div>
       </div>
@@ -378,7 +344,7 @@ export default function AirbnbSchedule() {
               />
             </div>
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Cost (£)</label>
+              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Cost ($)</label>
               <Input
                 type="number"
                 min={0}
@@ -512,7 +478,7 @@ export default function AirbnbSchedule() {
                           className={`text-[9px] px-1 py-0.5 rounded truncate ${mc.bg} ${mc.text} ${
                             dayIsPast && b.status !== "completed" ? "opacity-40" : ""
                           }`}
-                          title={`${b.model} — ${b.location}\n${formatDateFull(b.check_in)} → ${formatDateFull(b.check_out)}\n£${b.cost}`}
+                          title={`${b.model} — ${b.location}\n${formatDateFull(b.check_in)} → ${formatDateFull(b.check_out)}\n$${b.cost}`}
                         >
                           {isStart ? (
                             <span className="font-semibold">{b.model}</span>
@@ -600,7 +566,7 @@ export default function AirbnbSchedule() {
                       {/* Cost */}
                       <div className="flex items-center gap-1 text-sm">
                         <PoundSterling className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="text-emerald-400 font-semibold">£{booking.cost.toLocaleString()}</span>
+                        <span className="text-emerald-400 font-semibold">${booking.cost.toLocaleString()}</span>
                       </div>
 
                       {/* Notes */}
