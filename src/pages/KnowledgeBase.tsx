@@ -1257,6 +1257,86 @@ export default function KnowledgeBase() {
             </div>
           </AccordionContent>
         </AccordionItem>
+
+        {/* ─── THE UPSELL LADDER (from top-performer analysis) ─── */}
+        <AccordionItem value="upsell-ladder" className="glass-card border rounded-lg px-5 border-green-500/30">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
+                <DollarSign className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-base font-bold">The Upsell Ladder — MANDATORY</h2>
+                <p className="text-xs text-muted-foreground font-normal">Step-by-step PPV sales system. Follow this EXACTLY.</p>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6">
+            <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/10">
+              <h3 className="font-bold text-green-400 mb-2">⚠️ THIS IS NOT OPTIONAL</h3>
+              <p className="text-sm text-muted-foreground">
+                This system is based on analysis of a $170K/month account with $38 LTV. Their chatters follow this exact process for every single fan. No exceptions.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-sm mb-3">The 5-Step Ladder</h3>
+              <div className="space-y-3">
+                {[
+                  { step: 1, title: "The Opener (Welcome Message)", price: "Free", desc: "\"Why did you sub to my page, what makes me different? 💝🤞\" — This is NOT a greeting. It's a QUESTION. The fan HAS to reply. Their answer tells you exactly what they want, which you use for the entire conversation. If no reply after 2 hours: \"answer me, that's called manners....\"" },
+                  { step: 2, title: "Qualification & Build-Up", price: "Free", desc: "Ask follow-up questions based on their answer. \"What do you find so mesmerizing about my body?\" / \"Did something catch your eye scrolling through my profile?\" / \"Be open with me please\" — Build emotional investment BEFORE any PPV. Get them talking about what they want." },
+                  { step: 3, title: "Commitment Test", price: "$8-10", desc: "\"Open this and show me COMMITMENT, make me close out ALL my other chats so I can focus on YOU ONLY. This is a way of me testing your potential, commitment and hardness.\" — 5 images, low price. Purpose is FOOT IN THE DOOR. Once they buy this, they'll buy more. Frame it as THEM proving themselves to YOU." },
+                  { step: 4, title: "Escalation", price: "$40-50", desc: "\"Take care of this if you wanna have 1 on 1 with me right now. Drop me your snapchat @. You wanna make this personal with me, don't you?\" — 5 media items. Request their Snapchat (creates illusion of real connection). Use YES/NO close: \"READY? YES/NO\" — no wiggle room." },
+                  { step: 5, title: "The Big PPV", price: "$75-200", desc: "\"EXCLUSIVE VIP VIDEO INCOMING — I HOPE THAT COCK IS READY FOR THIS\" — 2-5 media items. Stack multiple in one session: \"Can you unwrap one more for me so I add a special one to your bundle? I really want that cock spoiled.\" Top fans will buy 2-3 of these in a row." },
+                ].map((s) => (
+                  <div key={s.step} className="glass-card p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full whitespace-nowrap">Step {s.step} — {s.price}</span>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-sm">{s.title}</h4>
+                        <p className="text-sm text-muted-foreground mt-1">{s.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <Zap className="h-4 w-4 text-yellow-400" />
+                Critical Sales Rules
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { rule: "NEVER quote a price first", detail: "Always ask: \"How much can you do baby? So I can make it special.\" Then send a PPV at EXACTLY their budget. Fan says $50? Send a $50 PPV. Never lose a sale." },
+                  { rule: "Use YES/NO binary closes", detail: "Before every mid/high PPV: \"READY? YES/NO\" in bold. Removes \"maybe\" and \"let me think\" as options." },
+                  { rule: "Never let a chat die", detail: "If a fan goes quiet: \"Don't ignore me baby... this pussy needs you\" / \"Come and claim it\" / \"UMMMM?????\" — Aggressive follow-up. Always." },
+                  { rule: "Create urgency & FOMO", detail: "\"This message will be unsent in 1 minute\" — Then actually unsend it. If they come back: \"I don't feel appreciated, letting you see my most private stuff and you ignore it... but I might give you another chance since you're so sweet.\"" },
+                  { rule: "Stack PPVs in one session", detail: "After each purchase: \"Can you unwrap one more for me?\" — A fan who's already buying is the easiest sale. Don't wait — stack while they're hot." },
+                  { rule: "Adapt price to fan budget", detail: "Not every fan can do $200. Some can only do $50. THAT'S FINE. $50 from a fan who would've spent $0 is better than losing them. Meet them where they are." },
+                ].map((r, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-sm"><strong className="text-yellow-400">{r.rule}:</strong> <span className="text-muted-foreground">{r.detail}</span></p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/10">
+              <h3 className="font-bold text-red-400 mb-2 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> What We Were Doing Wrong</h3>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>❌ Generic welcome messages that don't demand a response</p>
+                <p>❌ Sending expensive PPVs cold with no build-up or investment</p>
+                <p>❌ Fixed PPV prices — take it or leave it (losing sales)</p>
+                <p>❌ Letting conversations die instead of following up aggressively</p>
+                <p>❌ Open-ended questions instead of YES/NO closes</p>
+                <p>❌ No urgency or scarcity (fan thinks they can buy anytime)</p>
+                <p className="text-red-400 font-medium mt-2">Result: $1.75 LTV vs $38 LTV on the account doing it right.</p>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
     </div>
   );
