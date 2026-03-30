@@ -17,6 +17,7 @@ import RevenueLTV from "@/components/RevenueLTV";
 import MarkTaskTracker from "@/components/MarkTaskTracker";
 import LukeTaskTracker from "@/components/LukeTaskTracker";
 import StrikesPanel from "@/components/StrikesPanel";
+import ChatterTasksWidget from "@/components/ChatterTasksWidget";
 import { isDemoUser } from "@/utils/demo";
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -235,6 +236,9 @@ const Index = () => {
         <LukeTaskTracker />
         <MarkTaskTracker />
       </div>
+
+      {/* Chatter Task Repetition Widget */}
+      {(isAdmin || user?.role === "supervisor") && <ChatterTasksWidget />}
 
       {/* Strike Tracker Overview */}
       {(isAdmin || user?.role === "supervisor") && <StrikesPanel />}

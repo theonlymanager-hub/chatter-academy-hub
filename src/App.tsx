@@ -38,6 +38,7 @@ import ChatterScorecard from "./pages/ChatterScorecard";
 import UserManagement from "./pages/UserManagement";
 import DailyChecklist from "./pages/DailyChecklist";
 import ClientOnboarding from "./pages/ClientOnboarding";
+import ChatterTasks from "./pages/ChatterTasks";
 import ChattingPlaybook from "./pages/ChattingPlaybook";
 import ClientChecklist from "./pages/ClientChecklist";
 import NotFound from "./pages/NotFound";
@@ -350,6 +351,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <DailyChecklist />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Chatter Task Repetition - Admin + Supervisor */}
+        <Route 
+          path="/chatter-tasks" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'demo']}>
+              <DashboardLayout>
+                <ChatterTasks />
               </DashboardLayout>
             </ProtectedRoute>
           } 

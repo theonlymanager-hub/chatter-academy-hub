@@ -21,6 +21,7 @@ import {
   CheckSquare,
   Video,
   Rocket,
+  ListChecks,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -53,6 +54,7 @@ const getAllSections = () => [
       { title: "Strike Tracker", url: "/strikes", icon: ShieldAlert, roles: ['admin', 'supervisor', 'demo'] },
       { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Chat Feedback", url: "/chat-feedback", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Task Repetition", url: "/chatter-tasks", icon: ListChecks, roles: ['admin', 'supervisor', 'demo'] },
     ],
   },
   {
