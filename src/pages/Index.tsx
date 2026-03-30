@@ -18,6 +18,7 @@ import MarkTaskTracker from "@/components/MarkTaskTracker";
 import LukeTaskTracker from "@/components/LukeTaskTracker";
 import StrikesPanel from "@/components/StrikesPanel";
 import ChatterTasksWidget from "@/components/ChatterTasksWidget";
+import TeamActivityFeed from "@/components/TeamActivityFeed";
 import { isDemoUser } from "@/utils/demo";
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -39,12 +40,6 @@ interface QualityScore {
   chatter_name: string;
   overall_score: number;
   created_at: string;
-}
-
-interface TeamActivityEntry {
-  username: string;
-  role: string;
-  lastActive: number; // timestamp
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -70,65 +65,7 @@ const Index = () => {
   const [revenueError, setRevenueError] = useState<string | null>(null);
   const [qualityScores, setQualityScores] = useState<QualityScore[]>([]);
   const [pendingCustoms, setPendingCustoms] = useState(0);
-  const [teamActivity, setTeamActivity] = useState<TeamActivityEntry[]>([]);
   const [liveAttendance, setLiveAttendance] = useState<string[]>([]);
-
-  // ─ track own activity via Supabase dashboard_activity table ─
-  useEffect(() => {
-    if (!user) return;
-    const username = user.username || "Unknown";
-    const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
-
-    const upsertAndFetch = async () => {
-      // Upsert current user's activity
-      const now = new Date().toISOString();
-      const { data: existing } = await supabase
-        .from("dashboard_activity")
-        .select("id")
-        .eq("username", username)
-        .eq("date", todayStr)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from("dashboard_activity")
-          .update({ last_sync: now })
-          .eq("id", existing.id);
-      } else {
-        await supabase
-          .from("dashboard_activity")
-          .insert({ username, date: todayStr, login_time: now, last_sync: now });
-      }
-
-      // Fetch ALL team members' activity from today
-      const { data: allActivity } = await supabase
-        .from("dashboard_activity")
-        .select("username, last_sync, login_time, date")
-        .eq("date", todayStr)
-        .order("last_sync", { ascending: false });
-
-      if (allActivity) {
-        // Also look up roles from app_users
-        const { data: users } = await supabase
-          .from("app_users")
-          .select("username, role");
-        const roleMap: Record<string, string> = {};
-        if (users) users.forEach((u) => { roleMap[u.username] = u.role; });
-
-        const entries: TeamActivityEntry[] = allActivity.map((a) => ({
-          username: a.username,
-          role: roleMap[a.username] || "chatter",
-          lastActive: new Date(a.last_sync).getTime(),
-        }));
-        setTeamActivity(entries);
-      }
-    };
-
-    upsertAndFetch();
-    // Refresh every 30s
-    const interval = setInterval(upsertAndFetch, 30000);
-    return () => clearInterval(interval);
-  }, [user]);
 
   // ─ fetch weekly earnings ─
   useEffect(() => {
@@ -321,30 +258,8 @@ const Index = () => {
 
       {/* ── Middle Row: Team Activity + Quality Scores + Pending Customs ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Team Activity */}
-        <div className="glass-card p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" />
-            <h2 className="font-semibold text-sm">Team Activity</h2>
-          </div>
-          {teamActivity.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-3 text-center">No recent activity</p>
-          ) : (
-            <div className="space-y-2">
-              {teamActivity.map((t) => {
-                const isOnline = Date.now() - t.lastActive < 300000; // 5 min
-                return (
-                  <div key={t.username} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-secondary/30">
-                    <div className={`h-2 w-2 rounded-full shrink-0 ${isOnline ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground/40"}`} />
-                    <span className="text-sm font-medium flex-1 truncate">{t.username}</span>
-                    <span className="text-[10px] text-muted-foreground capitalize">{t.role}</span>
-                    <span className="text-[10px] text-muted-foreground">{timeAgo(t.lastActive)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        {/* Team Activity Feed (Discord attendance) */}
+        <TeamActivityFeed />
 
         {/* Recent Quality Scores */}
         <div className="glass-card p-5 space-y-3">
