@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -211,18 +211,25 @@ async function saveData(model: string, data: PipelineData) {
 
 // --- Component ---
 
+const MODEL_OPTIONS = ['Ashley', 'Willow', 'Izzie'];
+
 const ClientChecklist: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const modelName = searchParams.get('model') || '';
 
   let isAdmin = false;
+  let isDataEntry = false;
   try {
     const auth = useAuth();
     isAdmin = auth.user?.role === 'admin' || auth.user?.role === 'supervisor';
+    isDataEntry = auth.user?.role === 'data_entry';
   } catch {
     // No auth required for viewing
     isAdmin = false;
   }
+
+  const canEdit = isAdmin || isDataEntry;
 
   const [data, setData] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -380,11 +387,21 @@ const ClientChecklist: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground text-lg">No model specified.</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Use <code className="bg-muted px-1.5 py-0.5 rounded text-xs">?model=Name</code> in the URL.
-            </p>
+          <CardHeader>
+            <CardTitle className="text-center">Client Content Checklist</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground text-center">Select a model:</p>
+            {MODEL_OPTIONS.map(model => (
+              <Button
+                key={model}
+                variant="outline"
+                className="w-full h-12 text-lg"
+                onClick={() => setSearchParams({ model })}
+              >
+                {model}
+              </Button>
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -402,6 +419,22 @@ const ClientChecklist: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+        {/* Model Tabs (admin only) */}
+        {(canEdit) && (
+          <div className="flex gap-2 justify-center">
+            {MODEL_OPTIONS.map(model => (
+              <Button
+                key={model}
+                variant={model === modelName ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSearchParams({ model })}
+              >
+                {model}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-bold">{modelName}'s Content Checklist</h1>
@@ -418,7 +451,7 @@ const ClientChecklist: React.FC = () => {
               })}
             </p>
           )}
-          {isAdmin && (
+          {(canEdit) && (
             <div className="flex items-center justify-center gap-2">
               <Badge variant="outline" className="text-xs">Admin View</Badge>
               <Button variant="outline" size="sm" onClick={copyClientLink} className="text-xs h-7">
@@ -434,12 +467,12 @@ const ClientChecklist: React.FC = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Resources & Upload Links / Recursos y Enlaces</CardTitle>
-              {isAdmin && !editingLinks && (
+              {(canEdit) && !editingLinks && (
                 <Button variant="ghost" size="sm" onClick={startEditLinks}>
                   <Pencil className="h-4 w-4 mr-1" /> Edit
                 </Button>
               )}
-              {isAdmin && editingLinks && (
+              {(canEdit) && editingLinks && (
                 <div className="flex gap-1">
                   <Button variant="ghost" size="sm" onClick={saveLinks}>
                     <Check className="h-4 w-4" />
@@ -510,12 +543,12 @@ const ClientChecklist: React.FC = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Weekly Content / Contenido Semanal</CardTitle>
-              {isAdmin && !editingTargets && (
+              {(canEdit) && !editingTargets && (
                 <Button variant="ghost" size="sm" onClick={startEditTargets}>
                   <Pencil className="h-4 w-4 mr-1" /> Edit Targets
                 </Button>
               )}
-              {isAdmin && editingTargets && (
+              {(canEdit) && editingTargets && (
                 <div className="flex gap-1">
                   <Button variant="ghost" size="sm" onClick={saveTargets}>
                     <Check className="h-4 w-4" />
@@ -569,7 +602,7 @@ const ClientChecklist: React.FC = () => {
                       <p className="text-xs text-muted-foreground">{meta.description}</p>
                       <p className="text-[11px] text-muted-foreground/70 italic mt-0.5">{meta.example}</p>
                       <Progress value={pct} className="h-1.5 mt-1.5" />
-                      {isAdmin && item.completed.length > 0 && (
+                      {(canEdit) && item.completed.length > 0 && (
                         <p className="text-[10px] text-muted-foreground/60 mt-1">
                           Last: {new Date(item.completed[item.completed.length - 1].timestamp).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -608,7 +641,7 @@ const ClientChecklist: React.FC = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Specific Tasks / Tareas Específicas</CardTitle>
-              {isAdmin && (
+              {(canEdit) && (
                 <Button variant="ghost" size="sm" onClick={() => setShowAddTask(!showAddTask)}>
                   <Plus className="h-4 w-4 mr-1" /> Add
                 </Button>
@@ -617,7 +650,7 @@ const ClientChecklist: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {/* Add task form */}
-            {isAdmin && showAddTask && (
+            {(canEdit) && showAddTask && (
               <div className="space-y-2 p-3 rounded-lg border border-dashed border-muted-foreground/30">
                 <Input
                   placeholder="Task description (e.g. Custom: close up pussy play, riding dildo...)"
@@ -674,14 +707,14 @@ const ClientChecklist: React.FC = () => {
                           Due: {new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                         </span>
                       )}
-                      {isAdmin && task.done && task.done_at && (
+                      {(canEdit) && task.done && task.done_at && (
                         <span className="text-[10px] text-muted-foreground/60">
                           Done: {new Date(task.done_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
                     </div>
                   </div>
-                  {isAdmin && (
+                  {(canEdit) && (
                     <Button
                       variant="ghost"
                       size="sm"

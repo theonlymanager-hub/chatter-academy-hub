@@ -393,6 +393,18 @@ function AppContent() {
           } 
         />
 
+        {/* Content Checklist — Dashboard version for team */}
+        <Route 
+          path="/content-checklist" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
+              <DashboardLayout>
+                <ClientChecklist />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
         {/* Public client-facing page — NO auth, NO layout */}
         <Route path="/client-checklist" element={<ClientChecklist />} />
 
