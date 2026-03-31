@@ -178,20 +178,10 @@ async function loadData(model: string): Promise<PipelineData> {
     const raw = localStorage.getItem(storageKey(model));
     if (raw) {
       const parsed: PipelineData = JSON.parse(raw);
-      // Auto-reset if new week
+      // No auto-reset — weekly content is cumulative, not weekly
+      // Just update the week_start for display
       if (parsed.week_start !== currentMonday) {
-        const reset = defaultData(currentMonday);
-        // Keep targets and links from old data
-        for (const key of RECURRING_KEYS) {
-          if (parsed.recurring[key]?.target) {
-            reset.recurring[key].target = parsed.recurring[key].target;
-          }
-        }
-        if (parsed.drive_link) reset.drive_link = parsed.drive_link;
-        if (parsed.guidelines_link) reset.guidelines_link = parsed.guidelines_link;
-        // Keep incomplete one-off tasks
-        reset.one_off_tasks = parsed.one_off_tasks.filter(t => !t.done);
-        return reset;
+        parsed.week_start = currentMonday;
       }
       return parsed;
     }
@@ -395,6 +385,13 @@ const ClientChecklist: React.FC = () => {
     }));
   };
 
+  const confirmAndRemoveOneOff = (id: string) => {
+    updateData(prev => ({
+      ...prev,
+      one_off_tasks: prev.one_off_tasks.filter(t => t.id !== id),
+    }));
+  };
+
   const removeOneOff = (id: string) => {
     updateData(prev => ({
       ...prev,
@@ -426,6 +423,13 @@ const ClientChecklist: React.FC = () => {
       customs: (prev.customs || []).map(c =>
         c.id === id ? { ...c, done: !c.done, done_at: !c.done ? new Date().toISOString() : undefined } : c
       ),
+    }));
+  };
+
+  const confirmAndRemoveCustom = (id: string) => {
+    updateData(prev => ({
+      ...prev,
+      customs: (prev.customs || []).filter(c => c.id !== id),
     }));
   };
 
@@ -768,16 +772,28 @@ const ClientChecklist: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  {(canEdit) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeOneOff(task.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <div className="flex flex-col gap-1">
+                    {task.done && (canEdit) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-[10px] text-green-600 border-green-600/30 hover:bg-green-600/10"
+                        onClick={() => confirmAndRemoveOneOff(task.id)}
+                      >
+                        <Check className="h-3 w-3 mr-1" /> Confirm & Remove
+                      </Button>
+                    )}
+                    {(canEdit) && !task.done && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeOneOff(task.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))
             )}
@@ -874,7 +890,18 @@ const ClientChecklist: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  {(canEdit) && (
+                  <div className="flex flex-col gap-1">
+                    {custom.done && (canEdit) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-[10px] text-green-600 border-green-600/30 hover:bg-green-600/10"
+                        onClick={() => confirmAndRemoveCustom(custom.id)}
+                      >
+                        <Check className="h-3 w-3 mr-1" /> Confirm & Remove
+                      </Button>
+                    )}
+                    {(canEdit) && !custom.done && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -883,7 +910,8 @@ const ClientChecklist: React.FC = () => {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
               ))
             )}
