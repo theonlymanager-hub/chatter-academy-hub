@@ -25,9 +25,9 @@ interface ChatReview {
   model: string;
   score: number;
   notes: string;
-  screenshotUrl: string;
-  screenshotFile: File | null;
-  screenshotPreview: string;
+  screenshotUrls: string[];
+  screenshotFiles: File[];
+  screenshotPreviews: string[];
 }
 
 function newChatReview(): ChatReview {
@@ -37,9 +37,9 @@ function newChatReview(): ChatReview {
     model: "",
     score: 5,
     notes: "",
-    screenshotUrl: "",
-    screenshotFile: null,
-    screenshotPreview: "",
+    screenshotUrls: [],
+    screenshotFiles: [],
+    screenshotPreviews: [],
   };
 }
 
@@ -76,11 +76,28 @@ export default function QCInput() {
     setReviews(reviews.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   };
 
-  const handleScreenshot = (id: string, file: File) => {
-    const preview = URL.createObjectURL(file);
+  const handleScreenshot = (id: string, files: FileList) => {
+    const newFiles = Array.from(files);
+    const newPreviews = newFiles.map(f => URL.createObjectURL(f));
     setReviews(
       reviews.map((r) =>
-        r.id === id ? { ...r, screenshotFile: file, screenshotPreview: preview } : r
+        r.id === id ? { 
+          ...r, 
+          screenshotFiles: [...r.screenshotFiles, ...newFiles],
+          screenshotPreviews: [...r.screenshotPreviews, ...newPreviews]
+        } : r
+      )
+    );
+  };
+
+  const removeScreenshot = (reviewId: string, index: number) => {
+    setReviews(
+      reviews.map((r) =>
+        r.id === reviewId ? {
+          ...r,
+          screenshotFiles: r.screenshotFiles.filter((_, i) => i !== index),
+          screenshotPreviews: r.screenshotPreviews.filter((_, i) => i !== index),
+        } : r
       )
     );
   };
@@ -92,6 +109,10 @@ export default function QCInput() {
     if (error) throw error;
     const { data } = supabase.storage.from("qc-uploads").getPublicUrl(path);
     return data.publicUrl;
+  };
+
+  const uploadScreenshots = async (files: File[]): Promise<string[]> => {
+    return Promise.all(files.map(f => uploadScreenshot(f).catch(() => "")));
   };
 
   const handleSubmit = async () => {
@@ -113,15 +134,15 @@ export default function QCInput() {
       // Upload screenshots
       const uploadedReviews = await Promise.all(
         reviews.map(async (r) => {
-          let url = r.screenshotUrl;
-          if (r.screenshotFile) {
+          let urls = r.screenshotUrls;
+          if (r.screenshotFiles.length > 0) {
             try {
-              url = await uploadScreenshot(r.screenshotFile);
+              urls = await uploadScreenshots(r.screenshotFiles);
             } catch (e) {
               console.error("Screenshot upload failed:", e);
             }
           }
-          return { ...r, screenshotUrl: url };
+          return { ...r, screenshotUrls: urls };
         })
       );
 
@@ -141,7 +162,7 @@ export default function QCInput() {
           model: r.model,
           score: r.score,
           notes: r.notes,
-          screenshot_url: r.screenshotUrl,
+          screenshot_urls: r.screenshotUrls,
         })),
         submitted_at: new Date().toISOString(),
       };
@@ -348,42 +369,46 @@ export default function QCInput() {
                 />
               </div>
 
-              {/* Screenshot upload */}
+              {/* Screenshot/video upload */}
               <div>
-                {review.screenshotPreview ? (
-                  <div className="relative">
-                    {review.screenshotFile?.type?.startsWith("video/") ? (
-                      <video src={review.screenshotPreview} controls className="rounded-lg max-h-48" />
-                    ) : (
-                      <img src={review.screenshotPreview} alt="Screenshot" className="rounded-lg max-h-48 object-contain" />
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6 bg-black/60"
-                      onClick={() => {
-                        updateReview(review.id, "screenshotPreview", "");
-                        updateReview(review.id, "screenshotFile", null);
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                {review.screenshotPreviews.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {review.screenshotPreviews.map((preview, idx) => (
+                      <div key={idx} className="relative">
+                        {review.screenshotFiles[idx]?.type?.startsWith("video/") ? (
+                          <video src={preview} controls className="rounded-lg h-24 w-24 object-cover" />
+                        ) : (
+                          <img src={preview} alt={`Screenshot ${idx + 1}`} className="rounded-lg h-24 w-24 object-cover" />
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute -top-1 -right-1 h-5 w-5 bg-black/80 hover:bg-red-600"
+                          onClick={() => removeScreenshot(review.id, idx)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-muted-foreground/30 cursor-pointer hover:border-primary/50 transition-colors">
-                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Upload screenshot or video</span>
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) handleScreenshot(review.id, f);
-                      }}
-                    />
-                  </label>
                 )}
+                <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-muted-foreground/30 cursor-pointer hover:border-primary/50 transition-colors">
+                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {review.screenshotPreviews.length > 0 ? `Add more (${review.screenshotPreviews.length} uploaded)` : "Upload screenshots/videos"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        handleScreenshot(review.id, e.target.files);
+                      }
+                    }}
+                  />
+                </label>
               </div>
             </CardContent>
           </Card>
