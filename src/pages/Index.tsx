@@ -205,21 +205,7 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Stats grid */}
-              <div className="grid grid-cols-3 gap-2 text-[11px]">
-                <div>
-                  <p className="text-muted-foreground">LTV</p>
-                  <p className="font-semibold">{isDemo ? "—" : `$${ltv}`}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Subs</p>
-                  <p className="font-semibold">{isDemo ? "—" : (stats?.totalSubs?.toLocaleString() || "—")}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Tips</p>
-                  <p className="font-semibold">{isDemo ? "—" : revenueLoading ? "…" : fmt(tipsRev)}</p>
-                </div>
-              </div>
+              {/* Stats removed — LTV/Subs/Tips data unreliable */}
             </div>
           );
         })}
