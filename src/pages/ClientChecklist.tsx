@@ -51,39 +51,39 @@ type RecurringKey = keyof PipelineData['recurring'];
 
 const RECURRING_META: Record<RecurringKey, { label: string; description: string; example: string; icon: React.ReactNode }> = {
   photo_sets: { 
-    label: 'Photo Sets', 
-    description: 'Outfits, bedroom, lifestyle', 
-    example: '10 different outfits — bedroom, lifestyle, lingerie. Min 5 photos per set.',
+    label: 'Photo Sets / Sesiones de Fotos', 
+    description: 'Outfits, bedroom, lifestyle / Atuendos, dormitorio, estilo de vida', 
+    example: '10 different outfits — bedroom, lifestyle, lingerie. Min 5 photos per set. / 10 atuendos diferentes — dormitorio, estilo de vida, lencería. Mínimo 5 fotos por set.',
     icon: <Camera className="h-5 w-5" /> 
   },
   short_videos: { 
-    label: 'Short Video Clips', 
-    description: '30-60 sec for feed, mix of explicitness', 
-    example: '30-60 sec clips. Mix of SFW (teasers) and explicit. Vertical format.',
+    label: 'Short Video Clips / Videos Cortos', 
+    description: '30-60 sec for feed / 30-60 seg para el feed', 
+    example: '30-60 sec clips. Mix of SFW (teasers) and explicit. Vertical format. / Clips de 30-60 seg. Mezcla de SFW (adelantos) y explícito. Formato vertical.',
     icon: <Video className="h-5 w-5" /> 
   },
   ppv_pieces: { 
-    label: 'PPV Content Pieces', 
-    description: 'Lockable content to sell', 
-    example: 'Exclusive content for paid messages. Solo, toys, scenarios.',
+    label: 'PPV Content / Contenido PPV', 
+    description: 'Lockable content to sell / Contenido con candado para vender', 
+    example: 'Exclusive content for paid messages. Solo, toys, scenarios. / Contenido exclusivo para mensajes de pago. Solo, juguetes, escenarios.',
     icon: <Lock className="h-5 w-5" /> 
   },
   script_packages: { 
-    label: 'Script Packages', 
-    description: 'Full scenario shoots', 
-    example: 'Full scenario shoots from the scenario board. Follow the script exactly.',
+    label: 'Script Packages / Paquetes de Guión', 
+    description: 'Full scenario shoots / Sesiones completas de escenarios', 
+    example: 'Full scenario shoots from the scenario board. Follow the script exactly. / Sesiones completas del tablero de escenarios. Seguir el guión exactamente.',
     icon: <FileText className="h-5 w-5" /> 
   },
   ai_lifestyle: { 
-    label: 'AI Lifestyle Posts', 
-    description: 'AI images for feed — carousels, out and about, daily life', 
-    example: 'AI-generated lifestyle images for feed posts.',
+    label: 'AI Lifestyle Posts / Publicaciones IA Estilo de Vida', 
+    description: 'AI images for feed / Imágenes IA para el feed', 
+    example: 'AI-generated lifestyle images for feed posts. / Imágenes de estilo de vida generadas por IA.',
     icon: <Camera className="h-5 w-5" /> 
   },
   ai_scenario: { 
-    label: 'AI Scenario Content', 
-    description: 'AI images to support script scenarios — setup shots', 
-    example: 'AI images supporting script scenarios.',
+    label: 'AI Scenario Content / Contenido IA de Escenarios', 
+    description: 'AI images for script scenarios / Imágenes IA para escenarios', 
+    example: 'AI images supporting script scenarios. / Imágenes IA para apoyar escenarios de guión.',
     icon: <FileText className="h-5 w-5" /> 
   },
 };
@@ -433,7 +433,7 @@ const ClientChecklist: React.FC = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Resources & Upload Links</CardTitle>
+              <CardTitle className="text-lg">Resources & Upload Links / Recursos y Enlaces</CardTitle>
               {isAdmin && !editingLinks && (
                 <Button variant="ghost" size="sm" onClick={startEditLinks}>
                   <Pencil className="h-4 w-4 mr-1" /> Edit
@@ -483,7 +483,7 @@ const ClientChecklist: React.FC = () => {
                     className="flex items-center gap-2 text-sm text-primary hover:underline"
                   >
                     <ExternalLink className="h-4 w-4" />
-                    Google Drive Upload Folder
+                    Google Drive Upload Folder / Carpeta de Subida
                   </a>
                   <a
                     href={data.guidelines_link}
@@ -492,12 +492,13 @@ const ClientChecklist: React.FC = () => {
                     className="flex items-center gap-2 text-sm text-primary hover:underline"
                   >
                     <ExternalLink className="h-4 w-4" />
-                    Content Guidelines & Examples
+                    Content Guidelines & Examples / Guías y Ejemplos
                   </a>
                 </div>
                 <div className="bg-muted/30 p-3 rounded-lg text-xs text-muted-foreground">
-                  <p className="font-medium">Quick Instructions:</p>
+                  <p className="font-medium">Quick Instructions / Instrucciones:</p>
                   <p className="mt-1">Upload content to the drive folder, then tick items off below.</p>
+                  <p className="mt-0.5 italic">Sube el contenido a la carpeta de Drive, luego marca los elementos abajo.</p>
                 </div>
               </>
             )}
@@ -508,7 +509,7 @@ const ClientChecklist: React.FC = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Weekly Content</CardTitle>
+              <CardTitle className="text-lg">Weekly Content / Contenido Semanal</CardTitle>
               {isAdmin && !editingTargets && (
                 <Button variant="ghost" size="sm" onClick={startEditTargets}>
                   <Pencil className="h-4 w-4 mr-1" /> Edit Targets
@@ -606,7 +607,7 @@ const ClientChecklist: React.FC = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Specific Tasks</CardTitle>
+              <CardTitle className="text-lg">Specific Tasks / Tareas Específicas</CardTitle>
               {isAdmin && (
                 <Button variant="ghost" size="sm" onClick={() => setShowAddTask(!showAddTask)}>
                   <Plus className="h-4 w-4 mr-1" /> Add
@@ -649,7 +650,7 @@ const ClientChecklist: React.FC = () => {
             {/* Task list */}
             {data.one_off_tasks.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No specific tasks this week
+                No specific tasks this week / Sin tareas específicas esta semana
               </p>
             ) : (
               data.one_off_tasks.map(task => (
@@ -698,7 +699,8 @@ const ClientChecklist: React.FC = () => {
 
         {/* Footer */}
         <p className="text-center text-[11px] text-muted-foreground/40 pb-4">
-          Tap items to mark as done · Resets every Monday
+          Tap items to mark as done · Resets every Monday<br/>
+          Toca los elementos para marcarlos · Se reinicia cada lunes
         </p>
       </div>
     </div>
