@@ -49,8 +49,9 @@ const getAllSections = () => [
     ],
   },
   {
-    label: "Chatting",
+    label: "Quality Checks",
     items: [
+      { title: "QC Input", url: "/qc-input", icon: ClipboardList, roles: ['admin', 'supervisor', 'demo'] },
       { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Chat Feedback", url: "/chat-feedback", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },

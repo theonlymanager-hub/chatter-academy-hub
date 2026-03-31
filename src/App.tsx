@@ -17,6 +17,7 @@ import TrainingResults from "./pages/TrainingResults";
 import TrainingVideos from "./pages/TrainingVideos";
 import Tasks from "./pages/Tasks";
 import QualityChecks from "./pages/QualityChecks";
+import QCInput from "./pages/QCInput";
 import ShiftCalendar from "./pages/ShiftCalendar";
 import MassMessageCalendar from "./pages/MassMessageCalendar";
 // WeeklyTasks merged into Tasks
@@ -154,6 +155,18 @@ function AppContent() {
             <ProtectedRoute>
               <DashboardLayout>
                 <QualityChecks />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* QC Input - Admin/Supervisor only */}
+        <Route 
+          path="/qc-input" 
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <QCInput />
               </DashboardLayout>
             </ProtectedRoute>
           } 
