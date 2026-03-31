@@ -73,29 +73,10 @@ export default function TeamMembers() {
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        // Fetch from both tables — quality_scores (old) and scorecards (QC Input)
-        const [qsRes, scRes] = await Promise.all([
-          supabase
-            .from('quality_scores')
-            .select('id, chatter_name, overall_score, response_time_score, personalisation_score, conversation_flow_score, ppv_timing_score, energy_tone_score, notes, shift_date, reviewed_by, created_at')
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('scorecards')
-            .select('id, chatter_name, overall_score, response_time_score, personalisation_score, conversation_flow_score, ppv_timing_score, energy_tone_score, notes, shift_date, submitted_by, created_at')
-            .order('created_at', { ascending: false }),
-        ]);
-
-        const { data: qsData, error: qsError } = qsRes;
-        const { data: scData } = scRes;
-
-        // Merge both sources — scorecards use submitted_by instead of reviewed_by
-        const mergedData = [
-          ...(qsData || []),
-          ...(scData || []).map((r: any) => ({ ...r, reviewed_by: r.submitted_by })),
-        ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-        const data = mergedData;
-        const error = qsError;
+        const { data, error } = await supabase
+          .from('quality_scores')
+          .select('id, chatter_name, overall_score, response_time_score, personalisation_score, conversation_flow_score, ppv_timing_score, energy_tone_score, notes, shift_date, reviewed_by, created_at')
+          .order('created_at', { ascending: false });
         if (error || !data) return;
         const latest: Record<string, SupabaseQualityScore> = {};
         const allGrouped: Record<string, QualityScoreRecord[]> = {};

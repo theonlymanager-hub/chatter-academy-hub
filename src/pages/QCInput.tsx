@@ -174,8 +174,8 @@ export default function QCInput() {
         submitted_at: new Date().toISOString(),
       };
 
-      // Save to scorecards table (existing)
-      const { error: scoreError } = await supabase.from("scorecards").insert({
+      // Save to quality_scores table
+      const { error: scoreError } = await supabase.from("quality_scores").insert({
         chatter_name: chatterObj?.name || selectedChatter,
         shift_date: shiftDate,
         overall_score: overallScore,
@@ -185,8 +185,7 @@ export default function QCInput() {
         ppv_timing_score: overallScore,
         energy_tone_score: overallScore,
         notes: uploadedReviews.map((r) => `[${r.model || "?"} - ${r.fanName}] ${r.score}/10\n✅ ${r.wentRight || "N/A"}\n❌ ${r.wentWrong || "N/A"}`).join("\n\n"),
-        supervisor_notes: `QC by ${user?.displayName}. ${reviews.length} chats reviewed. Overall: ${overallScore}/10.`,
-        submitted_by: user?.username || "unknown",
+        reviewed_by: user?.displayName || user?.username || "unknown",
       });
 
       if (scoreError) {
