@@ -64,6 +64,7 @@ const getAllSections = () => [
       { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Airbnb Schedule", url: "/airbnb-schedule", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
+      { title: "Client Checklist", url: "/client-checklist", icon: ListChecks, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
     ],
   },
   {
