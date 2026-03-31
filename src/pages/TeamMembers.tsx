@@ -620,68 +620,9 @@ export default function TeamMembers() {
         <p className="text-muted-foreground text-sm mt-1">Scores, shifts, revenue, notes — everything in one place</p>
       </div>
 
-      {/* Dashboard Activity — visible to admin and supervisor */}
-      {(user?.role === 'admin' || user?.role === 'supervisor') && (
-        <DashboardActivityView />
-      )}
-
-      {/* Supervisors Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => toggleSection("supervisors")}
-            className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
-          >
-            {collapsedSections["supervisors"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-            👥 Supervisors ({groupedMembers.supervisors.length})
-          </button>
-        </div>
-        
-        {!collapsedSections["supervisors"] && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-            {groupedMembers.supervisors.map(renderMemberCard)}
-          </div>
-        )}
-      </div>
-
-      {/* Dashboard Manager Section */}
-      {groupedMembers.dashboardManagers.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => toggleSection("dashboardManagers")}
-              className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
-            >
-              {collapsedSections["dashboardManagers"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-              📊 Dashboard Manager ({groupedMembers.dashboardManagers.length})
-            </button>
-          </div>
-          
-          {!collapsedSections["dashboardManagers"] && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-              {groupedMembers.dashboardManagers.map(renderMemberCard)}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Chatters Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => toggleSection("chatters")}
-            className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
-          >
-            {collapsedSections["chatters"] ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-            💬 Chatters ({groupedMembers.chatters.length})
-          </button>
-        </div>
-        
-        {!collapsedSections["chatters"] && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-            {groupedMembers.chatters.map(renderMemberCard)}
-          </div>
-        )}
+      {/* Chatters Only */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+        {groupedMembers.chatters.map(renderMemberCard)}
       </div>
 
       {/* Chat Leaderboard */}

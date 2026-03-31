@@ -91,6 +91,7 @@ const getAllSections = () => [
   {
     label: "Management",
     items: [
+      { title: "Team List", url: "/team-list", icon: Users, roles: ['admin', 'supervisor', 'demo'] },
       { title: "User Management", url: "/users", icon: Settings, roles: ['admin', 'demo'] },
     ],
   },

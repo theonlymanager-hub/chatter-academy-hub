@@ -18,6 +18,7 @@ import TrainingVideos from "./pages/TrainingVideos";
 import Tasks from "./pages/Tasks";
 import QualityChecks from "./pages/QualityChecks";
 import QCInput from "./pages/QCInput";
+import TeamList from "./pages/TeamList";
 import ShiftCalendar from "./pages/ShiftCalendar";
 import MassMessageCalendar from "./pages/MassMessageCalendar";
 // WeeklyTasks merged into Tasks
@@ -353,6 +354,18 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'chatter', 'demo']}>
               <DashboardLayout>
                 <FanProfiles />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Team List - Admin + Supervisors */}
+        <Route 
+          path="/team-list" 
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <TeamList />
               </DashboardLayout>
             </ProtectedRoute>
           } 
