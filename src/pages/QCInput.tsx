@@ -24,10 +24,13 @@ interface ChatReview {
   fanName: string;
   model: string;
   score: number;
-  notes: string;
+  wentWrong: string;
+  wentRight: string;
   screenshotUrls: string[];
   screenshotFiles: File[];
   screenshotPreviews: string[];
+  voiceFile: File | null;
+  voicePreview: string;
 }
 
 function newChatReview(): ChatReview {
@@ -36,10 +39,13 @@ function newChatReview(): ChatReview {
     fanName: "",
     model: "",
     score: 5,
-    notes: "",
+    wentWrong: "",
+    wentRight: "",
     screenshotUrls: [],
     screenshotFiles: [],
     screenshotPreviews: [],
+    voiceFile: null,
+    voicePreview: "",
   };
 }
 
@@ -161,7 +167,8 @@ export default function QCInput() {
           fan_name: r.fanName,
           model: r.model,
           score: r.score,
-          notes: r.notes,
+          went_right: r.wentRight,
+          went_wrong: r.wentWrong,
           screenshot_urls: r.screenshotUrls,
         })),
         submitted_at: new Date().toISOString(),
@@ -177,7 +184,7 @@ export default function QCInput() {
         conversation_flow_score: overallScore,
         ppv_timing_score: overallScore,
         energy_tone_score: overallScore,
-        notes: uploadedReviews.map((r) => `[${r.model || "?"} - ${r.fanName}] ${r.score}/10: ${r.notes}`).join("\n\n"),
+        notes: uploadedReviews.map((r) => `[${r.model || "?"} - ${r.fanName}] ${r.score}/10\n✅ ${r.wentRight || "N/A"}\n❌ ${r.wentWrong || "N/A"}`).join("\n\n"),
         supervisor_notes: `QC by ${user?.displayName}. ${reviews.length} chats reviewed. Overall: ${overallScore}/10.`,
         submitted_by: user?.username || "unknown",
       });
@@ -358,15 +365,60 @@ export default function QCInput() {
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* What went right / wrong */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-green-400 mb-1 block">✅ What went right</label>
+                  <Textarea
+                    placeholder="e.g. Good rapport building, asked fan questions, natural conversation"
+                    value={review.wentRight}
+                    onChange={(e) => updateReview(review.id, "wentRight", e.target.value)}
+                    rows={2}
+                    className="border-green-500/20 focus:border-green-500/40"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-red-400 mb-1 block">❌ What went wrong</label>
+                  <Textarea
+                    placeholder="e.g. Rushed to PPV, didn't build rapport, guilt tripped the fan"
+                    value={review.wentWrong}
+                    onChange={(e) => updateReview(review.id, "wentWrong", e.target.value)}
+                    rows={2}
+                    className="border-red-500/20 focus:border-red-500/40"
+                  />
+                </div>
+              </div>
+
+              {/* Voice note */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">What went wrong / right</label>
-                <Textarea
-                  placeholder="e.g. Rushed straight to PPV without building rapport. Fan said 'could've been built up more'"
-                  value={review.notes}
-                  onChange={(e) => updateReview(review.id, "notes", e.target.value)}
-                  rows={2}
-                />
+                {review.voicePreview ? (
+                  <div className="flex items-center gap-2">
+                    <audio src={review.voicePreview} controls className="h-8 flex-1" />
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => {
+                      updateReview(review.id, "voiceFile", null);
+                      updateReview(review.id, "voicePreview", "");
+                    }}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-muted-foreground/30 cursor-pointer hover:border-primary/50 transition-colors">
+                    <span className="text-sm">🎙️</span>
+                    <span className="text-xs text-muted-foreground">Add voice note</span>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          updateReview(review.id, "voiceFile", f);
+                          updateReview(review.id, "voicePreview", URL.createObjectURL(f));
+                        }
+                      }}
+                    />
+                  </label>
+                )}
               </div>
 
               {/* Screenshot/video upload */}
