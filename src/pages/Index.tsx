@@ -56,6 +56,7 @@ const Index = () => {
 
   // ─ state ─
   const [weeklyEarnings, setWeeklyEarnings] = useState<Record<string, WeeklyEarnings>>({});
+  const [activeSubs, setActiveSubs] = useState<Record<string, number>>({});
   const [revenueLoading, setRevenueLoading] = useState(true);
   const [revenueError, setRevenueError] = useState<string | null>(null);
   const [qualityScores, setQualityScores] = useState<QualityScore[]>([]);
@@ -80,6 +81,23 @@ const Index = () => {
       } finally {
         setRevenueLoading(false);
       }
+    })();
+  }, []);
+
+  // ─ fetch active subscriber counts ─
+  useEffect(() => {
+    (async () => {
+      const apiKey = platformApi.getApiKey();
+      if (!apiKey) return;
+      try {
+        const counts: Record<string, number> = {};
+        for (const [key, id] of Object.entries(ACCOUNT_IDS)) {
+          try {
+            counts[key] = await platformApi.getActiveSubscribers(id);
+          } catch { counts[key] = 0; }
+        }
+        setActiveSubs(counts);
+      } catch {}
     })();
   }, []);
 
@@ -205,7 +223,17 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Stats removed — LTV/Subs/Tips data unreliable */}
+              {/* LTV + Subs */}
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div>
+                  <p className="text-muted-foreground">Active Subs</p>
+                  <p className="font-semibold">{isDemo ? "—" : (activeSubs[key]?.toLocaleString() || "—")}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">LTV (this week)</p>
+                  <p className="font-semibold">{isDemo ? "—" : activeSubs[key] && revenue > 0 ? `$${(revenue / activeSubs[key]).toFixed(2)}` : "—"}</p>
+                </div>
+              </div>
             </div>
           );
         })}
