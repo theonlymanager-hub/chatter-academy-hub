@@ -60,43 +60,43 @@ type RecurringKey = keyof PipelineData['recurring'];
 
 // --- Helpers ---
 
-// English labels for dashboard, Spanish added only on public client link
+// Weekly content categories — matches Luke's Notion plan
 const RECURRING_META: Record<RecurringKey, { label: string; labelEs: string; description: string; descEs: string; example: string; exampleEs: string; icon: React.ReactNode }> = {
   photo_sets: { 
-    label: 'Photo Sets', labelEs: 'Sesiones de Fotos',
-    description: 'Outfits, bedroom, lifestyle', descEs: 'Atuendos, dormitorio, estilo de vida',
-    example: '10 different outfits — bedroom, lifestyle, lingerie. Min 5 photos per set.', exampleEs: '10 atuendos diferentes — dormitorio, estilo de vida, lencería. Mínimo 5 fotos por set.',
-    icon: <Camera className="h-5 w-5" /> 
-  },
-  short_videos: { 
-    label: 'Short Clips (10-15 sec)', labelEs: 'Clips Cortos (10-15 seg)',
-    description: 'Quick teasers for feed', descEs: 'Avances rápidos para el feed',
-    example: '10-15 sec clips for feed. Mix of SFW (teasers) and suggestive. Vertical format.', exampleEs: 'Clips de 10-15 seg para el feed. Mezcla de SFW (adelantos) y sugestivo. Formato vertical.',
-    icon: <Video className="h-5 w-5" /> 
-  },
-  ppv_pieces: { 
     label: 'PPV Content', labelEs: 'Contenido PPV',
-    description: 'Lockable content to sell (30-60 sec+)', descEs: 'Contenido con candado para vender (30-60 seg+)',
-    example: 'Exclusive content for paid messages. Solo, toys, scenarios. 30-60 sec medium clips.', exampleEs: 'Contenido exclusivo para mensajes de pago. Solo, juguetes, escenarios.',
+    description: '2 per week — ideas refreshed weekly on the ideas board', descEs: '2 por semana — ideas actualizadas semanalmente',
+    example: 'Exclusive lockable content. New PPV ideas each week from the content board.', exampleEs: 'Contenido exclusivo con candado. Ideas nuevas cada semana.',
     icon: <Lock className="h-5 w-5" /> 
   },
-  script_packages: { 
+  short_videos: { 
     label: 'Script Packages', labelEs: 'Paquetes de Guión',
-    description: 'Full scenario shoots', descEs: 'Sesiones completas de escenarios',
-    example: 'Full scenario shoots from the scenario board. Follow the script exactly.', exampleEs: 'Sesiones completas del tablero de escenarios. Seguir el guión exactamente.',
+    description: '1-2 per week — for older subs who\'ve seen current scripts', descEs: '1-2 por semana — para suscriptores antiguos',
+    example: 'Full scenario shoots. At least 1-2 fresh scripts per week so returning fans have new content.', exampleEs: 'Sesiones completas de escenarios. Mínimo 1-2 guiones frescos por semana.',
     icon: <FileText className="h-5 w-5" /> 
   },
-  ai_lifestyle: { 
-    label: 'AI Lifestyle Posts', labelEs: 'Publicaciones IA Estilo de Vida',
-    description: 'AI images for feed', descEs: 'Imágenes IA para el feed',
-    example: 'AI-generated lifestyle images for feed posts.', exampleEs: 'Imágenes de estilo de vida generadas por IA.',
+  ppv_pieces: { 
+    label: 'Main Feed Posts', labelEs: 'Publicaciones del Feed',
+    description: '7-10 per week — post 1-2x daily to keep fans engaged', descEs: '7-10 por semana — publicar 1-2x al día',
+    example: 'Post on main feed at least once or twice a day. Mix of photos and short clips. Keeps fans engaged and active.', exampleEs: 'Publicar en el feed principal 1-2 veces al día. Mezcla de fotos y clips.',
     icon: <Camera className="h-5 w-5" /> 
   },
+  script_packages: { 
+    label: 'Mass Message Images', labelEs: 'Imágenes para Mensajes Masivos',
+    description: '7 per week — 1 free SFW image per day to fans', descEs: '7 por semana — 1 imagen SFW gratis al día',
+    example: 'SFW teasers only: bed selfie, bar pic, mirror selfie, shower pic (misty, cleavage). NOT explicit.', exampleEs: 'Solo SFW: selfie en cama, espejo, ducha (con vapor, escote). NO explícito.',
+    icon: <Camera className="h-5 w-5" /> 
+  },
+  ai_lifestyle: { 
+    label: 'Random Clips', labelEs: 'Clips Aleatorios',
+    description: '3-5 per week — extra sellable content', descEs: '3-5 por semana — contenido extra para vender',
+    example: 'Similar to PPV style but sold individually. Extra content to keep the vault stocked.', exampleEs: 'Similar a PPV pero vendido individualmente. Contenido extra.',
+    icon: <Video className="h-5 w-5" /> 
+  },
   ai_scenario: { 
-    label: 'AI Scenario Content', labelEs: 'Contenido IA de Escenarios',
-    description: 'AI images for script scenarios', descEs: 'Imágenes IA para escenarios',
-    example: 'AI images supporting script scenarios.', exampleEs: 'Imágenes IA para apoyar escenarios de guión.',
-    icon: <FileText className="h-5 w-5" /> 
+    label: 'Random Photos', labelEs: 'Fotos Aleatorias',
+    description: '3-5 per week — selfies, verification, casual', descEs: '3-5 por semana — selfies, verificación, casual',
+    example: 'Selfies, boob pics, thumbs up, verification poses. Quick casual content.', exampleEs: 'Selfies, fotos casuales, poses de verificación. Contenido rápido.',
+    icon: <Camera className="h-5 w-5" /> 
   },
 };
 
@@ -130,12 +130,12 @@ function generateId(): string {
 function defaultData(weekStart: string): PipelineData {
   return {
     recurring: {
-      photo_sets: { target: 10, completed: [] },
-      short_videos: { target: 3, completed: [] },
-      ppv_pieces: { target: 5, completed: [] },
-      script_packages: { target: 2, completed: [] },
+      photo_sets: { target: 2, completed: [] },
+      short_videos: { target: 2, completed: [] },
+      ppv_pieces: { target: 10, completed: [] },
+      script_packages: { target: 7, completed: [] },
       ai_lifestyle: { target: 5, completed: [] },
-      ai_scenario: { target: 3, completed: [] },
+      ai_scenario: { target: 5, completed: [] },
     },
     one_off_tasks: [],
     customs: [],
