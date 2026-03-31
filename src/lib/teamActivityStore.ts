@@ -150,16 +150,7 @@ export async function fetchTeamActivity(): Promise<{
     }
   }
 
-  // Add JD on leave if not present
-  if (!latestByUser["JD"]) {
-    activities.push({
-      id: "leave-jd",
-      user: "JD",
-      action: "on_leave",
-      timestamp: new Date(now.getTime() - 3600000).toISOString(),
-    });
-    latestByUser["JD"] = { action: "on_leave", timestamp: now.toISOString() };
-  }
+  // JD is active — removed hardcoded on_leave status
 
   // Build statuses
   const allMembers = ["KC", "Jane", "Marc", "Jemimah", "JD"];

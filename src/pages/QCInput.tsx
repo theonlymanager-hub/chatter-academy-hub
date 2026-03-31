@@ -46,12 +46,12 @@ function newChatReview(): ChatReview {
 export default function QCInput() {
   const { user } = useAuth();
   const isDemo = isDemoUser(user?.role);
-  const chatters = teamMembers.filter((m) => m.role === "chatter");
+  const chatters = teamMembers.filter((m) => m.role.toLowerCase() === "chatter" || m.category === "chatter");
 
   const [selectedChatter, setSelectedChatter] = useState("");
   const [selectedShift, setSelectedShift] = useState("");
   const [shiftDate, setShiftDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [reviews, setReviews] = useState<ChatReview[]>([newChatReview()]);
+  const [reviews, setReviews] = useState<ChatReview[]>([newChatReview(), newChatReview(), newChatReview(), newChatReview(), newChatReview()]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -97,6 +97,10 @@ export default function QCInput() {
   const handleSubmit = async () => {
     if (!selectedChatter || !selectedShift) {
       toast.error("Select a chatter and shift first");
+      return;
+    }
+    if (reviews.length < 5) {
+      toast.error(`Need at least 5 chat reviews (currently ${reviews.length})`);
       return;
     }
     if (reviews.some((r) => !r.fanName.trim())) {
