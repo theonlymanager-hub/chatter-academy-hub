@@ -28,6 +28,23 @@ ACCOUNTS = {
     "acct_f968a6be8f2041dcb9d52f8113f2d258": "Willow",
 }
 
+# Known creator accounts — skip these in dead chat / QC checks
+# These are other OF creators, not real fans (Jemimah corrected us 2026-03-30)
+CREATOR_NAMES_LOWER = {
+    "liana", "lucinda", "lina dew", "lina", "lucinda bleu",
+}
+
+def is_creator(fan_data):
+    """Check if a chat participant is a creator (not a real fan)"""
+    name = (fan_data.get("name", "") or "").strip().lower()
+    # Check known creator names
+    if name in CREATOR_NAMES_LOWER:
+        return True
+    # Check API flags if available
+    if fan_data.get("isPerformer", False) or fan_data.get("is_performer", False):
+        return True
+    return False
+
 def api_get(endpoint):
     """Make authenticated API request"""
     try:
@@ -59,8 +76,12 @@ def check_dead_chats(acct_id, model_name):
         last_msg = chat.get("lastMessage", {})
         from_user = last_msg.get("fromUser", {})
         created = last_msg.get("createdAt", "")
-        fan = chat.get("fan", {})
-        fan_name = fan.get("name", "Unknown")
+        fan = chat.get("fan", chat.get("withUser", {}))
+        fan_name = (fan.get("name", "") or "Unknown").strip()
+        
+        # Skip creators
+        if is_creator(fan):
+            continue
         
         # If last message is FROM fan (not model), check how long ago
         try:

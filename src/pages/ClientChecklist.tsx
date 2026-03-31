@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Pencil, Check, X, Camera, Video, Lock, FileText } from 'lucide-react';
+import { Trash2, Plus, Pencil, Check, X, Camera, Video, Lock, FileText, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 // --- Types ---
 
@@ -39,19 +40,52 @@ interface PipelineData {
   };
   one_off_tasks: OneOffTask[];
   week_start: string; // ISO date (Monday)
+  drive_link?: string; // Admin-editable Google Drive link
+  guidelines_link?: string; // Admin-editable guidelines link
+  updated_at?: string; // Last updated timestamp
 }
 
 type RecurringKey = keyof PipelineData['recurring'];
 
 // --- Helpers ---
 
-const RECURRING_META: Record<RecurringKey, { label: string; description: string; icon: React.ReactNode }> = {
-  photo_sets: { label: 'Photo Sets', description: 'Outfits, bedroom, lifestyle', icon: <Camera className="h-5 w-5" /> },
-  short_videos: { label: 'Short Video Clips', description: '30-60 sec for feed, mix of explicitness', icon: <Video className="h-5 w-5" /> },
-  ppv_pieces: { label: 'PPV Content Pieces', description: 'Lockable content to sell', icon: <Lock className="h-5 w-5" /> },
-  script_packages: { label: 'Script Packages', description: 'Full scenario shoots', icon: <FileText className="h-5 w-5" /> },
-  ai_lifestyle: { label: 'AI Lifestyle Posts', description: 'AI images for feed — carousels, out and about, daily life', icon: <Camera className="h-5 w-5" /> },
-  ai_scenario: { label: 'AI Scenario Content', description: 'AI images to support script scenarios — setup shots', icon: <FileText className="h-5 w-5" /> },
+const RECURRING_META: Record<RecurringKey, { label: string; description: string; example: string; icon: React.ReactNode }> = {
+  photo_sets: { 
+    label: 'Photo Sets', 
+    description: 'Outfits, bedroom, lifestyle', 
+    example: '10 different outfits — bedroom, lifestyle, lingerie. Min 5 photos per set.',
+    icon: <Camera className="h-5 w-5" /> 
+  },
+  short_videos: { 
+    label: 'Short Video Clips', 
+    description: '30-60 sec for feed, mix of explicitness', 
+    example: '30-60 sec clips. Mix of SFW (teasers) and explicit. Vertical format.',
+    icon: <Video className="h-5 w-5" /> 
+  },
+  ppv_pieces: { 
+    label: 'PPV Content Pieces', 
+    description: 'Lockable content to sell', 
+    example: 'Exclusive content for paid messages. Solo, toys, scenarios.',
+    icon: <Lock className="h-5 w-5" /> 
+  },
+  script_packages: { 
+    label: 'Script Packages', 
+    description: 'Full scenario shoots', 
+    example: 'Full scenario shoots from the scenario board. Follow the script exactly.',
+    icon: <FileText className="h-5 w-5" /> 
+  },
+  ai_lifestyle: { 
+    label: 'AI Lifestyle Posts', 
+    description: 'AI images for feed — carousels, out and about, daily life', 
+    example: 'AI-generated lifestyle images for feed posts.',
+    icon: <Camera className="h-5 w-5" /> 
+  },
+  ai_scenario: { 
+    label: 'AI Scenario Content', 
+    description: 'AI images to support script scenarios — setup shots', 
+    example: 'AI images supporting script scenarios.',
+    icon: <FileText className="h-5 w-5" /> 
+  },
 };
 
 const RECURRING_KEYS: RecurringKey[] = ['photo_sets', 'short_videos', 'ppv_pieces', 'script_packages'];
@@ -93,6 +127,8 @@ function defaultData(weekStart: string): PipelineData {
     },
     one_off_tasks: [],
     week_start: weekStart,
+    drive_link: 'https://drive.google.com/drive/folders/PLACEHOLDER',
+    guidelines_link: 'https://example.com/guidelines',
   };
 }
 
@@ -100,8 +136,31 @@ function storageKey(model: string): string {
   return `content_pipeline_${model.toLowerCase()}`;
 }
 
-function loadData(model: string): PipelineData {
+// Load from Supabase or localStorage
+async function loadData(model: string): Promise<PipelineData> {
   const currentMonday = formatDate(getMonday(new Date()));
+  
+  try {
+    // Try Supabase first
+    const { data, error } = await supabase
+      .from('client_checklist')
+      .select('*')
+      .eq('model_name', model)
+      .eq('week_start', currentMonday)
+      .single();
+
+    if (!error && data) {
+      return {
+        ...data.data,
+        week_start: currentMonday,
+        updated_at: data.updated_at,
+      } as PipelineData;
+    }
+  } catch (e) {
+    console.warn('Supabase load failed, using localStorage:', e);
+  }
+
+  // Fallback to localStorage
   try {
     const raw = localStorage.getItem(storageKey(model));
     if (raw) {
@@ -109,12 +168,14 @@ function loadData(model: string): PipelineData {
       // Auto-reset if new week
       if (parsed.week_start !== currentMonday) {
         const reset = defaultData(currentMonday);
-        // Keep targets from old data
+        // Keep targets and links from old data
         for (const key of RECURRING_KEYS) {
           if (parsed.recurring[key]?.target) {
             reset.recurring[key].target = parsed.recurring[key].target;
           }
         }
+        if (parsed.drive_link) reset.drive_link = parsed.drive_link;
+        if (parsed.guidelines_link) reset.guidelines_link = parsed.guidelines_link;
         // Keep incomplete one-off tasks
         reset.one_off_tasks = parsed.one_off_tasks.filter(t => !t.done);
         return reset;
@@ -122,11 +183,30 @@ function loadData(model: string): PipelineData {
       return parsed;
     }
   } catch {}
+  
   return defaultData(currentMonday);
 }
 
-function saveData(model: string, data: PipelineData) {
+// Save to both Supabase and localStorage
+async function saveData(model: string, data: PipelineData) {
+  // Save to localStorage as fallback
   localStorage.setItem(storageKey(model), JSON.stringify(data));
+
+  try {
+    // Save to Supabase
+    await supabase
+      .from('client_checklist')
+      .upsert({
+        model_name: model,
+        week_start: data.week_start,
+        data: data,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'model_name,week_start'
+      });
+  } catch (e) {
+    console.warn('Supabase save failed, localStorage only:', e);
+  }
 }
 
 // --- Component ---
@@ -140,30 +220,43 @@ const ClientChecklist: React.FC = () => {
     const auth = useAuth();
     isAdmin = auth.user?.role === 'admin' || auth.user?.role === 'supervisor';
   } catch {
+    // No auth required for viewing
     isAdmin = false;
   }
 
-  const [data, setData] = useState<PipelineData>(() => loadData(modelName));
+  const [data, setData] = useState<PipelineData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [editingTargets, setEditingTargets] = useState(false);
+  const [editingLinks, setEditingLinks] = useState(false);
   const [tempTargets, setTempTargets] = useState<Record<RecurringKey, number>>({
     photo_sets: 10, short_videos: 3, ppv_pieces: 5, script_packages: 2,
+    ai_lifestyle: 5, ai_scenario: 3,
   });
+  const [tempDriveLink, setTempDriveLink] = useState('');
+  const [tempGuidelinesLink, setTempGuidelinesLink] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
   const [newTaskDue, setNewTaskDue] = useState('');
   const [showAddTask, setShowAddTask] = useState(false);
 
-  // Persist on change
+  // Load data on mount
   useEffect(() => {
-    if (modelName) saveData(modelName, data);
-  }, [data, modelName]);
-
-  // Reload if model changes
-  useEffect(() => {
-    if (modelName) setData(loadData(modelName));
+    if (modelName) {
+      loadData(modelName).then(loaded => {
+        setData(loaded);
+        setLoading(false);
+      });
+    }
   }, [modelName]);
 
+  // Persist on change
+  useEffect(() => {
+    if (data && modelName) {
+      saveData(modelName, data);
+    }
+  }, [data, modelName]);
+
   const updateData = useCallback((updater: (prev: PipelineData) => PipelineData) => {
-    setData(prev => updater(prev));
+    setData(prev => prev ? updater(prev) : null);
   }, []);
 
   // --- Recurring handlers ---
@@ -172,7 +265,6 @@ const ClientChecklist: React.FC = () => {
     updateData(prev => {
       const item = prev.recurring[key];
       if (item.completed.length < item.target) {
-        // Add one
         return {
           ...prev,
           recurring: {
@@ -202,6 +294,7 @@ const ClientChecklist: React.FC = () => {
   };
 
   const startEditTargets = () => {
+    if (!data) return;
     const t: Record<string, number> = {};
     for (const key of RECURRING_KEYS) t[key] = data.recurring[key].target;
     setTempTargets(t as Record<RecurringKey, number>);
@@ -217,6 +310,22 @@ const ClientChecklist: React.FC = () => {
       return { ...prev, recurring: newRecurring };
     });
     setEditingTargets(false);
+  };
+
+  const startEditLinks = () => {
+    if (!data) return;
+    setTempDriveLink(data.drive_link || '');
+    setTempGuidelinesLink(data.guidelines_link || '');
+    setEditingLinks(true);
+  };
+
+  const saveLinks = () => {
+    updateData(prev => ({
+      ...prev,
+      drive_link: tempDriveLink,
+      guidelines_link: tempGuidelinesLink,
+    }));
+    setEditingLinks(false);
   };
 
   // --- One-off handlers ---
@@ -268,6 +377,14 @@ const ClientChecklist: React.FC = () => {
     );
   }
 
+  if (loading || !data) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
@@ -277,10 +394,95 @@ const ClientChecklist: React.FC = () => {
           <p className="text-sm text-muted-foreground">
             Week of {formatWeekLabel(data.week_start)}
           </p>
+          {data.updated_at && (
+            <p className="text-xs text-muted-foreground/60">
+              Last updated: {new Date(data.updated_at).toLocaleString('en-GB', { 
+                day: 'numeric', 
+                month: 'short', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+            </p>
+          )}
           {isAdmin && (
             <Badge variant="outline" className="text-xs">Admin View</Badge>
           )}
         </div>
+
+        {/* Resources & Upload Links */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Resources & Upload Links</CardTitle>
+              {isAdmin && !editingLinks && (
+                <Button variant="ghost" size="sm" onClick={startEditLinks}>
+                  <Pencil className="h-4 w-4 mr-1" /> Edit
+                </Button>
+              )}
+              {isAdmin && editingLinks && (
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={saveLinks}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditingLinks(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {editingLinks ? (
+              <>
+                <div>
+                  <label className="text-xs text-muted-foreground">Google Drive Folder</label>
+                  <Input
+                    value={tempDriveLink}
+                    onChange={e => setTempDriveLink(e.target.value)}
+                    placeholder="https://drive.google.com/..."
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Content Guidelines</label>
+                  <Input
+                    value={tempGuidelinesLink}
+                    onChange={e => setTempGuidelinesLink(e.target.value)}
+                    placeholder="https://..."
+                    className="text-sm"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <a
+                    href={data.drive_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Google Drive Upload Folder
+                  </a>
+                  <a
+                    href={data.guidelines_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Content Guidelines & Examples
+                  </a>
+                </div>
+                <div className="bg-muted/30 p-3 rounded-lg text-xs text-muted-foreground">
+                  <p className="font-medium">Quick Instructions:</p>
+                  <p className="mt-1">Upload content to the drive folder, then tick items off below.</p>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Recurring Weekly Section */}
         <Card>
@@ -344,6 +546,7 @@ const ClientChecklist: React.FC = () => {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">{meta.description}</p>
+                      <p className="text-[11px] text-muted-foreground/70 italic mt-0.5">{meta.example}</p>
                       <Progress value={pct} className="h-1.5 mt-1.5" />
                       {isAdmin && item.completed.length > 0 && (
                         <p className="text-[10px] text-muted-foreground/60 mt-1">
