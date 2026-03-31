@@ -352,12 +352,19 @@ export default function QCInput() {
               <div>
                 {review.screenshotPreview ? (
                   <div className="relative">
-                    <img src={review.screenshotPreview} alt="Screenshot" className="rounded-lg max-h-48 object-contain" />
+                    {review.screenshotFile?.type?.startsWith("video/") ? (
+                      <video src={review.screenshotPreview} controls className="rounded-lg max-h-48" />
+                    ) : (
+                      <img src={review.screenshotPreview} alt="Screenshot" className="rounded-lg max-h-48 object-contain" />
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
                       className="absolute top-1 right-1 h-6 w-6 bg-black/60"
-                      onClick={() => updateReview(review.id, "screenshotPreview", "")}
+                      onClick={() => {
+                        updateReview(review.id, "screenshotPreview", "");
+                        updateReview(review.id, "screenshotFile", null);
+                      }}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -365,10 +372,10 @@ export default function QCInput() {
                 ) : (
                   <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-muted-foreground/30 cursor-pointer hover:border-primary/50 transition-colors">
                     <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Upload screenshot</span>
+                    <span className="text-xs text-muted-foreground">Upload screenshot or video</span>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       className="hidden"
                       onChange={(e) => {
                         const f = e.target.files?.[0];
