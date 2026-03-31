@@ -29,6 +29,16 @@ interface OneOffTask {
   done_at?: string; // ISO string
 }
 
+interface CustomTask {
+  id: string;
+  fan_name: string;
+  description: string;
+  amount: string;
+  due_date: string;
+  done: boolean;
+  done_at?: string;
+}
+
 interface PipelineData {
   recurring: {
     photo_sets: RecurringItem;
@@ -39,10 +49,11 @@ interface PipelineData {
     ai_scenario: RecurringItem;
   };
   one_off_tasks: OneOffTask[];
-  week_start: string; // ISO date (Monday)
-  drive_link?: string; // Admin-editable Google Drive link
-  guidelines_link?: string; // Admin-editable guidelines link
-  updated_at?: string; // Last updated timestamp
+  customs: CustomTask[];
+  week_start: string;
+  drive_link?: string;
+  guidelines_link?: string;
+  updated_at?: string;
 }
 
 type RecurringKey = keyof PipelineData['recurring'];
@@ -126,6 +137,7 @@ function defaultData(weekStart: string): PipelineData {
       ai_scenario: { target: 3, completed: [] },
     },
     one_off_tasks: [],
+    customs: [],
     week_start: weekStart,
     drive_link: 'https://drive.google.com/drive/folders/PLACEHOLDER',
     guidelines_link: 'https://example.com/guidelines',
@@ -220,16 +232,18 @@ const ClientChecklist: React.FC = () => {
 
   let isAdmin = false;
   let isDataEntry = false;
+  let isLoggedIn = false;
   try {
     const auth = useAuth();
     isAdmin = auth.user?.role === 'admin' || auth.user?.role === 'supervisor';
     isDataEntry = auth.user?.role === 'data_entry';
+    isLoggedIn = !!auth.user;
   } catch {
-    // No auth required for viewing
     isAdmin = false;
   }
 
   const canEdit = isAdmin || isDataEntry;
+  const isDashboard = window.location.pathname.startsWith('/content-checklist');
 
   const [data, setData] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -245,6 +259,11 @@ const ClientChecklist: React.FC = () => {
   const [newTaskDue, setNewTaskDue] = useState('');
   const [newTaskAmount, setNewTaskAmount] = useState('');
   const [showAddTask, setShowAddTask] = useState(false);
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [newCustomFan, setNewCustomFan] = useState('');
+  const [newCustomDesc, setNewCustomDesc] = useState('');
+  const [newCustomAmount, setNewCustomAmount] = useState('');
+  const [newCustomDue, setNewCustomDue] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
 
   // Load data on mount
@@ -340,6 +359,7 @@ const ClientChecklist: React.FC = () => {
   // --- One-off handlers ---
 
   const copyClientLink = () => {
+    // Always generate the PUBLIC client link, not the dashboard URL
     const url = `${window.location.origin}/client-checklist?model=${encodeURIComponent(modelName)}`;
     navigator.clipboard.writeText(url).then(() => {
       setLinkCopied(true);
@@ -381,6 +401,40 @@ const ClientChecklist: React.FC = () => {
     }));
   };
 
+  // --- Customs handlers ---
+
+  const addCustom = () => {
+    if (!newCustomDesc.trim()) return;
+    updateData(prev => ({
+      ...prev,
+      customs: [
+        ...(prev.customs || []),
+        { id: generateId(), fan_name: newCustomFan.trim(), description: newCustomDesc.trim(), amount: newCustomAmount.trim(), due_date: newCustomDue, done: false },
+      ],
+    }));
+    setNewCustomFan('');
+    setNewCustomDesc('');
+    setNewCustomAmount('');
+    setNewCustomDue('');
+    setShowAddCustom(false);
+  };
+
+  const toggleCustom = (id: string) => {
+    updateData(prev => ({
+      ...prev,
+      customs: (prev.customs || []).map(c =>
+        c.id === id ? { ...c, done: !c.done, done_at: !c.done ? new Date().toISOString() : undefined } : c
+      ),
+    }));
+  };
+
+  const removeCustom = (id: string) => {
+    updateData(prev => ({
+      ...prev,
+      customs: (prev.customs || []).filter(c => c.id !== id),
+    }));
+  };
+
   // --- Render ---
 
   if (!modelName) {
@@ -419,8 +473,8 @@ const ClientChecklist: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {/* Model Tabs (admin only) */}
-        {(canEdit) && (
+        {/* Model Tabs — ONLY on dashboard, never on public client link */}
+        {isDashboard && canEdit && (
           <div className="flex gap-2 justify-center">
             {MODEL_OPTIONS.map(model => (
               <Button
@@ -720,6 +774,112 @@ const ClientChecklist: React.FC = () => {
                       size="sm"
                       className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                       onClick={() => removeOneOff(task.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Customs Section */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Customs / Personalizados</CardTitle>
+              {(canEdit) && (
+                <Button variant="ghost" size="sm" onClick={() => setShowAddCustom(!showAddCustom)}>
+                  <Plus className="h-4 w-4 mr-1" /> Add
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {(canEdit) && showAddCustom && (
+              <div className="space-y-2 p-3 rounded-lg border border-dashed border-muted-foreground/30">
+                <Input
+                  placeholder="Fan name / Nombre del fan"
+                  value={newCustomFan}
+                  onChange={e => setNewCustomFan(e.target.value)}
+                />
+                <Input
+                  placeholder="Description (e.g. close up, riding dildo, dirty talk...)"
+                  value={newCustomDesc}
+                  onChange={e => setNewCustomDesc(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={newCustomAmount}
+                    onChange={e => setNewCustomAmount(e.target.value)}
+                    className="w-24"
+                    placeholder="Amount $"
+                  />
+                  <Input
+                    type="date"
+                    value={newCustomDue}
+                    onChange={e => setNewCustomDue(e.target.value)}
+                    className="flex-1"
+                    placeholder="Due date"
+                  />
+                  <Button size="sm" onClick={addCustom} disabled={!newCustomDesc.trim()}>
+                    Add
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {(!data.customs || data.customs.length === 0) ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No customs pending / Sin personalizados pendientes
+              </p>
+            ) : (
+              data.customs.map(custom => (
+                <div
+                  key={custom.id}
+                  className={`flex items-start gap-3 p-3 rounded-lg border transition-all
+                    ${custom.done ? 'border-green-600/30 bg-green-600/5' : 'border-orange-500/30 bg-orange-500/5'}`}
+                >
+                  <Checkbox
+                    checked={custom.done}
+                    onCheckedChange={() => toggleCustom(custom.id)}
+                    className="mt-0.5 h-6 w-6"
+                  />
+                  <div className="flex-1 min-w-0">
+                    {custom.fan_name && (
+                      <p className="text-xs font-medium text-orange-400 mb-0.5">
+                        🧑 {custom.fan_name}
+                      </p>
+                    )}
+                    <p className={`text-sm ${custom.done ? 'line-through text-muted-foreground' : ''}`}>
+                      {custom.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {custom.amount && (
+                        <Badge variant="outline" className="text-xs">
+                          ${custom.amount}
+                        </Badge>
+                      )}
+                      {custom.due_date && (
+                        <span className="text-[11px] text-muted-foreground">
+                          Due: {new Date(custom.due_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        </span>
+                      )}
+                      {(canEdit) && custom.done && custom.done_at && (
+                        <span className="text-[10px] text-muted-foreground/60">
+                          Done: {new Date(custom.done_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {(canEdit) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeCustom(custom.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
