@@ -52,7 +52,6 @@ const getAllSections = () => [
     label: "Quality Checks",
     items: [
       { title: "QC Input", url: "/qc-input", icon: ClipboardList, roles: ['admin', 'supervisor', 'demo'] },
-      { title: "Scorecards", url: "/scorecards", icon: Trophy, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Chat Feedback", url: "/chat-feedback", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
@@ -73,7 +72,7 @@ const getAllSections = () => [
     items: [
       { title: "Fan Profiles", url: "/fans", icon: Heart, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Client Profiles", url: "/clients", icon: UserCircle, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
-      { title: "Team Members", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Chatter Profiles", url: "/team", icon: Users, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
   {
