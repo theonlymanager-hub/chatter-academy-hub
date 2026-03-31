@@ -57,14 +57,19 @@ const getAllSections = () => [
     ],
   },
   {
-    label: "Content & Scheduling",
+    label: "Content",
     items: [
       { title: "Content Ideas", url: "/content-ideas", icon: Camera, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
-      { title: "Mass Messages / PPV", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Client Checklist", url: "/content-checklist", icon: ListChecks, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
+    ],
+  },
+  {
+    label: "Scheduling",
+    items: [
+      { title: "Mass Messages / PPV", url: "/messages", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Shift Calendar", url: "/calendar", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Airbnb Schedule", url: "/airbnb-schedule", icon: CalendarDays, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
-      { title: "Client Checklist", url: "/content-checklist", icon: ListChecks, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
     ],
   },
   {
