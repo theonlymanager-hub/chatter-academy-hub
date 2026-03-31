@@ -60,6 +60,48 @@ export default function QCInput() {
   const [reviews, setReviews] = useState<ChatReview[]>([newChatReview(), newChatReview(), newChatReview(), newChatReview(), newChatReview()]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [pendingRecovery, setPendingRecovery] = useState<any[]>([]);
+  const [recovering, setRecovering] = useState(false);
+
+  // Check for unsaved localStorage submissions on mount
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("qc_submissions") || "[]");
+      if (saved.length > 0) {
+        setPendingRecovery(saved);
+      }
+    } catch {}
+  }, []);
+
+  const recoverSubmissions = async () => {
+    setRecovering(true);
+    let recovered = 0;
+    for (const sub of pendingRecovery) {
+      try {
+        const { error } = await supabase.from("quality_scores").insert({
+          chatter_name: sub.chatter_name,
+          shift_date: sub.shift_date,
+          overall_score: sub.overall_score,
+          response_time_score: sub.overall_score,
+          personalisation_score: sub.overall_score,
+          conversation_flow_score: sub.overall_score,
+          ppv_timing_score: sub.overall_score,
+          energy_tone_score: sub.overall_score,
+          notes: sub.reviews?.map((r: any) => `[${r.model || "?"} - ${r.fan_name}] ${r.score}/10\n✅ ${r.went_right || "N/A"}\n❌ ${r.went_wrong || "N/A"}`).join("\n\n") || "",
+          reviewed_by: sub.reviewer || "unknown",
+        });
+        if (!error) recovered++;
+      } catch {}
+    }
+    if (recovered > 0) {
+      localStorage.removeItem("qc_submissions");
+      setPendingRecovery([]);
+      toast.success(`Recovered ${recovered} submission(s) to database!`);
+    } else {
+      toast.error("Failed to recover — data may be corrupted");
+    }
+    setRecovering(false);
+  };
 
   const avgScore = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.score, 0) / reviews.length).toFixed(1)
@@ -261,6 +303,25 @@ export default function QCInput() {
           {avgScore}<span className="text-lg text-muted-foreground">/10</span>
         </div>
       </div>
+
+      {/* Recovery Banner */}
+      {pendingRecovery.length > 0 && (
+        <Card className="glass-card border-yellow-500/30 bg-yellow-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bold text-yellow-400">⚠️ {pendingRecovery.length} unsaved QC submission(s) found</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {pendingRecovery.map((s: any) => `${s.chatter_name} (${s.overall_score}/10)`).join(", ")}
+                </p>
+              </div>
+              <Button onClick={recoverSubmissions} disabled={recovering} className="bg-yellow-500 hover:bg-yellow-600 text-black">
+                {recovering ? "Recovering..." : "Save to Database"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Chatter + Shift Selection */}
       <Card className="glass-card">
