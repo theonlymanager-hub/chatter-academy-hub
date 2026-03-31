@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Pencil, Check, X, Camera, Video, Lock, FileText, ExternalLink } from 'lucide-react';
+import { Trash2, Plus, Pencil, Check, X, Camera, Video, Lock, FileText, ExternalLink, Copy, ClipboardCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 // --- Types ---
@@ -236,7 +236,9 @@ const ClientChecklist: React.FC = () => {
   const [tempGuidelinesLink, setTempGuidelinesLink] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
   const [newTaskDue, setNewTaskDue] = useState('');
+  const [newTaskAmount, setNewTaskAmount] = useState('');
   const [showAddTask, setShowAddTask] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -330,17 +332,29 @@ const ClientChecklist: React.FC = () => {
 
   // --- One-off handlers ---
 
+  const copyClientLink = () => {
+    const url = `${window.location.origin}/client-checklist?model=${encodeURIComponent(modelName)}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  };
+
   const addOneOffTask = () => {
     if (!newTaskDesc.trim()) return;
+    const desc = newTaskAmount 
+      ? `${newTaskDesc.trim()} — $${newTaskAmount}` 
+      : newTaskDesc.trim();
     updateData(prev => ({
       ...prev,
       one_off_tasks: [
         ...prev.one_off_tasks,
-        { id: generateId(), description: newTaskDesc.trim(), due_date: newTaskDue, done: false },
+        { id: generateId(), description: desc, due_date: newTaskDue, done: false },
       ],
     }));
     setNewTaskDesc('');
     setNewTaskDue('');
+    setNewTaskAmount('');
     setShowAddTask(false);
   };
 
@@ -405,7 +419,13 @@ const ClientChecklist: React.FC = () => {
             </p>
           )}
           {isAdmin && (
-            <Badge variant="outline" className="text-xs">Admin View</Badge>
+            <div className="flex items-center justify-center gap-2">
+              <Badge variant="outline" className="text-xs">Admin View</Badge>
+              <Button variant="outline" size="sm" onClick={copyClientLink} className="text-xs h-7">
+                {linkCopied ? <ClipboardCheck className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                {linkCopied ? 'Copied!' : 'Copy Client Link'}
+              </Button>
+            </div>
           )}
         </div>
 
@@ -599,18 +619,25 @@ const ClientChecklist: React.FC = () => {
             {isAdmin && showAddTask && (
               <div className="space-y-2 p-3 rounded-lg border border-dashed border-muted-foreground/30">
                 <Input
-                  placeholder="Task description..."
+                  placeholder="Task description (e.g. Custom: close up pussy play, riding dildo...)"
                   value={newTaskDesc}
                   onChange={e => setNewTaskDesc(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addOneOffTask()}
                 />
                 <div className="flex gap-2">
                   <Input
+                    type="text"
+                    value={newTaskAmount}
+                    onChange={e => setNewTaskAmount(e.target.value)}
+                    className="w-24"
+                    placeholder="Amount $"
+                  />
+                  <Input
                     type="date"
                     value={newTaskDue}
                     onChange={e => setNewTaskDue(e.target.value)}
                     className="flex-1"
-                    placeholder="Due date (optional)"
+                    placeholder="Due date"
                   />
                   <Button size="sm" onClick={addOneOffTask} disabled={!newTaskDesc.trim()}>
                     Add
