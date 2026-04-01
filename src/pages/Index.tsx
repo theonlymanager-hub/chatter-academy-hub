@@ -16,8 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DailyCheckInBanner from "@/components/DailyCheckInBanner";
 import RevenueLTV from "@/components/RevenueLTV";
-import MarkTaskTracker from "@/components/MarkTaskTracker";
-import LukeTaskTracker from "@/components/LukeTaskTracker";
+// Task trackers removed from dashboard per Luke's request (2026-04-01)
 import StrikesPanel from "@/components/StrikesPanel";
 import ChatterTasksWidget from "@/components/ChatterTasksWidget";
 import TeamActivityFeed from "@/components/TeamActivityFeed";
@@ -301,16 +300,8 @@ const Index = () => {
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          4. TASK TRACKERS — kept but lower priority
-          ══════════════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <LukeTaskTracker />
-        <MarkTaskTracker />
-      </div>
-
-      {/* ── RevenueLTV (detailed breakdown — kept for drill-down) ─────── */}
-      <RevenueLTV />
+      {/* ── RevenueLTV (detailed breakdown — uses same API data as hero cards) ─────── */}
+      <RevenueLTV weeklyEarnings={weeklyEarnings} activeSubs={activeSubs} revenueLoading={revenueLoading} />
     </div>
   );
 };

@@ -1,45 +1,30 @@
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Target, Loader2, RefreshCw } from 'lucide-react';
+import { DollarSign, Target, Loader2, TrendingUp } from 'lucide-react';
+import { WeeklyEarnings } from '@/services/platformApi';
 
-interface ModelRevenue {
-  today_gross: number;
-  week_gross: number;
-}
-
-interface RevenueData {
-  updated_at: string;
-  week_start: string;
-  models: Record<string, ModelRevenue>;
-}
-
-const MODELS = ['Ashley', 'Izzie', 'Willow'];
+const MODELS = [
+  { key: 'ashley', name: 'Ashley' },
+  { key: 'izzie', name: 'Izzie' },
+  { key: 'willow', name: 'Willow' },
+];
 const WEEKLY_TARGET = 5000;
 
-export default function RevenueLTV() {
-  const [data, setData] = useState<RevenueData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState('');
+interface Props {
+  weeklyEarnings: Record<string, WeeklyEarnings>;
+  activeSubs: Record<string, number>;
+  revenueLoading: boolean;
+}
 
-  async function fetchData() {
-    setLoading(true);
-    try {
-      const resp = await fetch('/revenue-data.json?t=' + Date.now());
-      if (resp.ok) {
-        const d = await resp.json();
-        setData(d);
-        if (d.updated_at) setLastUpdated(new Date(d.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
-      }
-    } catch {}
-    setLoading(false);
+export default function RevenueLTV({ weeklyEarnings, activeSubs, revenueLoading }: Props) {
+  if (revenueLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  useEffect(() => { fetchData(); }, []);
-
-  if (loading) return <div className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
-  if (!data) return <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">Revenue data not available. Updates every 3 hours.</CardContent></Card>;
-
-  const weekTotal = MODELS.reduce((s, n) => s + (data.models[n]?.week_gross || 0), 0);
+  const weekTotal = MODELS.reduce((s, m) => s + (weeklyEarnings[m.key]?.grossTotal || 0), 0);
   const weekTarget = WEEKLY_TARGET * MODELS.length;
   const progress = Math.min((weekTotal / weekTarget) * 100, 100);
 
@@ -47,15 +32,10 @@ export default function RevenueLTV() {
     <div className="space-y-4">
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              This Week's Revenue
-            </CardTitle>
-            <button onClick={fetchData} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-              <RefreshCw className="h-3 w-3" /> {lastUpdated}
-            </button>
-          </div>
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            This Week's Revenue
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-baseline gap-2">
@@ -63,31 +43,57 @@ export default function RevenueLTV() {
             <span className="text-muted-foreground text-sm">/ ${weekTarget.toLocaleString()} target</span>
           </div>
           <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
-            <div className={`h-full rounded-full ${progress >= 100 ? 'bg-green-500' : progress >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${progress}%` }} />
+            <div
+              className={`h-full rounded-full ${progress >= 100 ? 'bg-green-500' : progress >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+              style={{ width: `${progress}%` }}
+            />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">Week of {data.week_start} — {progress.toFixed(0)}%</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Week of {new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' })} — {progress.toFixed(0)}%
+          </p>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {MODELS.map((name) => {
-          const m = data.models[name] || { today_gross: 0, week_gross: 0 };
-          const mp = Math.min((m.week_gross / WEEKLY_TARGET) * 100, 100);
+        {MODELS.map(({ key, name }) => {
+          const weekly = weeklyEarnings[key];
+          const revenue = weekly?.grossTotal || 0;
+          const tipsRev = weekly?.tips || 0;
+          const subs = activeSubs[key] || 0;
+          const ltv = subs > 0 && revenue > 0 ? (revenue / subs).toFixed(2) : '—';
+          const mp = Math.min((revenue / WEEKLY_TARGET) * 100, 100);
+
           return (
-            <Card key={name}>
+            <Card key={key}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">{name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-baseline gap-2">
                   <DollarSign className="h-4 w-4 text-green-400" />
-                  <span className="text-xl font-bold text-green-400">${m.week_gross.toLocaleString()}</span>
+                  <span className="text-xl font-bold text-green-400">
+                    ${revenue.toLocaleString()}
+                  </span>
                   <span className="text-xs text-muted-foreground">this week</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${mp >= 100 ? 'bg-green-500' : mp >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${mp}%` }} />
+                  <div
+                    className={`h-full rounded-full ${mp >= 100 ? 'bg-green-500' : mp >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                    style={{ width: `${mp}%` }}
+                  />
                 </div>
-                <p className="text-[10px] text-muted-foreground">${m.week_gross.toLocaleString()} / $5K — Today: ${m.today_gross.toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  ${revenue.toLocaleString()} / $5K — Tips: ${tipsRev.toLocaleString()}
+                </p>
+                <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                  <TrendingUp className="h-3 w-3 text-cyan-400" />
+                  <span className="text-xs text-muted-foreground">
+                    LTV: <span className="font-semibold text-foreground">{ltv === '—' ? '—' : `$${ltv}`}</span>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {subs > 0 ? `${subs} active subs` : 'No sub data'}
+                  </span>
+                </div>
               </CardContent>
             </Card>
           );
