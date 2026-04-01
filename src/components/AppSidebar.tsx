@@ -62,6 +62,7 @@ const getAllSections = () => [
       { title: "Content Ideas", url: "/content-ideas", icon: Camera, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
       { title: "Scenario Board", url: "/scenarios", icon: Sparkles, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Client Checklist", url: "/content-checklist", icon: ListChecks, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
+      { title: "Content Guidelines", url: "/content-guidelines", icon: Camera, roles: ['admin', 'supervisor', 'data_entry', 'demo'] },
     ],
   },
   {
