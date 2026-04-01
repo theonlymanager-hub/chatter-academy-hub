@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Pencil, Check, X, Camera, Video, Lock, FileText, ExternalLink, Copy, ClipboardCheck } from 'lucide-react';
+import { Trash2, Plus, Pencil, Check, X, Camera, Video, Lock, FileText, ExternalLink, Copy, ClipboardCheck, MapPin, CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 // --- Types ---
@@ -145,6 +145,50 @@ function defaultData(weekStart: string): PipelineData {
   };
 }
 
+// --- Airbnb Booking Helpers ---
+
+interface AirbnbBooking {
+  id: string;
+  model: string;
+  location: string;
+  check_in: string;
+  check_out: string;
+  cost: number;
+  status: string;
+  notes: string;
+}
+
+function loadAirbnbBookings(model: string, weekStart: string): AirbnbBooking[] {
+  try {
+    const raw = localStorage.getItem('airbnb_bookings');
+    if (!raw) return [];
+    const all: AirbnbBooking[] = JSON.parse(raw);
+    const monday = new Date(weekStart + 'T00:00:00');
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    
+    return all.filter(b => {
+      if (b.model?.toLowerCase() !== model.toLowerCase()) return false;
+      if (b.status === 'cancelled') return false;
+      const checkIn = new Date(b.check_in + 'T00:00:00');
+      const checkOut = new Date(b.check_out + 'T00:00:00');
+      // Booking overlaps with this week
+      return checkIn <= sunday && checkOut >= monday;
+    });
+  } catch {
+    return [];
+  }
+}
+
+function formatBookingDate(dateStr: string): string {
+  if (!dateStr) return '';
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
 function storageKey(model: string): string {
   return `content_pipeline_${model.toLowerCase()}`;
 }
@@ -256,12 +300,14 @@ const ClientChecklist: React.FC = () => {
   const [newCustomAmount, setNewCustomAmount] = useState('');
   const [newCustomDue, setNewCustomDue] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [airbnbBookings, setAirbnbBookings] = useState<AirbnbBooking[]>([]);
 
   // Load data on mount
   useEffect(() => {
     if (modelName) {
       loadData(modelName).then(loaded => {
         setData(loaded);
+        setAirbnbBookings(loadAirbnbBookings(modelName, loaded.week_start));
         setLoading(false);
       });
     }
@@ -595,6 +641,40 @@ const ClientChecklist: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Airbnb Shoot Schedule */}
+        {airbnbBookings.length > 0 && (
+          <Card className="border-amber-500/30 bg-amber-500/5">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-amber-400" />
+                Shoots This Week
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {airbnbBookings.map(booking => (
+                <div key={booking.id} className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <MapPin className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                  <div className="space-y-1 text-sm">
+                    <p className="font-medium text-amber-200">{booking.location || 'Location TBC'}</p>
+                    <p className="text-muted-foreground">
+                      {formatBookingDate(booking.check_in)} → {formatBookingDate(booking.check_out)}
+                    </p>
+                    {booking.notes && (
+                      <p className="text-xs text-muted-foreground/70">{booking.notes}</p>
+                    )}
+                    <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-300">
+                      {booking.status === 'confirmed' ? '✅ Confirmed' : booking.status === 'booked' ? '📋 Booked' : booking.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground/60">
+                Content to film during this booking should be ticked off below ↓
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recurring Weekly Section */}
         <Card>
