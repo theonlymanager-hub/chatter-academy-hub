@@ -152,11 +152,36 @@ export async function fetchTeamActivity(): Promise<{
 
   // JD is active — removed hardcoded on_leave status
 
-  // Build statuses
+  // ── Determine if a chatter SHOULD be on duty based on shift schedule ──
+  const ukHour = parseInt(
+    now.toLocaleString("en-GB", { timeZone: "Europe/London", hour: "numeric", hour12: false })
+  );
+
+  function isScheduledNow(name: string): boolean {
+    for (const s of SHIFT_SCHEDULE) {
+      if (!s.members.includes(name)) continue;
+      if (s.startHour < s.endHour) {
+        // Normal shift (e.g. 6-14, 14-22)
+        if (ukHour >= s.startHour && ukHour < s.endHour) return true;
+      } else {
+        // Overnight shift (e.g. 22-6)
+        if (ukHour >= s.startHour || ukHour < s.endHour) return true;
+      }
+    }
+    return false;
+  }
+
+  // Build statuses — cross-reference attendance data with shift schedule
   const allMembers = ["KC", "Jane", "Marc", "Jemimah", "JD"];
   const statuses: TeamMemberStatus[] = allMembers.map((name) => {
     const latest = latestByUser[name];
-    const isOnDuty = latest?.action === "logged_in" || latest?.action === "joined_voice";
+    const rawOnDuty = latest?.action === "logged_in" || latest?.action === "joined_voice";
+    const scheduled = isScheduledNow(name);
+
+    // If attendance says "on duty" but their shift has ended, mark them off duty
+    // (catches missed logout records)
+    const isOnDuty = rawOnDuty && scheduled;
+
     const isOnLeave = latest?.action === "on_leave";
     return {
       name,
