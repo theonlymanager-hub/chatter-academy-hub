@@ -98,7 +98,7 @@ for name in ['Ashley', 'Izzie', 'Willow']:
     current_subs = int(latest['subscription_revenue']) if latest and latest['subscription_revenue'] else 0
     
     # New subs this week
-    new_subs = max(current_subs - baseline_subs, 0) if baseline_subs > 0 else 0
+    new_subs = max(current_subs - baseline_subs, 0)
     
     # Weekly LTV
     ltv = round(week_rev / new_subs, 2) if new_subs > 0 else 0
