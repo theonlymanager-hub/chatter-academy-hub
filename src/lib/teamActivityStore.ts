@@ -182,7 +182,15 @@ export async function fetchTeamActivity(): Promise<{
     // (catches missed logout records)
     const isOnDuty = rawOnDuty && scheduled;
 
-    const isOnLeave = latest?.action === "on_leave";
+    // Ignore stale "on_leave" if chatter has recent active records
+    // Fix for JD showing "on leave" when actually on shift
+    const hasRecentActivity = latest && (
+      latest.action === "logged_in" || 
+      latest.action === "joined_voice" ||
+      latest.action === "logged_out"
+    );
+    const isOnLeave = latest?.action === "on_leave" && !hasRecentActivity;
+    
     return {
       name,
       isOnDuty,
