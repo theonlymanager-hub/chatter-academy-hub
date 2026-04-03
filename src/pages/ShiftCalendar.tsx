@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { shiftSchedule, chatterColors } from "@/lib/mock-data";
 import { Clock, ChevronLeft, ChevronRight, Sun, Sunset, Moon, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // ── Shift definitions ──────────────────────────────────────────────────
 const SHIFTS = [
@@ -54,6 +56,15 @@ function isCurrentShift(shiftKey: string): boolean {
 export default function ShiftCalendar() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [now, setNow] = useState(new Date());
+  const { toast } = useToast();
+  
+  const [requestForm, setRequestForm] = useState({
+    chatter_name: "",
+    request_type: "",
+    request_date: "",
+    shift: "",
+    reason: ""
+  });
 
   // Live clock tick every 30s
   useEffect(() => {
@@ -86,6 +97,53 @@ export default function ShiftCalendar() {
     const entries = shiftMap[`${todayName}-${currentShift}`] || [];
     return entries.map((e) => e.memberName);
   }, [currentShift, shiftMap, now]);
+
+  async function handleSubmitRequest() {
+    if (!requestForm.chatter_name || !requestForm.request_type || !requestForm.request_date || !requestForm.shift) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("shift_requests")
+        .insert({
+          chatter_name: requestForm.chatter_name,
+          request_type: requestForm.request_type,
+          request_date: requestForm.request_date,
+          shift: requestForm.shift,
+          reason: requestForm.reason || null,
+          status: "pending"
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Request submitted",
+        description: "Your shift request has been submitted. Please message Zar on Discord."
+      });
+
+      // Reset form
+      setRequestForm({
+        chatter_name: "",
+        request_type: "",
+        request_date: "",
+        shift: "",
+        reason: ""
+      });
+    } catch (error) {
+      console.error("Failed to submit request:", error);
+      toast({
+        title: "Submission failed",
+        description: "Could not submit request. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-[1400px]">
@@ -336,7 +394,11 @@ export default function ShiftCalendar() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Your Name</label>
-            <select className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+            <select 
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
+              value={requestForm.chatter_name}
+              onChange={(e) => setRequestForm({ ...requestForm, chatter_name: e.target.value })}
+            >
               <option value="">Select your name</option>
               <option value="Marc">Marc</option>
               <option value="Jaydee">Jaydee</option>
@@ -347,7 +409,11 @@ export default function ShiftCalendar() {
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Request Type</label>
-            <select className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+            <select 
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
+              value={requestForm.request_type}
+              onChange={(e) => setRequestForm({ ...requestForm, request_type: e.target.value })}
+            >
               <option value="">Select type</option>
               <option value="time-off">Time Off</option>
               <option value="shift-swap">Shift Swap</option>
@@ -359,11 +425,17 @@ export default function ShiftCalendar() {
             <input
               type="date"
               className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
+              value={requestForm.request_date}
+              onChange={(e) => setRequestForm({ ...requestForm, request_date: e.target.value })}
             />
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Shift</label>
-            <select className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+            <select 
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
+              value={requestForm.shift}
+              onChange={(e) => setRequestForm({ ...requestForm, shift: e.target.value })}
+            >
               <option value="">Select shift</option>
               <option value="morning">Morning (6 AM - 2 PM)</option>
               <option value="afternoon">Afternoon (2 PM - 10 PM)</option>
@@ -375,14 +447,22 @@ export default function ShiftCalendar() {
             <textarea
               className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm min-h-[80px]"
               placeholder="Briefly explain your request..."
+              value={requestForm.reason}
+              onChange={(e) => setRequestForm({ ...requestForm, reason: e.target.value })}
             />
           </div>
         </div>
         <div className="mt-6 flex gap-3">
-          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+          <button 
+            onClick={handleSubmitRequest}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
             Submit Request
           </button>
-          <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors">
+          <button 
+            onClick={() => setRequestForm({ chatter_name: "", request_type: "", request_date: "", shift: "", reason: "" })}
+            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
+          >
             Cancel
           </button>
         </div>
