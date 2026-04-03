@@ -56,6 +56,7 @@ const Index = () => {
   // ─ state ─
   const [weeklyEarnings, setWeeklyEarnings] = useState<Record<string, WeeklyEarnings>>({});
   const [activeSubs, setActiveSubs] = useState<Record<string, number>>({});
+  const [weeklyNewSubs, setWeeklyNewSubs] = useState<Record<string, number>>({});
   const [revenueLoading, setRevenueLoading] = useState(true);
   const [revenueError, setRevenueError] = useState<string | null>(null);
   const [qualityScores, setQualityScores] = useState<QualityScore[]>([]);
@@ -97,6 +98,41 @@ const Index = () => {
         }
         setActiveSubs(counts);
       } catch {}
+    })();
+  }, []);
+
+  // ─ fetch weekly new subscriber counts (for LTV calculation) ─
+  useEffect(() => {
+    (async () => {
+      try {
+        // Get Monday of current week
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Monday = 1
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + diff);
+        const weekStart = monday.toISOString().split('T')[0];
+
+        const { data, error } = await supabase
+          .from('weekly_subs')
+          .select('account_id, new_subs_count')
+          .eq('week_start', weekStart);
+
+        if (error) {
+          console.error('Failed to fetch weekly subs:', error);
+          return;
+        }
+
+        const counts: Record<string, number> = {};
+        if (data) {
+          for (const row of data) {
+            counts[row.account_id] = row.new_subs_count || 0;
+          }
+        }
+        setWeeklyNewSubs(counts);
+      } catch (e) {
+        console.error('Error fetching weekly new subs:', e);
+      }
     })();
   }, []);
 
@@ -225,12 +261,12 @@ const Index = () => {
               {/* LTV + Subs */}
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div>
-                  <p className="text-muted-foreground">Active Subs</p>
-                  <p className="font-semibold">{isDemo ? "—" : (activeSubs[key]?.toLocaleString() || "—")}</p>
+                  <p className="text-muted-foreground">New Subs (this week)</p>
+                  <p className="font-semibold">{isDemo ? "—" : (weeklyNewSubs[key]?.toLocaleString() || "0")}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">LTV (this week)</p>
-                  <p className="font-semibold">{isDemo ? "—" : activeSubs[key] && revenue > 0 ? `$${(revenue / activeSubs[key]).toFixed(2)}` : "—"}</p>
+                  <p className="font-semibold">{isDemo ? "—" : weeklyNewSubs[key] && revenue > 0 ? `$${(revenue / weeklyNewSubs[key]).toFixed(2)}` : "—"}</p>
                 </div>
               </div>
             </div>
