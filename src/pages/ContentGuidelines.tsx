@@ -160,6 +160,81 @@ export default function ContentGuidelines() {
         </div>
       </div>
 
+      {/* Visual Examples */}
+      <div className="rounded-xl border border-white/10 bg-card p-5">
+        <h2 className="text-lg font-semibold text-white mb-4">Examples: Good vs Bad</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Good Lighting Example */}
+          <div>
+            <div className="aspect-video bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center mb-2">
+              <div className="text-center">
+                <CheckCircle className="h-8 w-8 text-green-400 mx-auto mb-2" />
+                <p className="text-sm text-green-400 font-medium">Good Lighting</p>
+                <p className="text-xs text-slate-400 mt-1">Natural light, no shadows</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-300">
+              <strong>✓ Soft natural light from window</strong><br />
+              ✓ Even skin tone, no harsh shadows<br />
+              ✓ Well-lit background
+            </p>
+          </div>
+
+          {/* Bad Lighting Example */}
+          <div>
+            <div className="aspect-video bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-center mb-2">
+              <div className="text-center">
+                <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-2" />
+                <p className="text-sm text-red-400 font-medium">Bad Lighting</p>
+                <p className="text-xs text-slate-400 mt-1">Backlit, dark shadows</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-300">
+              <strong>✗ Window behind subject (silhouette)</strong><br />
+              ✗ Face too dark, harsh shadows<br />
+              ✗ Overexposed background
+            </p>
+          </div>
+
+          {/* Good Framing Example */}
+          <div>
+            <div className="aspect-video bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center mb-2">
+              <div className="text-center">
+                <CheckCircle className="h-8 w-8 text-green-400 mx-auto mb-2" />
+                <p className="text-sm text-green-400 font-medium">Good Framing</p>
+                <p className="text-xs text-slate-400 mt-1">Stable, centered, clean background</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-300">
+              <strong>✓ Subject centered, rule of thirds</strong><br />
+              ✓ Clean, uncluttered background<br />
+              ✓ Stable camera (tripod)
+            </p>
+          </div>
+
+          {/* Bad Framing Example */}
+          <div>
+            <div className="aspect-video bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-center mb-2">
+              <div className="text-center">
+                <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-2" />
+                <p className="text-sm text-red-400 font-medium">Bad Framing</p>
+                <p className="text-xs text-slate-400 mt-1">Messy background, shaky</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-300">
+              <strong>✗ Cluttered background (clothes, mess)</strong><br />
+              ✗ Subject off-center, awkward crop<br />
+              ✗ Shaky handheld footage
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <p className="text-xs text-slate-300">
+            <strong className="text-blue-400">📸 Real examples coming soon:</strong> Luke will upload reference images/clips to replace these placeholders. Check back here for actual good/bad comparison shots.
+          </p>
+        </div>
+      </div>
+
       {/* Model-specific notes */}
       <div className="rounded-xl border border-white/10 bg-card p-5">
         <h2 className="text-lg font-semibold text-white mb-3">Model-Specific Notes</h2>
