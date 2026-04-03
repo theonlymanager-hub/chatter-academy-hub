@@ -3,12 +3,13 @@
 
 const API_BASE = 'https://app.onlyfansapi.com/api';
 
-// Account IDs for each model
+// Account IDs for each model (from OnlyFansAPI accounts endpoint)
 export const ACCOUNT_IDS = {
-  ashley: 'acct_71750a6057e34776b9b6ca0903b5ee1a',
-  izzie: 'acct_6140bb9805e9416a928d4d7a788f3939',
-  willow: 'acct_f968a6be8f2041dcb9d52f8113f2d258',
-
+  ashley: 'acct_71750a6057e34776b9b6ca0903b5ee1a',  // ashleyxmorris - 9778 subs
+  izzie: 'acct_6140bb9805e9416a928d4d7a788f3939',   // izzierae - 11395 subs
+  willow: 'acct_f968a6be8f2041dcb9d52f8113f2d258',  // willowxjoy - 1497 subs
+  // olivia: 'acct_c423cf3f392c4025aba7cbbea507a9cb', // Olivia paid (not on dashboard)
+  // lucinda: 'acct_62e65e4c2c0740b386cde14811762f4d', // Lucinda (dropped per Luke)
 } as const;
 
 // API key - fallback to built-in key if not set in localStorage
@@ -332,8 +333,19 @@ export const platformApi = {
 
   // Get active subscribers count
   async getActiveSubscribers(accountId: string): Promise<number> {
-    const stats = await this.getAccountStats(accountId);
-    return stats?.subscribersCount || 0;
+    // Use accounts endpoint instead of individual account endpoint (more reliable)
+    try {
+      const response = await fetch(`${API_BASE}/accounts`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) return 0;
+      const accounts = await response.json();
+      const account = accounts.find((a: any) => a.id === accountId);
+      return account?.onlyfans_user_data?.subscribersCount || 0;
+    } catch (e) {
+      console.error('Failed to fetch subscriber count:', e);
+      return 0;
+    }
   },
 };
 
