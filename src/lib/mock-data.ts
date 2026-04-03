@@ -58,6 +58,7 @@ export interface ShiftEntry {
   shift: "morning" | "afternoon" | "night";
   startTime: string;
   endTime: string;
+  accounts?: string[]; // Model accounts assigned (e.g., ["Ashley", "Willow"])
 }
 
 export interface MassMessage {
@@ -179,11 +180,11 @@ export const tasks: Task[] = [
 // Marc: 6AM-2PM (morning), JD+Jemimah: 2PM-10PM (afternoon), KC+Jane: 10PM-6AM (night)
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const shiftSchedule: ShiftEntry[] = days.flatMap((day, di) => [
-  { id: `m1-${di}`, memberId: "1", memberName: "Marc", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM" },
-  { id: `a1-${di}`, memberId: "5", memberName: "Jaydee", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: `a2-${di}`, memberId: "2", memberName: "Jemimah", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM" },
-  { id: `n1-${di}`, memberId: "4", memberName: "KC", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
-  { id: `n2-${di}`, memberId: "3", memberName: "Jane", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM" },
+  { id: `m1-${di}`, memberId: "1", memberName: "Marc", day, shift: "morning", startTime: "6:00 AM", endTime: "2:00 PM", accounts: ["Ashley", "Willow", "Izzy"] },
+  { id: `a1-${di}`, memberId: "5", memberName: "Jaydee", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM", accounts: ["Ashley", "Willow", "Izzy"] },
+  { id: `a2-${di}`, memberId: "2", memberName: "Jemimah", day, shift: "afternoon", startTime: "2:00 PM", endTime: "10:00 PM", accounts: ["Ashley", "Willow", "Izzy"] },
+  { id: `n1-${di}`, memberId: "4", memberName: "KC", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM", accounts: ["Ashley", "Willow", "Izzy"] },
+  { id: `n2-${di}`, memberId: "3", memberName: "Jane", day, shift: "night", startTime: "10:00 PM", endTime: "6:00 AM", accounts: ["Ashley", "Willow", "Izzy"] },
 ]);
 
 // Mass messages - Week of March 9-15, 2026

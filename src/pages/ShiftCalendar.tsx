@@ -326,6 +326,70 @@ export default function ShiftCalendar() {
           </div>
         ))}
       </div>
+
+      {/* Shift Request Form */}
+      <div className="rounded-xl border border-border/40 bg-card/50 p-6">
+        <h3 className="text-lg font-semibold mb-4">Request Shift Change</h3>
+        <p className="text-sm text-muted-foreground mb-6">
+          Need time off or want to swap shifts? Fill out this form and notify Zar in Discord.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Your Name</label>
+            <select className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+              <option value="">Select your name</option>
+              <option value="Marc">Marc</option>
+              <option value="Jaydee">Jaydee</option>
+              <option value="Jemimah">Jemimah</option>
+              <option value="KC">KC</option>
+              <option value="Jane">Jane</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Request Type</label>
+            <select className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+              <option value="">Select type</option>
+              <option value="time-off">Time Off</option>
+              <option value="shift-swap">Shift Swap</option>
+              <option value="schedule-change">Schedule Change</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Date</label>
+            <input
+              type="date"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Shift</label>
+            <select className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+              <option value="">Select shift</option>
+              <option value="morning">Morning (6 AM - 2 PM)</option>
+              <option value="afternoon">Afternoon (2 PM - 10 PM)</option>
+              <option value="night">Night (10 PM - 6 AM)</option>
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Reason</label>
+            <textarea
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm min-h-[80px]"
+              placeholder="Briefly explain your request..."
+            />
+          </div>
+        </div>
+        <div className="mt-6 flex gap-3">
+          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+            Submit Request
+          </button>
+          <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors">
+            Cancel
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground mt-4">
+          <strong>Note:</strong> After submitting, message Zar directly on Discord for approval.
+        </p>
+      </div>
     </div>
   );
 }
