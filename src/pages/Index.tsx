@@ -18,7 +18,7 @@ import DailyCheckInBanner from "@/components/DailyCheckInBanner";
 import RevenueLTV from "@/components/RevenueLTV";
 // Task trackers removed from dashboard per Luke's request (2026-04-01)
 import StrikesPanel from "@/components/StrikesPanel";
-import ChatterTasksWidget from "@/components/ChatterTasksWidget";
+// ChatterTasksWidget removed per Luke's order (2026-04-03)
 import TeamActivityFeed from "@/components/TeamActivityFeed";
 import { isDemoUser } from "@/utils/demo";
 
@@ -293,10 +293,9 @@ const Index = () => {
           <TeamActivityFeed />
         </div>
 
-        {/* RIGHT — Strikes + Chatter Tasks stacked */}
+        {/* RIGHT — Strikes only */}
         <div className="space-y-4">
           {(isAdmin || user?.role === "supervisor") && <StrikesPanel />}
-          {(isAdmin || user?.role === "supervisor") && <ChatterTasksWidget />}
         </div>
       </div>
 
