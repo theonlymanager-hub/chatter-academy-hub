@@ -45,6 +45,7 @@ import ChatterTasks from "./pages/ChatterTasks";
 import ChattingPlaybook from "./pages/ChattingPlaybook";
 import ClientChecklist from "./pages/ClientChecklist";
 import ContentGuidelines from "./pages/ContentGuidelines";
+import Whiteboard from "./pages/Whiteboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -438,6 +439,17 @@ function AppContent() {
             <ProtectedRoute allowedRoles={['admin', 'supervisor', 'data_entry', 'demo']}>
               <DashboardLayout>
                 <ContentGuidelines />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/whiteboard" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'supervisor', 'demo']}>
+              <DashboardLayout>
+                <Whiteboard />
               </DashboardLayout>
             </ProtectedRoute>
           } 
