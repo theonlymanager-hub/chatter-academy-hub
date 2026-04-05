@@ -1,28 +1,28 @@
 {
-  "updated_at": "2026-04-03T11:00:06Z",
-  "date": "2026-04-03",
+  "updated_at": "2026-04-05T05:00:06Z",
+  "date": "2026-04-05",
   "week_start": "2026-03-30",
   "models": {
     "Ashley": {
-      "today_gross": 582.0,
-      "week_gross": 4041.88,
-      "total_subs": 10511,
-      "new_subs_week": 10511,
-      "ltv_week": 0.38
+      "today_gross": 583.0,
+      "week_gross": 5487.88,
+      "total_subs": 10828,
+      "new_subs_week": 10828,
+      "ltv_week": 0.51
     },
     "Izzie": {
-      "today_gross": 0.0,
-      "week_gross": 714.0,
+      "today_gross": 80.0,
+      "week_gross": 1018.0,
       "total_subs": 12661,
       "new_subs_week": 12661,
-      "ltv_week": 0.06
+      "ltv_week": 0.08
     },
     "Willow": {
-      "today_gross": 30.0,
-      "week_gross": 962.0,
-      "total_subs": 6909,
-      "new_subs_week": 6909,
-      "ltv_week": 0.14
+      "today_gross": 0.0,
+      "week_gross": 1212.0,
+      "total_subs": 6900,
+      "new_subs_week": 6900,
+      "ltv_week": 0.18
     }
   }
 }

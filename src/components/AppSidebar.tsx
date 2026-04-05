@@ -53,6 +53,7 @@ const getAllSections = () => [
     items: [
       { title: "QC Input", url: "/qc-input", icon: ClipboardList, roles: ['admin', 'supervisor', 'demo'] },
       { title: "Chat Feedback", url: "/chat-feedback", icon: MessageSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
+      { title: "Chatter Tasks", url: "/tasks", icon: CheckSquare, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
       { title: "Customs Board", url: "/customs", icon: Palette, roles: ['admin', 'supervisor', 'data_entry', 'chatter', 'demo'] },
     ],
   },
