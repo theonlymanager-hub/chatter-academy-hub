@@ -10,6 +10,7 @@ interface Role {
   status: Status;
   role: string;
   shift?: string;
+  note?: string;
   pay: string;
   daily: string[];
   weekly: string[];
@@ -82,7 +83,7 @@ const chatterKpis = [
   "Below QC 4.0 for a month = automatic fire",
 ];
 
-const chatterPay = "New hires \$4/hr + 3% commission. After 90 days at QC 7+: \$5/hr + 5% individual commission. After 6 months at QC 8+: \$5.50/hr + 7% individual commission. Bonuses: \$10 per completed task, \$100 Chatter of Month, \$50 Most Improved.";
+const chatterPay = "Existing chatters: \$3/hr + 3% commission. New hires: \$4/hr + 3% commission. After 90 days at QC 7+: \$5/hr + 5% individual commission. After 6 months at QC 8+: \$5.50/hr + 7% individual commission. Bonuses: \$10 per completed task, \$100 Chatter of Month, \$50 Most Improved.";
 
 const SECTIONS: { title: string; roles: Role[] }[] = [
   {
@@ -94,10 +95,38 @@ const SECTIONS: { title: string; roles: Role[] }[] = [
         status: "OPEN",
         role: "Operations Manager",
         pay: "PHP 60-80k/mo starter, scales to \$5-6k USD once profitable",
-        daily: ["Review overnight handover from Night Supervisor","Monitor live dashboard for revenue, QC, and shift attendance anomalies","Check team Discord for blockers and escalations","Respond to supervisor escalations within 2 hours","Spot-check 2-3 chats per shift across the day","Update Whiteboard with daily priorities"],
-        weekly: ["Run Sunday team call (Fireflies on, all 3 supervisors)","Build weekly summary email for founder","Approve next week's mass message schedule from each supervisor","Approve any chatter raises","Submit payroll line items to founder","Update Dashboard Improvements Tracker"],
-        monthly: ["Run monthly chatter performance reviews","Make keep/fire calls on chatters below QC 4.0","Update hiring pipeline","Send monthly P&L view to founder","Set next month's team-wide goals (QC, LTV, revenue)"],
-        kpis: ["Team avg QC >= 7.0 by end of month 3","Per-model weekly revenue trending up month-over-month","100% shift coverage","Chatter retention (no involuntary churn from A/B-tier)","Sunday summary delivered by 11pm UK every Sunday","Weekly mass message plan approved by Sunday","< 24h response on chatter blockers"],
+        daily: [
+          "Review overnight handover from Night Supervisor",
+          "Monitor live dashboard for revenue, QC, and shift attendance anomalies",
+          "Check team Discord for blockers and escalations",
+          "Respond to supervisor escalations within 2 hours",
+          "Spot-check 2-3 chats per shift across the day",
+          "Update Whiteboard with daily priorities",
+        ],
+        weekly: [
+          "Run Sunday team call (Fireflies on, all 3 supervisors)",
+          "Build weekly summary email for founder",
+          "Approve next week's mass message schedule from each supervisor",
+          "Approve any chatter raises",
+          "Submit payroll line items to founder",
+          "Update Dashboard Improvements Tracker",
+        ],
+        monthly: [
+          "Run monthly chatter performance reviews",
+          "Make keep/fire calls on chatters below QC 4.0",
+          "Update hiring pipeline",
+          "Send monthly P&L view to founder",
+          "Set next month's team-wide goals (QC, LTV, revenue)",
+        ],
+        kpis: [
+          "Team avg QC >= 7.0 by end of month 3",
+          "Per-model weekly revenue trending up month-over-month",
+          "100% shift coverage",
+          "Chatter retention (no involuntary churn from A/B-tier)",
+          "Sunday summary delivered by 11pm UK every Sunday",
+          "Weekly mass message plan approved by Sunday",
+          "< 24h response on chatter blockers",
+        ],
       },
     ],
   },
@@ -113,28 +142,10 @@ const SECTIONS: { title: string; roles: Role[] }[] = [
     title: "Chatters",
     roles: [
       { id: "ch-marc", name: "Marc", status: "PROBATION", role: "Chatter", shift: "Morning 6AM-2PM UK", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
-      { id: "ch-morning-2", name: "OPEN — Hiring", status: "OPEN", role: "Chatter", shift: "Morning 6AM-2PM UK", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
-      { id: "ch-aft-1", name: "OPEN — Hiring (replacing JD)", status: "OPEN", role: "Chatter", shift: "Afternoon 2PM-10PM UK", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
-      { id: "ch-aft-2", name: "OPEN — Hiring (replacing Jemimah)", status: "OPEN", role: "Chatter", shift: "Afternoon 2PM-10PM UK", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
+      { id: "ch-jd", name: "JD", status: "FILLED", role: "Chatter", shift: "Afternoon 2PM-10PM UK", note: "Marked for replacement (performance)", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
+      { id: "ch-jemimah", name: "Jemimah", status: "FILLED", role: "Chatter", shift: "Afternoon 2PM-10PM UK", note: "Marked for replacement (attendance)", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
       { id: "ch-kc", name: "KC", status: "FILLED", role: "Chatter", shift: "Night 10PM-6AM UK", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
       { id: "ch-jane", name: "Jane", status: "FILLED", role: "Chatter", shift: "Night 10PM-6AM UK", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
-      { id: "ch-buffer", name: "OPEN — Hiring (buffer / any shift)", status: "OPEN", role: "Chatter", shift: "Flexible", pay: chatterPay, daily: chatterDaily, weekly: chatterWeekly, monthly: [], kpis: chatterKpis },
-    ],
-  },
-  {
-    title: "Support",
-    roles: [
-      {
-        id: "data-entry",
-        name: "OPEN — Hiring",
-        status: "OPEN",
-        role: "Data Entry / Admin",
-        pay: "PHP 20-30k/mo + \$50 monthly accuracy bonus",
-        daily: ["Update fan profiles per chatter flags","Process Airbnb booking updates","Add new mass message images to scheduling system","Coordinate custom delivery scheduling","Onboard new hires (NDA, Hubstaff install, account setup)"],
-        weekly: ["Build Client Checklist for each model","Review Airbnb Schedule for upcoming week","Pull weekly revenue report from API","Update Chatter Profile photos / bios","Clean up Client Profiles"],
-        monthly: ["Help Ops Manager assemble payroll line items"],
-        kpis: ["100% data accuracy","< 24h on any data update request","Airbnb schedule always current","New hires fully onboarded within 48h"],
-      },
     ],
   },
 ];
@@ -175,7 +186,7 @@ export default function TeamList() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="glass-card p-4"><p className="text-xs text-muted-foreground">Total Positions</p><p className="text-2xl font-bold">{total}</p></div>
         <div className="glass-card p-4"><p className="text-xs text-muted-foreground">Filled</p><p className="text-2xl font-bold text-green-400">{filled}</p></div>
-        <div className="glass-card p-4"><p className="text-xs text-muted-foreground">Open</p><p className="text-2xl font-bold text-orange-400">{open}</p></div>
+        <div className="glass-card p-4"><p className="text-xs text-muted-foreground">Currently Hiring</p><p className="text-2xl font-bold text-orange-400">{open}</p></div>
         <div className="glass-card p-4"><p className="text-xs text-muted-foreground">On Probation</p><p className="text-2xl font-bold text-blue-400">{probation}</p></div>
       </div>
 
@@ -192,6 +203,7 @@ export default function TeamList() {
                     <div className="flex-1 text-left min-w-0">
                       <p className="font-semibold truncate">{role.name}</p>
                       <p className="text-xs text-muted-foreground">{role.role}{role.shift && ` · ${role.shift}`}</p>
+                      {role.note && (<p className="text-xs text-yellow-400 mt-0.5">⚠ {role.note}</p>)}
                     </div>
                     {statusBadge(role.status)}
                   </button>
@@ -216,4 +228,3 @@ export default function TeamList() {
     </div>
   );
 }
-
