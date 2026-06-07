@@ -14,66 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      quiz_results: {
-        Row: {
-          id: string
-          username: string
-          score: number
-          total: number
-          percentage: number
-          category_scores: Json | null
-          quiz_name: string | null
-          completed_at: string
-        }
-        Insert: {
-          id?: string
-          username: string
-          score: number
-          total: number
-          percentage: number
-          category_scores?: Json | null
-          quiz_name?: string | null
-          completed_at?: string
-        }
-        Update: {
-          id?: string
-          username?: string
-          score?: number
-          total?: number
-          percentage?: number
-          category_scores?: Json | null
-          quiz_name?: string | null
-          completed_at?: string
-        }
-        Relationships: []
-      }
-      dashboard_activity: {
-        Row: {
-          id: string
-          username: string
-          date: string
-          pages_visited: Json | null
-          login_time: string
-          last_sync: string
-        }
-        Insert: {
-          id?: string
-          username: string
-          date: string
-          pages_visited?: Json | null
-          login_time?: string
-          last_sync?: string
-        }
-        Update: {
-          id?: string
-          username?: string
-          date?: string
-          pages_visited?: Json | null
-          login_time?: string
-          last_sync?: string
-        }
-        Relationships: []
-      }
       app_users: {
         Row: {
           created_at: string
